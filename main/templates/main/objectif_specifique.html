@@ -1,0 +1,1188 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Vision Spécifique - Église Pentecôte Alléluia de Guinée{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =============================================
+       HERO SECTION - BANNIÈRE PRINCIPALE
+       ============================================= */
+    .vision-hero {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1a0a00 0%, #3d1a00 50%, #1a0a00 100%);
+        padding: 4rem 0;
+    }
+    
+    .vision-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("{% static 'main/images/hero/fond6.jpg' %}") center/cover no-repeat;
+        opacity: 0.4;
+        animation: slowZoom 20s ease-in-out infinite alternate;
+    }
+    
+    @keyframes slowZoom {
+        from { transform: scale(1); }
+        to { transform: scale(1.1); }
+    }
+    
+    .vision-hero::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.7) 100%);
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 2rem;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .hero-icon {
+        margin-bottom: 1.5rem;
+        animation: floatIcon 3s ease-in-out infinite;
+    }
+    
+    .hero-logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 5px;
+    }
+    
+    @keyframes floatIcon {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-10px) scale(1.05); }
+    }
+    
+    .hero-title-main {
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        font-weight: 900;
+        color: white;
+        text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        margin-bottom: 1rem;
+        line-height: 1.3;
+        padding: 0 1rem;
+    }
+    
+    .hero-title-main .highlight {
+        background: linear-gradient(135deg, #daa520, #ffd700, #daa520);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 3s linear infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+    
+    .hero-subtitle-main {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        max-width: 100%;
+        margin: 0 auto 2rem;
+        line-height: 1.8;
+        padding: 0 2rem;
+    }
+    
+    .hero-verse {
+        background: rgba(218, 165, 32, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(218, 165, 32, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem 2rem;
+        max-width: 90%;
+        margin: 0 auto;
+        animation: fadeInUp 1s ease 0.5s both;
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .hero-verse p {
+        color: white;
+        font-style: italic;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .hero-verse cite {
+        color: #daa520;
+        font-weight: 700;
+    }
+    
+    .verse-link {
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .verse-link:hover {
+        transform: scale(1.05);
+    }
+    
+    .verse-link:hover cite {
+        color: #ffd700;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    /* Scroll indicator */
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        animation: bounce 2s infinite;
+    }
+    
+    .scroll-indicator i {
+        font-size: 2rem;
+        color: #daa520;
+        text-shadow: 0 0 10px rgba(218, 165, 32, 0.5);
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+        40% { transform: translateX(-50%) translateY(-15px); }
+        60% { transform: translateX(-50%) translateY(-7px); }
+    }
+    
+    /* =============================================
+       MAIN CONTENT AREA
+       ============================================= */
+    body {
+        background: linear-gradient(135deg, #1a0a00 0%, #3d1a00 50%, #1a0a00 100%);
+        min-height: 100vh;
+    }
+    
+    /* Section Cards */
+    .vision-section {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .vision-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 50px rgba(218, 165, 32, 0.2);
+    }
+    
+    .vision-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(180deg, #daa520, #8b4513);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .section-icon.orange { background: linear-gradient(135deg, #ff8c00, #cc6600); }
+    .section-icon.green { background: linear-gradient(135deg, #20c997, #0ea5a5); }
+    .section-icon.blue { background: linear-gradient(135deg, #5b8cff, #2b4aa3); }
+    .section-icon.purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+    .section-icon.pink { background: linear-gradient(135deg, #db2777, #be185d); }
+    .section-icon.gray { background: linear-gradient(135deg, #64748b, #475569); }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #8b4513;
+        margin: 0;
+    }
+    
+    .section-content p {
+        color: #5a3a1a;
+        line-height: 1.8;
+        font-size: 1.05rem;
+    }
+    
+    .section-content ul, .section-content ol {
+        list-style: none;
+        padding: 0;
+        margin: 1rem 0;
+    }
+    
+    .section-content ul li, .section-content ol li {
+        padding: 0.8rem 0;
+        padding-left: 2rem;
+        position: relative;
+        color: #5a3a1a;
+        border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+    }
+    
+    .section-content ul li:last-child, .section-content ol li:last-child {
+        border-bottom: none;
+    }
+    
+    .section-content ul li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #daa520;
+        font-weight: bold;
+    }
+    
+    .section-content ol {
+        counter-reset: item;
+    }
+    
+    .section-content ol li::before {
+        counter-increment: item;
+        content: counter(item) ".";
+        position: absolute;
+        left: 0;
+        color: #daa520;
+        font-weight: bold;
+    }
+    
+    /* Keyline badge */
+    .keyline {
+        display: inline-block;
+        padding: 0.8rem 1.5rem;
+        border-radius: 50px;
+        background: linear-gradient(135deg, #daa520, #b8860b);
+        color: white;
+        font-weight: 800;
+        font-size: clamp(0.7rem, 1.5vw, 1.1rem);
+        box-shadow: 0 6px 20px rgba(218, 165, 32, 0.4);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        margin: 1rem 0;
+        white-space: nowrap;
+    }
+    
+    /* Featured section */
+    .featured-section {
+        text-align: center;
+        background: linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(139, 69, 19, 0.1));
+    }
+    
+    .featured-section::before {
+        background: linear-gradient(180deg, #daa520, #ffd700);
+    }
+    
+    /* =============================================
+       QUOTE SECTION
+       ============================================= */
+    .quote-section {
+        background: linear-gradient(135deg, #3d1a00, #1a0a00);
+        padding: 4rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quote-section::before {
+        content: '"';
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 15rem;
+        color: rgba(218, 165, 32, 0.1);
+        font-family: Georgia, serif;
+        line-height: 1;
+    }
+    
+    .quote-text {
+        font-size: 1.5rem;
+        color: white;
+        font-style: italic;
+        max-width: 800px;
+        margin: 0 auto 1rem;
+        position: relative;
+        z-index: 1;
+        line-height: 1.8;
+    }
+    
+    .quote-author {
+        color: #daa520;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    .verse-link-footer {
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .verse-link-footer:hover {
+        transform: scale(1.05);
+    }
+    
+    .verse-link-footer:hover .quote-author {
+        color: #ffd700;
+        text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+
+    /* Bouton Lire la suite - Style élégant */
+    .btn-lire-suite {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 35px;
+        margin-top: 25px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(135deg, #89253e 0%, #b8860b 50%, #89253e 100%);
+        background-size: 200% 200%;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(137, 37, 62, 0.4), 0 4px 10px rgba(184, 134, 11, 0.3);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .btn-lire-suite:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(137, 37, 62, 0.5), 0 8px 20px rgba(184, 134, 11, 0.4);
+    }
+
+    .btn-lire-suite:active {
+        transform: translateY(-2px) scale(1.02);
+    }
+
+    .btn-lire-suite i {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-lire-suite:hover i {
+        transform: rotate(-10deg) scale(1.2);
+    }
+
+    .btn-shine {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .btn-lire-suite:hover .btn-shine {
+        left: 100%;
+    }
+
+    /* Animation pulse subtile */
+    .btn-lire-suite::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(135deg, #89253e, #b8860b, #89253e);
+        border-radius: 52px;
+        z-index: -1;
+        opacity: 0;
+        animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 0; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.02); }
+    }
+
+    /* =============================================
+       MODAL PDF - DESIGN ÉLÉGANT
+       ============================================= */
+    .vision-pdf-modal {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+    }
+
+    .vision-modal-header {
+        background: linear-gradient(135deg, #89253e 0%, #6b1d30 50%, #b8860b 100%);
+        border: none;
+        padding: 1.2rem 1.8rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .vision-modal-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+        0%, 100% { transform: translate(-30%, -30%); }
+        50% { transform: translate(30%, 30%); }
+    }
+
+    .modal-icon-wrapper {
+        width: 50px;
+        height: 50px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .modal-icon-wrapper i {
+        font-size: 1.5rem;
+        color: #ffd700;
+        text-shadow: 0 0 10px rgba(255,215,0,0.5);
+    }
+
+    .vision-modal-header .modal-title {
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.3rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .btn-close-custom {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-close-custom:hover {
+        background: rgba(255,255,255,0.25);
+        transform: rotate(90deg) scale(1.1);
+    }
+
+    .vision-modal-body {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+        height: 75vh;
+        position: relative;
+    }
+
+    .pdf-container {
+        width: 100%;
+        height: 100%;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    .pdf-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .vision-modal-footer {
+        background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
+        border: none;
+        padding: 1rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .footer-decoration {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #89253e, #b8860b, #89253e);
+        background-size: 200% 100%;
+        animation: gradientMove 3s ease infinite;
+    }
+
+    @keyframes gradientMove {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .footer-info {
+        color: rgba(255,255,255,0.7);
+        font-size: 0.9rem;
+    }
+
+    .footer-info i {
+        color: #b8860b;
+    }
+
+    .btn-fermer {
+        padding: 10px 25px;
+        background: linear-gradient(135deg, #89253e, #b8860b);
+        border: none;
+        border-radius: 25px;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(137,37,62,0.4);
+    }
+
+    .btn-fermer:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(137,37,62,0.5);
+    }
+
+    .btn-fermer:active {
+        transform: translateY(-1px);
+    }
+
+    /* =============================================
+       VISION CARDS - DESIGN ÉLÉGANT
+       ============================================= */
+    .vision-card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 24px;
+        padding: 2.5rem;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(218, 165, 32, 0.1);
+    }
+
+    .vision-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 60px rgba(218, 165, 32, 0.25);
+    }
+
+    .card-glow {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(218, 165, 32, 0.08) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+    }
+
+    .vision-card:hover .card-glow {
+        opacity: 1;
+    }
+
+    .card-icon-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+    }
+
+    .vision-card:hover .card-icon {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    .icon-ring {
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 24px;
+        border: 2px dashed rgba(218, 165, 32, 0.4);
+        animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .green-gradient { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .purple-gradient { background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%); }
+    .orange-gradient { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #2d1810;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .card-divider {
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #daa520, #b8860b);
+        border-radius: 2px;
+        margin-bottom: 1.5rem;
+        transition: width 0.3s ease;
+    }
+
+    .vision-card:hover .card-divider {
+        width: 100px;
+    }
+
+    .card-text, .card-intro {
+        color: #5a4030;
+        line-height: 1.8;
+        font-size: 1.05rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-decoration {
+        position: absolute;
+        bottom: 15px;
+        right: 20px;
+        font-size: 4rem;
+        color: rgba(218, 165, 32, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .vision-card:hover .card-decoration {
+        color: rgba(218, 165, 32, 0.15);
+        transform: scale(1.1);
+    }
+
+    /* Highlight Words */
+    .highlight-word {
+        background: linear-gradient(135deg, rgba(218, 165, 32, 0.2), rgba(184, 134, 11, 0.2));
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        color: #8b4513;
+    }
+
+    /* Featured Card - Vision Spécifique Principale */
+    .featured-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,248,230,0.98));
+    }
+
+    .featured-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Pillars Container */
+    .pillars-container {
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        gap: 1rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .pillar {
+        flex: 1;
+        min-width: 200px;
+        max-width: 280px;
+        background: linear-gradient(135deg, #89253e, #6b1d30);
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(137, 37, 62, 0.3);
+    }
+
+    .pillar:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(137, 37, 62, 0.4);
+    }
+
+    .pillar-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.8rem;
+        color: #ffd700;
+        border: 2px solid rgba(255,215,0,0.3);
+        transition: all 0.3s ease;
+    }
+
+    .pillar:hover .pillar-icon {
+        transform: scale(1.1) rotate(10deg);
+        background: rgba(255,255,255,0.25);
+    }
+
+    .pillar h4 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pillar p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .pillar-divider {
+        display: flex;
+        align-items: center;
+        color: #daa520;
+        font-size: 1.5rem;
+    }
+
+    /* Holistic Message */
+    .holistic-message {
+        background: linear-gradient(135deg, rgba(218,165,32,0.1), rgba(184,134,11,0.1));
+        border-radius: 15px;
+        padding: 1.5rem 2rem;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid rgba(218,165,32,0.2);
+    }
+
+    .holistic-message i {
+        color: #daa520;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .holistic-message p {
+        margin: 0;
+        color: #5a4030;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        font-style: italic;
+    }
+
+    /* Difference List */
+    .difference-list {
+        margin-top: 1rem;
+    }
+
+    .diff-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, rgba(17,153,142,0.05), rgba(56,239,125,0.05));
+        border-radius: 12px;
+        border-left: 4px solid #11998e;
+        transition: all 0.3s ease;
+    }
+
+    .diff-item:hover {
+        transform: translateX(5px);
+        background: linear-gradient(135deg, rgba(17,153,142,0.1), rgba(56,239,125,0.1));
+    }
+
+    .diff-number {
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .diff-item p {
+        margin: 0;
+        color: #5a4030;
+        line-height: 1.6;
+    }
+
+    .diff-item strong {
+        color: #11998e;
+    }
+
+    /* Success Metrics */
+    .success-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .metric {
+        background: linear-gradient(135deg, rgba(142,45,226,0.08), rgba(74,0,224,0.08));
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(142,45,226,0.1);
+    }
+
+    .metric:hover {
+        transform: translateY(-5px);
+        background: linear-gradient(135deg, rgba(142,45,226,0.15), rgba(74,0,224,0.15));
+    }
+
+    .metric i {
+        display: block;
+        font-size: 1.8rem;
+        color: #8e2de2;
+        margin-bottom: 0.5rem;
+    }
+
+    .metric span {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #5a4030;
+    }
+
+    /* Responsive */
+    @media (max-width: 991px) {
+        .vision-card {
+            padding: 2rem;
+        }
+        
+        .card-icon {
+            width: 65px;
+            height: 65px;
+            font-size: 1.6rem;
+        }
+        
+        .card-icon-wrapper {
+            width: 65px;
+            height: 65px;
+        }
+        
+        .pillars-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .pillar {
+            max-width: 100%;
+        }
+        
+        .pillar-divider {
+            transform: rotate(90deg);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .holistic-message {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .success-metrics {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="vision-hero">
+    <div class="hero-content">
+        <div class="hero-icon">
+            <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo EPAG" class="hero-logo">
+        </div>
+        <h1 class="hero-title-main" style="text-transform: uppercase;">
+            <span style="font-size: 0.7em;">Vision Spécifique de l'Église Pentecôte</span><br><span class="highlight">Alléluia de Guinée</span>
+        </h1>
+        <p class="hero-subtitle-main">
+            Nos objectifs concrets et notre feuille de route pour accomplir notre mission divine
+        </p>
+        <div class="hero-verse">
+            <p>"Que le Dieu de paix vous sanctifie lui-même tout entiers, et que tout votre être, l'esprit, l'âme et le corps, soit conservé irrépréhensible."</p>
+            <a href="https://www.bible.com/fr/bible/93/1TH.5.23.LSG" target="_blank" class="verse-link">
+                <cite><i class="fas fa-bible me-1"></i>1 Thessaloniciens 5:23 <i class="fas fa-external-link-alt ms-1" style="font-size: 0.8rem;"></i></cite>
+            </a>
+        </div>
+    </div>
+    <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container py-5">
+    
+    <!-- Grille des 3 sections -->
+    <div class="row g-4">
+        
+        <!-- Section Vision Spécifique Principale - Pleine largeur -->
+        <div class="col-12" data-aos="fade-up" data-aos-delay="100">
+            <section class="vision-card featured-card">
+                <div class="card-glow"></div>
+                <div class="featured-content">
+                    <div class="card-icon-wrapper mx-auto">
+                        <div class="card-icon orange-gradient">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="icon-ring"></div>
+                    </div>
+                    <h3 class="card-title text-center">Notre Vision Spécifique</h3>
+                    <div class="card-divider mx-auto"></div>
+                    <p class="card-intro text-center">Notre vision spécifique est de :</p>
+                    
+                    <!-- Les 3 piliers -->
+                    <div class="pillars-container">
+                        <div class="pillar">
+                            <div class="pillar-icon">
+                                <i class="fas fa-church"></i>
+                            </div>
+                            <h4>Implanter des Églises</h4>
+                            <p>Établir de nouvelles communautés de foi</p>
+                        </div>
+                        <div class="pillar-divider">
+                            <i class="fas fa-minus"></i>
+                        </div>
+                        <div class="pillar">
+                            <div class="pillar-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h4>Faire des Disciples</h4>
+                            <p>Former des croyants engagés</p>
+                        </div>
+                        <div class="pillar-divider">
+                            <i class="fas fa-minus"></i>
+                        </div>
+                        <div class="pillar">
+                            <div class="pillar-icon">
+                                <i class="fas fa-hands-helping"></i>
+                            </div>
+                            <h4>Évangélisation Holistique</h4>
+                            <p>Corps, âme et esprit</p>
+                        </div>
+                    </div>
+                    
+                    <div class="holistic-message">
+                        <i class="fas fa-quote-left"></i>
+                        <p>L'évangélisation holistique prend en compte l'être humain dans sa totalité : <span class="highlight-word">le corps</span>, <span class="highlight-word">l'âme</span> et <span class="highlight-word">l'esprit</span>.</p>
+                        <i class="fas fa-quote-right"></i>
+                    </div>
+                </div>
+                <div class="card-decoration">
+                    <i class="fas fa-cross"></i>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Section Différence -->
+        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+            <section class="vision-card difference-card">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrapper">
+                    <div class="card-icon green-gradient">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="icon-ring"></div>
+                </div>
+                <h3 class="card-title">Différence entre Vision Générale et Spécifique</h3>
+                <div class="card-divider"></div>
+                
+                <div class="difference-list">
+                    <div class="diff-item">
+                        <div class="diff-number">1</div>
+                        <p>La vision spécifique est <strong>tirée de la vision générale</strong>.</p>
+                    </div>
+                    <div class="diff-item">
+                        <div class="diff-number">2</div>
+                        <p>La vision spécifique peut <strong>évoluer ou s'arrêter</strong> selon le niveau de son accomplissement ou sa transformation progressive.</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button class="btn-lire-suite" data-bs-toggle="modal" data-bs-target="#visionPdfModal">
+                        <i class="fas fa-book-open me-2"></i>Lire la suite...
+                        <span class="btn-shine"></span>
+                    </button>
+                </div>
+                
+                <div class="card-decoration">
+                    <i class="fas fa-arrows-alt-h"></i>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Section Mesures de Réussite -->
+        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="300">
+            <section class="vision-card success-card">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrapper">
+                    <div class="card-icon purple-gradient">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="icon-ring"></div>
+                </div>
+                <h3 class="card-title">Mesures de Réussite</h3>
+                <div class="card-divider"></div>
+                
+                <p class="card-text">Nous évaluons régulièrement nos progrès à travers des indicateurs quantitatifs et qualitatifs, en recueillant les retours de notre communauté pour ajuster nos stratégies.</p>
+                
+                <div class="success-metrics">
+                    <div class="metric">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Quantitatif</span>
+                    </div>
+                    <div class="metric">
+                        <i class="fas fa-star"></i>
+                        <span>Qualitatif</span>
+                    </div>
+                    <div class="metric">
+                        <i class="fas fa-comments"></i>
+                        <span>Feedback</span>
+                    </div>
+                    <div class="metric">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Ajustement</span>
+                    </div>
+                </div>
+                
+                <div class="card-decoration">
+                    <i class="fas fa-trophy"></i>
+                </div>
+            </section>
+        </div>
+        
+    </div>
+
+    <!-- Modal pour afficher le PDF Vision Spécifique -->
+    <div class="modal fade" id="visionPdfModal" tabindex="-1" aria-labelledby="visionPdfModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content vision-pdf-modal">
+                <!-- En-tête élégant -->
+                <div class="modal-header vision-modal-header">
+                    <div class="d-flex align-items-center">
+                        <div class="modal-icon-wrapper me-3">
+                            <i class="fas fa-scroll"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title mb-0" id="visionPdfModalLabel">Vision Spécifique</h5>
+                            <small class="text-white-50">Document officiel de l'EPAG</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close-custom" data-bs-dismiss="modal" aria-label="Fermer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Corps avec PDF -->
+                <div class="modal-body p-0 vision-modal-body">
+                    <div class="pdf-container">
+                        <iframe src="{% static 'main/images/Vision_spécifique.pdf' %}#toolbar=0&navpanes=0&scrollbar=1" 
+                                title="Vision Spécifique PDF"></iframe>
+                    </div>
+                </div>
+                
+                <!-- Pied de page élégant -->
+                <div class="modal-footer vision-modal-footer">
+                    <div class="footer-decoration"></div>
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <div class="footer-info">
+                            <i class="fas fa-church me-2"></i>
+                            <span>Église Pentecôte Alléluia de Guinée</span>
+                        </div>
+                        <button type="button" class="btn-fermer" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Fermer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<!-- Quote Section -->
+<section class="quote-section">
+    <p class="quote-text">
+        "Car je connais les projets que j'ai formés sur vous, dit l'Éternel, projets de paix et non de malheur, afin de vous donner un avenir et de l'espérance."
+    </p>
+    <a href="https://www.bible.com/fr/bible/93/JER.29.11.LSG" target="_blank" class="verse-link-footer">
+        <span class="quote-author"><i class="fas fa-bible me-2"></i>Jérémie 29:11 <i class="fas fa-external-link-alt ms-1" style="font-size: 0.8rem;"></i></span>
+    </a>
+</section>
+{% endblock %}

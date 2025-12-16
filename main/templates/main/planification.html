@@ -1,0 +1,747 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Planification - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Styles généraux pour la page de planification */
+    .page-content {
+        background-image: url("{% static 'main/images/hero/fond.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        backdrop-filter: blur(10px);
+        padding: 30px;
+        margin-top: 20px;
+    }
+    
+    /* Titre principal avec effet */
+    .display-4 {
+        background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+        font-weight: 800;
+        animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+    
+    @keyframes titleGlow {
+        0% { filter: brightness(1); }
+        100% { filter: brightness(1.2); }
+    }
+    
+    .lead {
+        text-align: center;
+        color: #6c757d;
+        font-style: italic;
+        font-size: 1.1rem;
+    }
+    
+    .section-header {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 0.5rem;
+    }
+    
+    .planning-section {
+        margin-bottom: 3rem;
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        padding: 1.5rem;
+    }
+    
+    .planning-section h3 {
+        color: #4e73df;
+        border-bottom: 2px solid #e3e6f0;
+        padding-bottom: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: #4e73df;
+    }
+    
+    .nav-pills .nav-link {
+        color: #5a5c69;
+        font-weight: 600;
+    }
+    
+    .nav-pills .nav-link.active {
+        color: white;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #5a5c69;
+    }
+    
+    .btn-add {
+        background-color: #1cc88a;
+        color: white;
+    }
+    
+    .btn-remove {
+        background-color: #e74a3b;
+        color: white;
+    }
+    
+    /* Navigation tabs améliorée */
+    .nav-tabs-planning {
+        border: none;
+        margin-bottom: 30px;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .nav-tabs-planning::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+        border-radius: 2px;
+    }
+    
+    .nav-tabs-planning .nav-link {
+        border: none;
+        border-radius: 25px;
+        padding: 15px 35px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 0 10px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .nav-tabs-planning .nav-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s;
+        z-index: -1;
+    }
+    
+    .nav-tabs-planning .nav-link:hover::before {
+        left: 100%;
+    }
+    
+    .nav-tabs-planning .nav-link:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .nav-tabs-planning .nav-link.active {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+    
+    .weekly-tab {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white !important;
+    }
+    
+    .weekly-tab.active {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        animation: pulse 2s infinite;
+    }
+    
+    .monthly-tab {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white !important;
+    }
+    
+    .monthly-tab.active {
+        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        50% { box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        100% { box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+    }
+    
+    /* Sections de contenu */
+    .tab-content {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        backdrop-filter: blur(5px);
+    }
+    
+    .planning-section h3 {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 30px;
+        font-size: 2rem;
+    }
+    /* Forcer le grand titre sur une seule ligne */
+    .single-line-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    @media (max-width: 992px) {
+        .single-line-title { font-size: 1.6rem; }
+    }
+    
+    /* Formulaires améliorés */
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        transform: translateY(-2px);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+    }
+
+    /* Embellissement ciblé du formulaire hebdomadaire */
+    .weekly-form .form-label { letter-spacing: .2px; }
+    .weekly-form .input-group-text { background: #f8f9fc; border: 2px solid #e9ecef; border-right: 0; }
+    .weekly-form .input-group .form-control { border-left: 0; }
+    .weekly-form .hint { color: #6c757d; font-size: .85rem; }
+    .weekly-form .badge-soft { background: #eef2ff; color: #4e73df; border: 1px solid #dbe1ff; }
+    .weekly-form .shadow-in { box-shadow: inset 0 1px 2px rgba(0,0,0,.04); }
+    .weekly-form .card-header.bg-primary { background: linear-gradient(135deg, #4e73df, #224abe) !important; }
+    .weekly-form .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; }
+    .weekly-form .btn-outline-secondary { border-width: 2px; }
+    /* Encadrement léger coloré des champs (thème vert) */
+    .weekly-form .input-group.shadow-in > .input-group-text,
+    .weekly-form .input-group.shadow-in > .form-control,
+    .weekly-form .input-group.shadow-in > .form-select {
+        border-color: #d9f2e6 !important; /* pastel vert */
+        background-color: #fbfefc;
+    }
+    .weekly-form .form-control:focus,
+    .weekly-form .form-select:focus {
+        border-color: #8fe3c1;
+        box-shadow: 0 0 0 0.2rem rgba(28, 200, 138, 0.18);
+    }
+    
+    .table-responsive {
+        margin-top: 1rem;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        transform: translate(-50%, -50%);
+    }
+    
+    .btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        border: none;
+    }
+    
+    /* Tableaux améliorés */
+    .table {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .table thead th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 15px;
+    }
+    
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.1);
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .table tbody td {
+        padding: 15px;
+        border: none;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* Colonne Église sticky à gauche */
+    .table thead th.sticky-col { position: sticky; left: 0; z-index: 3; }
+    .table tbody td.sticky-col { position: sticky; left: 0; background: #fff; z-index: 2; box-shadow: 2px 0 0 rgba(0,0,0,0.05); }
+    .eglise-badge { background: #eef2ff; color: #224abe; border: 1px solid #dbe1ff; padding: .2rem .5rem; border-radius: 999px; font-weight: 600; font-size: .8rem; transition: background-color .2s ease, box-shadow .2s ease, transform .15s ease; }
+    .eglise-badge:hover { background: #e1e7ff; color: #1f3fb8; box-shadow: 0 2px 10px rgba(34, 74, 190, 0.12); transform: translateY(-1px); }
+    
+    /* Cartes mensuelles améliorées */
+    .card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.72); /* plus transparent pour laisser voir le fond */
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.35);
+    }
+    
+    .card:hover {
+        transform: translateY(-10px) scale(1.03);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    
+    .card-header {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 15px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.6s;
+    }
+    
+    .card:hover .card-header::before {
+        left: 100%;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .card-body ul li {
+        padding: 8px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .card-body ul li:hover {
+        transform: translateX(10px);
+        color: #667eea;
+    }
+    
+    /* Classes d'activités */
+    .special-activity {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+    
+    .weekly-activity {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+    
+    .monthly-activity {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    }
+    
+    .pastoral-activity {
+        background: linear-gradient(135deg, #36b9cc 0%, #258c9a 100%);
+    }
+    
+    .bible-verse-container {
+        position: relative;
+        height: 80px;
+        width: 100%;
+    }
+    
+    .bible-verse {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-left: 5px solid #4e73df;
+        padding: 10px 15px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        position: relative;
+        transition: all 0.5s ease;
+        max-width: 95%;
+        width: auto;
+        margin: 0 auto;
+        white-space: normal;
+        overflow: visible;
+        transform-origin: center;
+    }
+    
+    .verse-text {
+        font-size: 0.65rem;
+        font-style: italic;
+        margin-bottom: 0;
+        color: #333;
+        white-space: normal;
+        overflow: visible;
+        line-height: 1.2;
+    }
+    
+    @keyframes float {
+        0% {
+            transform: translateY(0px) rotate(0deg);
+        }
+        25% {
+            transform: translateY(-8px) rotate(0.5deg);
+        }
+        50% {
+            transform: translateY(-15px) rotate(0deg);
+        }
+        75% {
+            transform: translateY(-8px) rotate(-0.5deg);
+        }
+        100% {
+            transform: translateY(0px) rotate(0deg);
+        }
+    }
+    
+    .floating {
+        animation: float 4s ease-in-out infinite;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<!div class="page-content">
+    <div class="container-fluid px-4">
+        <!-- En-tête moderne avec logo -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-12 col-xl-10">
+                <div class="card shadow-lg" style="border: none; border-radius: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden;">
+                    <div class="card-body text-center py-4">
+                        <div class="d-flex justify-content-center align-items-center">
+                            <!-- Logo animé -->
+                            <div class="bg-white rounded-circle me-4 logo-planif" style="box-shadow: 0 8px 25px rgba(0,0,0,0.3); width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo" style="width: 60px; height: 60px; object-fit: contain;">
+                            </div>
+                            <div class="text-start">
+                                <h1 class="text-white mb-1 fw-bold" style="font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+                                    <i class="fas fa-calendar-alt me-2"></i>PLANIFICATION
+                                </h1>
+                                <p class="text-white-50 mb-0" style="font-size: 1.1rem;">
+                                    <i class="fas fa-church me-1"></i> Gérez et planifiez les activités et événements de l'église
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <style>
+                    @keyframes floatLogo {
+                        0%, 100% { transform: translateY(0) rotate(0deg); }
+                        25% { transform: translateY(-5px) rotate(2deg); }
+                        50% { transform: translateY(-8px) rotate(0deg); }
+                        75% { transform: translateY(-5px) rotate(-2deg); }
+                    }
+                    .logo-planif {
+                        animation: floatLogo 3s ease-in-out infinite;
+                    }
+                </style>
+            </div>
+        </div>
+        
+        <!-- Verset biblique flottant -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-12 col-xl-10">
+                <div class="bible-verse floating" id="bibleVerse" style="background: linear-gradient(135deg, #fff, #f8f9fa); border-left: 5px solid #667eea; padding: 15px 20px; border-radius: 10px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
+                    <p class="verse-text mb-0" style="font-size: 0.95rem; font-style: italic; color: #333;">
+                        <i class="fas fa-quote-left text-primary me-2" style="opacity: 0.5;"></i>
+                        "Tout doit se faire convenablement et dans l'ordre. Car Dieu n'est pas un Dieu de désordre, mais de paix."
+                        <strong class="text-primary ms-2">1 Corinthiens 14:40</strong>
+                        <i class="fas fa-quote-right text-primary ms-2" style="opacity: 0.5;"></i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+        
+       
+            <!-- Section : Informations de planification -->
+            <div class="tab-pane fade show active" id="weekly" role="tabpanel" aria-labelledby="weekly-tab">
+                <!div class="planning-section">
+                    <blockquote class="blockquote p-3 rounded bg-light border-start border-4" style="border-color:#4e73df !important;">
+                        <p class="mb-0">« Car je connais les projets que j'ai formés sur vous, dit l'Éternel, projets de paix et non de malheur, afin de vous donner un avenir et de l'espérance. » <strong>Jérémie 29:11</strong></p>
+                    </blockquote>
+
+                    <blockquote class="blockquote p-3 rounded bg-light border-start border-4 mt-4" style="border-color:#1cc88a !important;">
+                        <p class="mb-0">« Que tout se passe bien parmi vous, et que vous soyez en bonne santé, comme tout va bien pour votre âme. » <strong>3 Jean 1:2</strong></p>
+                    </blockquote>
+                    
+                            <!-- Bloc descriptif: structure et planings mensuels -->
+                            <style>
+                              /* Styles colorés par mois pour le bloc d'informations */
+                              .month-title { 
+                                display: flex; align-items: center; gap: .5rem; 
+                                font-weight: 700; margin-top: 1rem; margin-bottom: .5rem; 
+                                padding: .25rem .5rem; border-radius: .5rem; color: #122; 
+                              }
+                              .month-title .dot { width: .65rem; height: .65rem; border-radius: 50%; display: inline-block; }
+                              .month-title i { font-size: .95rem; opacity: .9; }
+                              .month-jan { background: rgba(0,123,255,.08); border-left: 6px solid #007bff; }
+                              .month-fev { background: rgba(111,66,193,.08); border-left: 6px solid #6f42c1; }
+                              .month-mar { background: rgba(32,201,151,.08); border-left: 6px solid #20c997; }
+                              .month-avr { background: rgba(255,193,7,.1); border-left: 6px solid #ffc107; }
+                              .month-mai { background: rgba(40,167,69,.08); border-left: 6px solid #28a745; }
+                              .month-jun { background: rgba(220,53,69,.08); border-left: 6px solid #dc3545; }
+                              .month-jul { background: rgba(13,110,253,.08); border-left: 6px solid #0d6efd; }
+                              .month-aou { background: rgba(255,159,64,.12); border-left: 6px solid #ff9f40; }
+                              .month-sep { background: rgba(75,192,192,.12); border-left: 6px solid #4bc0c0; }
+                              .month-oct { background: rgba(153,102,255,.12); border-left: 6px solid #9966ff; }
+                              .month-nov { background: rgba(255,99,132,.12); border-left: 6px solid #ff6384; }
+                              .month-dec { background: rgba(54,162,235,.12); border-left: 6px solid #36a2eb; }
+                              .month-title small { color:#556; font-weight: 600; }
+                              /* Header amélioré */
+                              .info-header { 
+                                background: linear-gradient(135deg, #eef2ff, #eaf7ff);
+                                border-bottom: 1px solid #e0e6f1; 
+                              }
+                              .info-header h5 { color: #355; }
+                              /* Listes mensuelles élégantes */
+                              .month-list { 
+                                background: #ffffff; 
+                                border: 1px solid #eef2f7; 
+                                border-radius: .5rem; 
+                                padding: .5rem .9rem; 
+                                box-shadow: 0 2px 6px rgba(0,0,0,.04);
+                              }
+                              .month-list li { position: relative; padding-left: 1.1rem; }
+                              .month-list li::marker { color: #7b8; }
+                              .month-list li::before { content: "\2022"; position: absolute; left: .2rem; color: #9ab; opacity: .8; }
+                              /* Mode compact pour réduire la hauteur du bloc */
+                              .compact-plan h5 { font-size: 1rem; }
+                              .compact-plan h6 { font-size: .95rem; }
+                              .compact-plan ul { margin-bottom: .5rem; }
+                              .compact-plan li { margin-bottom: .2rem; line-height: 1.25; font-size: .95rem; }
+                            </style>
+                            <div class="card shadow-sm mt-4">
+                                <div class="card-header info-header">
+                                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations de planification</h5>
+                                </div>
+                                <div id="planInfoBody" class="card-body compact-plan">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <h5 class="mb-0">Structure</h5>
+                                        <button id="spToggle" class="btn btn-warning btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#planInfoCollapse" aria-expanded="true" aria-controls="planInfoCollapse" title="Replier / Déployer la liste">
+                                            <i class="bi bi-arrows-collapse me-1"></i>Replier
+                                        </button>
+                                    </div>
+                                    <div id="planInfoCollapse" class="collapse show">
+                                    <ol class="mb-4">
+                                        <li><strong>Activités hebdomadaires (récurrentes)</strong></li>
+                                        <li><strong>Planification mensuelle</strong> (en mettant en avant les fêtes et événements majeurs)</li>
+                                        <li><strong>Suggestions d'activités spéciales et pastorales</strong> — <em>Note</em> : Les dates exactes des fêtes mobiles (Pâques, Pentecôte etc.) changent chaque année. Pour 2025, on utilisera les dates appropriées.</li>
+                                    </ol>
+
+                                    <h5 class="mb-3">QUELQUES PLANINGS MENSUEL</h5>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <h6 class="month-title month-jan"><span class="dot" style="background:#007bff"></span> <i class="fas fa-snowflake text-primary"></i> Janvier</h6>
+                                            <ul class="month-list">
+                                                <li>1er janvier : Culte d'Action de Grâce pour la nouvelle année — <em>Commémoré par le Pasteur Principal</em>.</li>
+                                                <li>2ème semaine : Retraite de planification annuelle (conseil d'église)</li>
+                                                <li>Activité sociale : Visite aux personnes âgées ou isolées, les malades dans les hôpitaux, les prisonniers.</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                            </ul>
+                                            <h6 class="month-title month-fev"><span class="dot" style="background:#6f42c1"></span> <i class="fas fa-heart text-danger"></i> Février</h6>
+                                            <ul>
+                                                <li>Assemblée Générale des Pasteurs</li>
+                                                <li>Spécial Culte mensuel roulement des Pasteurs (chaque 1er dimanche)</li>
+                                                <li>14 février : Spécial Soirée des couples (Saint-Valentin chrétienne)</li>
+                                                <li>Week-end de jeûne et prière (3ème week-end)</li>
+                                                <li>Mercredi Prières et Évangélisations (tous Mercredis du mois)</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                            </ul>
+                                            <h6 class="month-title month-avr"><span class="dot" style="background:#ffc107"></span> <i class="fas fa-seedling text-success"></i> Avril</h6>
+                                            <ul>
+                                                <li>Dimanche des Rameaux (13 avril) : Procession et culte</li>
+                                                <li>Jeudi Saint (17 avril) : Cène</li>
+                                                <li>Vendredi Saint (18 avril) : Chemin de croix et célébration de la Passion</li>
+                                                <li>Veillée Pascale (19 avril, samedi soir)</li>
+                                                <li>Pâques (20 avril) : Grand culte festif avec repas communautaire</li>
+                                            </ul>
+                                            <h6 class="month-title month-mai"><span class="dot" style="background:#28a745"></span> <i class="fas fa-leaf text-success"></i> Mai</h6>
+                                            <ul>
+                                                <li>Culte de louange spécial (1er dimanche)</li>
+                                                <li>Fête des mères (2ème dimanche) : Cadeaux et honneur aux mères</li>
+                                                <li>Ascension (29 mai) : Culte en semaine (soirée)</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                            </ul>
+                                            <h6 class="month-title month-jun"><span class="dot" style="background:#dc3545"></span> <i class="fas fa-fire text-danger"></i> Juin</h6>
+                                            <ul>
+                                                <li>Pentecôte (8 juin) : Culte spécial avec accent sur le Saint-Esprit</li>
+                                                <li>Fête des pères (3ème dimanche)</li>
+                                                <li>Début de l'école biblique d'été (vacances) pour les enfants</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <h6 class="month-title month-jul"><span class="dot" style="background:#0d6efd"></span> <i class="fas fa-umbrella-beach text-primary"></i> Juillet</h6>
+                                            <ul>
+                                                <li>Semaine missionnaire (1ère semaine) : Formation et envoi en mission locale</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                                <li>Camps de jeunes (juillet/août - à planifier selon disponibilités)</li>
+                                            </ul>
+                                            <h6 class="month-title month-aou"><span class="dot" style="background:#ff9f40"></span> <i class="fas fa-water text-info"></i> Août</h6>
+                                            <ul>
+                                                <li>Partage de témoignages</li>
+                                                <li>Sortie plage ou montagne (activité familiale)</li>
+                                                <li>Préparation de la rentrée (dernière semaine)</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                            </ul>
+                                            <h6 class="month-title month-sep"><span class="dot" style="background:#4bc0c0"></span> <i class="fas fa-school text-secondary"></i> Septembre <small>(Rentrée)</small></h6>
+                                            <ul>
+                                                <li>Culte de rentrée (bénédiction, enseignants)</li>
+                                                <li>Reprise de toutes les activités hebdomadaires</li>
+                                                <li>Forum des associations (présence de l'église à l'événement local)</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                            </ul>
+                                            <h6 class="month-title month-oct"><span class="dot" style="background:#9966ff"></span> <i class="fas fa-globe text-primary"></i> Octobre</h6>
+                                            <ul>
+                                                <li>Mois missionnaire : Invitation de missionnaires, conférences</li>
+                                                <li>Culte d'action de grâce</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                            </ul>
+                                            <h6 class="month-title month-nov"><span class="dot" style="background:#ff6384"></span> <i class="fas fa-hands-helping text-danger"></i> Novembre</h6>
+                                            <ul>
+                                                <li>Semaine d’évangélisation</li>
+                                                <li>Veillée et Prière (le dernier vendredi du mois)</li>
+                                            </ul>
+                                            <h6 class="month-title month-dec"><span class="dot" style="background:#36a2eb"></span> <i class="fas fa-bell text-primary"></i> Décembre</h6>
+                                            <ul>
+                                                <li>24 décembre : Veillée de Noël (contes, chants, théâtres, Témoignages)</li>
+                                                <li>25 décembre : Culte de Noël (célébration de la Nativité)</li>
+                                                <li>31 décembre : Veillée du Nouvel An (action de grâce, prière)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-4">
+                                    <h5 class="mb-3">III. Activités Spéciales &amp; Pastorales</h5>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <h6 class="fw-bold">Formations :</h6>
+                                            <ul>
+                                                <li>Formation prévue pour les :
+                                                    <ul>
+                                                        <li>Anciens</li>
+                                                        <li>Diacres et Diaconesses</li>
+                                                        <li>Responsables des Départements</li>
+                                                    </ul>
+                                                </li>
+                                                <li>Formation des Disciples</li>
+                                                <li>Formation des serviteurs (accueil, sécurité, technique etc...)</li>
+                                            </ul>
+                                            <h6 class="fw-bold">Actions sociales :</h6>
+                                            <ul>
+                                                <li>Visite aux orphelins</li>
+                                                <li>Visite aux malades dans les hôpitaux</li>
+                                                <li>Visites aux prisonniers dans les prisons</li>
+                                                <li>Soutien scolaire (année scolaire)</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <h6 class="fw-bold">Événements ponctuels :</h6>
+                                            <ul>
+                                                <li>Concert chrétien</li>
+                                                <li>Conférences thématiques (bioéthique, famille, etc.)</li>
+                                                <li>Campagne d’évangélisation en plaine ère.</li>
+                                            </ul>
+                                            <h6 class="fw-bold">Missions :</h6>
+                                            <ul>
+                                                <li>Mission locale (évangélisation dans la ville)</li>
+                                                <li>Mission internationale (1 fois par an)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                </div>
+            </div>
+
+<script>
+// Animation du verset biblique après 10 secondes
+setTimeout(function() {
+    const bibleVerse = document.getElementById('bibleVerse');
+    if (bibleVerse) {
+        bibleVerse.classList.add('floating');
+    }
+}, 10000);
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Basculement Replier/Déployer (pour la section Informations de planification)
+    const spToggle = document.getElementById('spToggle');
+    const spCollapse = document.getElementById('planInfoCollapse');
+    if (spToggle && spCollapse){
+        spCollapse.addEventListener('shown.bs.collapse', ()=>{
+            spToggle.innerHTML = '<i class="bi bi-arrows-collapse me-1"></i>Replier';
+            spToggle.setAttribute('aria-expanded','true');
+        });
+        spCollapse.addEventListener('hidden.bs.collapse', ()=>{
+            spToggle.innerHTML = '<i class="bi bi-arrows-expand me-1"></i>Déployer';
+            spToggle.setAttribute('aria-expanded','false');
+        });
+    }
+});
+</script>
+
+{% endblock %}

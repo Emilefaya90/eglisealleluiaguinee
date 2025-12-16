@@ -1,0 +1,325 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Liste du Personnel Pastoral{% endblock %}
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="card shadow-sm">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <h5 class="mb-0"><i class="fas fa-users me-2"></i>Liste complète du Personnel Pastoral</h5>
+      <div class="d-flex gap-2">
+        <a href="{% url 'main:personnel_pastoral' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-arrow-left me-1"></i>Retour au formulaire
+        </a>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between mb-3">
+        <div class="small text-muted">
+          Total: <strong>{{ pasteurs|length|default:'0' }}</strong>
+        </div>
+        <div class="input-group input-group-sm" style="min-width:280px; max-width:420px;">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" id="searchPersonnelFull" class="form-control" placeholder="Rechercher…" autocomplete="off">
+        </div>
+      </div>
+      <div class="mb-3 d-flex flex-wrap gap-2">
+        <button id="btnExcel" class="btn btn-success btn-sm"><i class="fas fa-file-excel me-1"></i>Excel</button>
+        <button id="btnPDF" class="btn btn-danger btn-sm"><i class="fas fa-file-pdf me-1"></i>PDF</button>
+        <button id="btnPrint" class="btn btn-secondary btn-sm"><i class="fas fa-print me-1"></i>Imprimer</button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-striped table-nowrap mb-0" id="tablePersonnelFull" style="font-size:0.85rem; min-width:2500px;">
+          <thead class="table-light">
+          <tr>
+            <th class="text-center" style="width:80px;">Photo</th>
+            <th>Nom & Prénoms</th>
+            <th>Fonction</th>
+            <th>Sexe</th>
+            <th>Date de naissance</th>
+            <th>Lieu de naissance</th>
+            <th>Nationalité</th>
+            <th>Domicile</th>
+            <th>État civil</th>
+            <th>Nb d'enfants</th>
+            <th>Profession</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>Date de consécration</th>
+            <th>Lieu de consécration</th>
+            <th>Consacré par qui ?</th>
+            <th>Prénoms du Père</th>
+            <th>Prénoms & Nom de la Mère</th>
+            <th>Église affectée</th>
+            <th>Lieu d'affectation</th>
+            <th>Date d'affectation</th>
+            <th>Région</th>
+            <th>Zone</th>
+            <th>Types de formations</th>
+            <th>Statut actuel</th>
+            <th>Document</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for pasteur in pasteurs %}
+            <tr>
+              <td class="text-center">
+                {% if pasteur.photo %}
+                <img src="{{ pasteur.photo.url }}" class="rounded-circle" width="50" height="50" alt="">
+                {% else %}
+                <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center" style="width:50px;height:50px;">
+                  <i class="fas fa-user text-white"></i>
+                </div>
+                {% endif %}
+              </td>
+              <td>{{ pasteur.prenom|default:"" }} {{ pasteur.nom|default:"" }}</td>
+              <td>{{ pasteur.fonction|default:"-" }}</td>
+              <td>{{ pasteur.sexe|default:"-" }}</td>
+              <td>{{ pasteur.date_naissance|date:"d/m/Y"|default:"-" }}</td>
+              <td>{{ pasteur.lieu_naissance|default:"-" }}</td>
+              <td>{{ pasteur.nationalite|default:"-" }}</td>
+              <td>{{ pasteur.domicile|default:"-" }}</td>
+              <td>{{ pasteur.etat_civil|default:"-" }}</td>
+              <td>{{ pasteur.nombre_enfants|default:"-" }}</td>
+              <td>{{ pasteur.profession|default:"-" }}</td>
+              <td>{{ pasteur.telephone|default:"-" }}</td>
+              <td>{{ pasteur.email|default:"-" }}</td>
+              <td>{{ pasteur.date_consecration|date:"d/m/Y"|default:"-" }}</td>
+              <td>{{ pasteur.lieu_consecration|default:"-" }}</td>
+              <td>{{ pasteur.consacre_par|default:"-" }}</td>
+              <td>{{ pasteur.prenoms_pere|default:"-" }}</td>
+              <td>{{ pasteur.prenoms_nom_mere|default:"-" }}</td>
+              <td>{{ pasteur.eglise.nom|default:"-" }}</td>
+              <td>{{ pasteur.lieu_affectation|default:"-" }}</td>
+              <td>{{ pasteur.date_affectation|date:"d/m/Y"|default:"-" }}</td>
+              <td>{{ pasteur.region|default:"-" }}</td>
+              <td>{{ pasteur.zone|default:"-" }}</td>
+              <td>{{ pasteur.types_formations|default:"-" }}</td>
+              <td>{{ pasteur.statut_actuel|default:"-" }}</td>
+              <td>
+                {% if pasteur.document_fichier %}
+                <a href="{{ pasteur.document_fichier.url }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-file-download"></i></a>
+                {% else %}-{% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="26" class="text-center py-4">
+                <div class="alert alert-info m-0"><i class="fas fa-info-circle me-2"></i>Aucun personnel pastoral enregistré pour le moment.</div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jsPDF + AutoTable pour export PDF direct -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-8q1YH9vJc5GmQm5nq2eQ1s7n8c8s1t6mA4Yw6Zy5w6vQhP2j+gBv5u6aO7o2q3Zt6Yv2wUQkVQfZ3w8JQ2Q7wQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js" integrity="sha512-6c8b4qC0y3n3b1b+z4n0wH0o1VwPq6t4m2Y2y9o6sR2l9k5m0yE1v5V0gB9gq7e4z7+5u7m0m9u6l1q2wS3xg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const table = document.getElementById('tablePersonnelFull');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    // Recherche native
+    const search = document.getElementById('searchPersonnelFull');
+    if (search) {
+      search.addEventListener('input', function(){
+        const q = this.value.toLowerCase();
+        rows.forEach(tr => {
+          const txt = tr.innerText.toLowerCase();
+          tr.style.display = txt.includes(q) ? '' : 'none';
+        });
+      });
+    }
+
+    // Helpers
+    function nowStamp() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2,'0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}`;
+    }
+
+    function cellText(td){
+      // Prend le texte visible; évite les retours ligne multiples
+      return td.innerText.replace(/\s+/g,' ').trim();
+    }
+
+    // Export Excel (CSV amélioré)
+    function exportTableToExcel() {
+      try {
+        // Excel FR préfère souvent le séparateur ;
+        const sep = ';';
+        let csv = '';
+        const ths = table.querySelectorAll('thead th');
+        const clean = (txt) => {
+          if (!txt) return '';
+          return String(txt)
+            .replace(/\r?\n|\r/g, ' ')      // supprimer retours ligne
+            .replace(/\s+/g, ' ')            // espaces multiples -> simple
+            .trim();
+        };
+        const quote = (txt) => '"' + String(txt).replaceAll('"', '""') + '"';
+        // En-têtes
+        csv += Array.from(ths).map(th => quote(clean(th.innerText))).join(sep) + '\n';
+        // Lignes: exporter TOUTES les lignes (y compris filtrées), pour un export complet
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        allRows.forEach(tr => {
+          // Ignorer lignes placeholder sans cellules normales
+          const tds = Array.from(tr.children);
+          if (!tds.length) return;
+          const cols = tds.map((td, idx) => {
+            // Colonne 0 = Photo: export de l'URL de l'image si disponible
+            if (idx === 0) {
+              const img = td.querySelector('img');
+              if (img && img.src) {
+                return quote(clean(img.src));
+              }
+            }
+            return quote(clean(cellText(td)));
+          });
+          csv += cols.join(sep) + '\n';
+        });
+        // Ajout BOM pour Excel (UTF-8)
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `personnel_pastoral_${nowStamp()}.csv`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      } catch(err) { console.error(err); alert('Erreur lors de l\'export Excel'); }
+    }
+
+    // Export PDF direct (téléchargement) via jsPDF + AutoTable
+    function exportTableToPDF() {
+      try {
+        const { jsPDF } = window.jspdf || {};
+        if (!jsPDF || !window.jspdf || !('autoTable' in (jsPDF.API || {}))) {
+          // Fallback hors-ligne: impression via iframe pour enregistrer en PDF
+          return exportPdfFallbackPrint();
+        }
+        // Préparer données: entêtes et lignes visibles
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => (th.innerText || '').trim());
+        // Conserver seulement les lignes visibles (respecte la recherche)
+        const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none');
+        const data = visibleRows.map(tr => Array.from(tr.children).map(td => (td.innerText || '').replace(/\s+/g,' ').trim()));
+
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+        const title = 'Liste du Personnel Pastoral';
+        doc.setFontSize(13);
+        doc.text(title, 40, 30);
+        doc.setFontSize(9);
+        doc.text('Généré le: ' + new Date().toLocaleString(), 40, 46);
+
+        doc.autoTable({
+          head: [headers],
+          body: data,
+          startY: 60,
+          styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
+          headStyles: { fillColor: [15, 100, 200], textColor: 255 },
+          columnStyles: {},
+          pageBreak: 'auto',
+          theme: 'grid'
+        });
+
+        const fileName = `personnel_pastoral_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.pdf`;
+        doc.save(fileName);
+      } catch(err) {
+        console.error(err);
+        // Fallback en cas d'erreur inattendue
+        exportPdfFallbackPrint();
+      }
+    }
+
+    // Fallback: utilise un iframe caché et ouvre la boîte d'impression (choisir « Enregistrer en PDF »)
+    function exportPdfFallbackPrint() {
+      try {
+        const styles = `
+          <style>
+            body { font-family: Arial, sans-serif; }
+            h3 { margin: 0 0 8px 0; }
+            .meta { color:#555; font-size: 12px; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+            th, td { border: 1px solid #ccc; padding: 6px; vertical-align: top; }
+            thead { background: #f8f9fa; }
+            th { word-wrap: break-word; }
+            td { word-wrap: break-word; }
+            tr { page-break-inside: avoid; }
+            @page { size: A4 landscape; margin: 12mm; }
+          </style>`;
+        const clone = table.cloneNode(true);
+        // Respecter le filtre: seulement lignes visibles
+        Array.from(clone.querySelectorAll('tbody tr')).forEach(tr => { if (tr.style.display === 'none') tr.remove(); });
+        const html = `<!doctype html><html><head><meta charset="utf-8"><title>Personnel Pastoral</title>${styles}</head><body>
+          <h3>Liste du Personnel Pastoral</h3>
+          <div class=\"meta\">Généré le: ${new Date().toLocaleString()}</div>
+        </body></html>`;
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+        setTimeout(() => {
+          try {
+            doc.body.appendChild(clone);
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          } finally {
+            setTimeout(() => { iframe.remove(); }, 1500);
+          }
+        }, 50);
+      } catch (e) {
+        console.error(e);
+        alert("Impossible d'exporter le PDF hors-ligne.");
+      }
+    }
+
+    // Impression
+    function printTable() {
+      try {
+        const w = window.open('', '_blank');
+        const styles = `
+          <style>
+            @page { size: A4 landscape; margin: 12mm; }
+            body { font-family: Arial, sans-serif; }
+            h3 { margin: 0 0 8px 0; }
+            .meta { color:#555; font-size: 12px; margin-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+            th, td { border: 1px solid #ccc; padding: 6px; }
+            thead { background: #f8f9fa; }
+            th { word-wrap: break-word; }
+            td { word-wrap: break-word; }
+            tr { page-break-inside: avoid; }
+          </style>`;
+        w.document.write('<html><head><title>Impression</title>' + styles + '</head><body>');
+        w.document.write('<h3>Liste du Personnel Pastoral</h3>');
+        w.document.write(`<div class="meta">Généré le: ${new Date().toLocaleString()}</div>`);
+        const clone = table.cloneNode(true);
+        Array.from(clone.querySelectorAll('tbody tr')).forEach(tr => { if (tr.style.display === 'none') tr.remove(); });
+        w.document.body.appendChild(clone);
+        w.document.write('</body></html>');
+        w.document.close();
+        w.focus();
+        w.print();
+      } catch(err) { console.error(err); alert('Erreur lors de l\'impression'); }
+    }
+
+    document.getElementById('btnExcel')?.addEventListener('click', exportTableToExcel);
+    document.getElementById('btnPDF')?.addEventListener('click', exportTableToPDF);
+    document.getElementById('btnPrint')?.addEventListener('click', printTable);
+  });
+</script>
+{% endblock %}

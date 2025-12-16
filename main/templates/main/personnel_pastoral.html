@@ -1,0 +1,1246 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Personnel Pastoral - Gestion Église{% endblock %}
+
+{% load pasteur_extras %}
+{% block content %}
+<div class="container-fluid"style="background-image: url('{% static 'main/images/hero/PPst.jpg' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; background-attachment: fixed; min-height: 100vh; width: 100vw; margin: 0; padding: 0; position: fixed; top: 0; left: 0; z-index: -1;">
+</div>
+<div class="container-fluid mt-4" style="position: relative; z-index: 1;">
+    <style>
+      /* Couleurs d'icônes par section */
+      .icon-green  { color: #2e7d32; }
+      .icon-orange { color: #e65100; }
+      .icon-blue   { color: #1565c0; }
+      .icon-purple { color: #6a1b9a; }
+      .icon-red    { color: #c62828; }
+      .input-group-text.bg-soft   { background: #f8f9fa; }
+      .input-group .form-select { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+      .input-group .form-control { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+      /* Taille/espacement icônes intégrées */
+      .input-group-text { padding: 0.5rem 0.7rem; }
+      .input-group-text i { font-size: 1.05rem; width: 1.4em; text-align: center; line-height: 1; }
+      /* Espacement horizontal entre l'icône et le champ */
+      .input-group .form-control,
+      .input-group .form-select { padding-left: 0.75rem; }
+      /* Desktop: icônes plus grandes, plus d'espacement */
+      @media (min-width: 992px) {
+        .input-group-text { padding: 0.6rem 0.95rem; }
+        .input-group-text i { font-size: 1.2rem; }
+        .input-group .form-control,
+        .input-group .form-select { padding-left: 0.9rem; }
+      }
+      /* Ajustements compacts sur mobile */
+      @media (max-width: 576px) {
+        .input-group-text { padding: 0.4rem 0.5rem; }
+        .input-group-text i { font-size: 0.95rem; width: 1.2em; }
+        .form-label { margin-bottom: 0.25rem; }
+        .input-group .form-control, .input-group .form-select { font-size: 0.95rem; padding-left: 0.6rem; }
+      }
+      /* Masquer les icônes dans les labels (ex: Prénoms, Nom, Sexe) */
+      .card .card-body label i { display: none !important; }
+    </style>
+    <!-- Overlay très léger pour la lisibilité -->
+    <div style="background-color: rgba(255, 255, 255, 0.1); min-height: 100vh; padding: 20px 0; width: 100%;">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+            <!-- En-tête du formulaire -->
+            <div class="card mb-4 shadow-lg" style="border: none; border-radius: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-center py-4">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="bg-white rounded-circle me-3 logo-float" style="box-shadow: 0 8px 25px rgba(0,0,0,0.3); width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo" style="width: 45px; height: 45px; object-fit: contain; border-radius: 50%;">
+                        </div>
+                        <style>
+                            @keyframes float {
+                                0%, 100% { transform: translateY(0); }
+                                50% { transform: translateY(-8px); }
+                            }
+                            .logo-float {
+                                animation: float 2s ease-in-out infinite;
+                            }
+                        </style>
+                        <div>
+                            <h2 class="text-white mb-0 fw-bold">Formulaire d'Enregistrement du Personnel Pastoral</h2>
+                            <p class="text-white-50 mb-0">Gestion complète des informations pastorales</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire principal -->
+            <div id="formMessage"></div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>{{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <script>
+            // Auto-fermeture des messages de succès et d'erreur après 3 secondes
+            document.addEventListener('DOMContentLoaded', function() {
+              setTimeout(function() {
+                var alerts = document.querySelectorAll('.alert.alert-success, .alert.alert-danger, .alert.alert-error');
+                alerts.forEach(function(el) {
+                  try {
+                    if (window.bootstrap && bootstrap.Alert) {
+                      var inst = bootstrap.Alert.getOrCreateInstance(el);
+                      inst.close();
+                    } else {
+                      // Fallback si Bootstrap JS n'est pas accessible
+                      el.classList.remove('show');
+                      el.remove();
+                    }
+                  } catch (e) {
+                    el.remove();
+                  }
+                });
+              }, 3000);
+            });
+            </script>
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Section 1: Informations personnelles -->
+                <div class="card mb-4 shadow-sm" style="border: 2px solid #4CAF50; border-radius: 15px;">
+                    <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #4CAF50, #45a049); border-radius: 13px 13px 0 0;">
+                        <h5 class="mb-0 fw-bold" style="color: #fff;">
+                            <i class="fas fa-user me-2"></i>Section 1 : Informations Personnelles
+                        </h5>
+                    </div>
+                    <div class="card-body" style="background-color: #f8fff8;">
+                        <!-- Section Photo -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card border-success">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0 text-success"><i class="fas fa-camera me-2"></i>Photo du Personnel</h6>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <div id="photoPreview" class="mb-3">
+                                            <div class="border border-dashed border-success rounded p-2" style="width: 140px; height: 180px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; margin: 0 auto;">
+                                                <div>
+                                                    <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                                                    <p class="text-muted">Aucune photo sélectionnée</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-primary me-2" id="cameraBtn">
+                                                <i class="fas fa-camera me-1"></i>Apprendre photo
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success" id="importBtn">
+                                                <i class="fas fa-upload me-1"></i>Importer photo
+                                            </button>
+                                        </div>
+                                        <input type="file" id="photoInput" name="photo" accept="image/*" style="display: none;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations de base -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="prenoms" class="form-label fw-bold text-success">
+                                    <i class="fas fa-user me-1"></i>Prénoms <span style="color: red;">*</span>
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-user icon-green"></i></span>
+                                  <input type="text" class="form-control" id="prenoms" name="prenoms" value="{{ form_data.prenom|default:'' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="nom" class="form-label fw-bold text-success">
+                                    <i class="fas fa-user me-1"></i>Nom <span style="color: red;">*</span>
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-user icon-green"></i></span>
+                                  <input type="text" class="form-control" id="nom" name="nom" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="sexe" class="form-label fw-bold text-success">
+                                    <i class="fas fa-venus-mars me-1"></i>Sexe <span style="color: red;">*</span>
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-venus-mars icon-green"></i></span>
+                                  <select class="form-select" id="sexe" name="sexe" required>
+                                      <option value="">Sélectionnez...</option>
+                                      <option value="Masculin">Masculin</option>
+                                      <option value="Féminin">Féminin</option>
+                                  </select>
+                                </div>
+                            </div>
+                            <!-- Ligne 2: Date de naissance, Lieu de naissance, Nationalité -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="date_naissance" class="form-label fw-bold text-success">
+                                        <i class="fas fa-calendar me-1"></i>Date de naissance <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-calendar icon-green"></i></span>
+                                      <input type="date" class="form-control" id="date_naissance" name="date_naissance" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="lieu_naissance" class="form-label fw-bold text-success">
+                                        <i class="fas fa-map-marker-alt me-1"></i>Lieu de naissance <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-map-marker-alt icon-green"></i></span>
+                                      <input type="text" class="form-control" id="lieu_naissance" name="lieu_naissance" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="nationalite" class="form-label fw-bold text-success">
+                                        <i class="fas fa-flag me-1"></i>Nationalité <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-flag icon-green"></i></span>
+                                      <input type="text" class="form-control" id="nationalite" name="nationalite" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Ligne 3: État civil, Nombre d'enfants, Domicile -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="etat_civil" class="form-label fw-bold text-success">
+                                        <i class="fas fa-heart me-1"></i>État civil <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-heart icon-green"></i></span>
+                                      <select class="form-select" id="etat_civil" name="etat_civil" required>
+                                          <option value="">Sélectionnez...</option>
+                                          <option value="Célibataire">Célibataire</option>
+                                          <option value="Marié(e)">Marié(e)</option>
+                                          <option value="Veuf(ve)">Veuf(ve)</option>
+                                          <option value="Divorcé(e)">Divorcé(e)</option>
+                                      </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="nombre_enfants" class="form-label fw-bold text-success">
+                                        <i class="fas fa-child me-1"></i>Nombre d'enfants
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-child icon-green"></i></span>
+                                      <input type="number" class="form-control" id="nombre_enfants" name="nombre_enfants" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="domicile" class="form-label fw-bold text-success">
+                                        <i class="fas fa-home me-1"></i>Domicile <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-home icon-green"></i></span>
+                                      <input type="text" class="form-control" id="domicile" name="domicile" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Ligne 4: Profession, Date de conversion, Date de baptême -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="profession" class="form-label fw-bold text-success">
+                                        <i class="fas fa-tools me-1"></i>Profession
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-tools icon-green"></i></span>
+                                      <input type="text" class="form-control" id="profession" name="profession">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="date_conversion" class="form-label fw-bold text-success">
+                                        <i class="fas fa-calendar me-1"></i>Date de conversion <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-calendar icon-green"></i></span>
+                                      <input type="date" class="form-control" id="date_conversion" name="date_conversion" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="date_bapteme" class="form-label fw-bold text-success">
+                                        <i class="fas fa-calendar me-1"></i>Date de baptême <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-calendar icon-green"></i></span>
+                                      <input type="date" class="form-control" id="date_bapteme" name="date_bapteme" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="date_consecration" class="form-label fw-bold text-success">
+                                        <i class="fas fa-calendar-check me-1"></i>Date de consécration
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-calendar-check icon-green"></i></span>
+                                      <input type="date" class="form-control" id="date_consecration" name="date_consecration">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="lieu_consecration" class="form-label fw-bold text-success">
+                                        <i class="fas fa-church me-1"></i>Lieu de consécration
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-church icon-green"></i></span>
+                                      <input type="text" class="form-control" id="lieu_consecration" name="lieu_consecration">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="consacre_par" class="form-label fw-bold text-success">
+                                        <i class="fas fa-user-tie me-1"></i>Consacré par qui ?
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-user-tie icon-green"></i></span>
+                                      <input type="text" class="form-control" id="consacre_par" name="consacre_par">
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Ligne 6: Statut actuel du Pasteur, Téléphone, Email -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="fonction" class="form-label fw-bold text-success">
+                                        <i class="fas fa-briefcase me-1"></i>Statut actuel du Pasteur <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-briefcase icon-green"></i></span>
+                                      <input type="text" class="form-control" id="fonction" name="fonction" required list="statut-suggestions" placeholder="Saisir ou sélectionner un statut...">
+                                    </div>
+                                    <datalist id="statut-suggestions">
+                                        <option value="Évêque">
+                                        <option value="Pasteur Principal">
+                                        <option value="Pasteur Assistant">
+                                        <option value="Pasteur Stagiaire">
+                                        <option value="Laïc">
+                                        <option value="Étudient(e) Pasteur">
+                                        <option value="Évangéliste">
+                                        <option value="Ancien">
+                                        <option value="Diacre">
+                                        <option value="Diaconesse">
+                                        <option value="Membre du Comité National">
+                                    </datalist>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="telephone" class="form-label fw-bold text-success">
+                                        <i class="fas fa-phone me-1"></i>Téléphone <span style="color: red;">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-phone icon-green"></i></span>
+                                      <input type="tel" class="form-control" id="telephone" name="telephone" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="email" class="form-label fw-bold text-success">
+                                        <i class="fas fa-envelope me-1"></i>Email
+                                    </label>
+                                    <div class="input-group">
+                                      <span class="input-group-text bg-soft"><i class="fas fa-envelope icon-green"></i></span>
+                                      <input type="email" class="form-control" id="email" name="email">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Filiation -->
+                <div class="card mb-4 shadow-sm" style="border: 2px solid #FF9800; border-radius: 15px;">
+                    <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #FF9800, #F57C00); border-radius: 13px 13px 0 0;">
+                        <h5 class="mb-0 fw-bold" style="color: #fff;">
+                            <i class="fas fa-users me-2"></i>Section 2 : Filiation
+                        </h5>
+                    </div>
+                    <div class="card-body" style="background-color: #fff8f0;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="prenoms_pere" class="form-label fw-bold text-warning">
+                                    <i class="fas fa-male me-1"></i>Prénoms du Père
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-male icon-orange"></i></span>
+                                  <input type="text" class="form-control" id="prenoms_pere" name="prenoms_pere">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="prenoms_nom_mere" class="form-label fw-bold text-warning">
+                                    <i class="fas fa-female me-1"></i>Prénoms & Nom de la Mère
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-female icon-orange"></i></span>
+                                  <input type="text" class="form-control" id="prenoms_nom_mere" name="prenoms_nom_mere">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Affectation du Pasteur -->
+                <div class="card mb-4 shadow-sm" style="border: 2px solid #2196F3; border-radius: 15px;">
+                    <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #2196F3, #1976D2); border-radius: 13px 13px 0 0;">
+                        <h5 class="mb-0 fw-bold" style="color: #fff;">
+                            <i class="fas fa-church me-2"></i>Section 3 : Affectation du Pasteur
+                        </h5>
+                    </div>
+                    <div class="card-body" style="background-color: #f0f8ff;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="eglise_affectee" class="form-label fw-bold text-primary">
+                                    <i class="fas fa-church me-1"></i>Église affectée <span style="color: red;">*</span>
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-church icon-blue"></i></span>
+                                  <select class="form-select" id="eglise_affectee" name="eglise_affectee" required>
+                                      <option value="">Sélectionnez une église...</option>
+                                      {% for e in eglises %}
+                                          <option value="{{ e.id }}" {% if form_data.eglise_affectee|stringformat:'s' == e.id|stringformat:'s' %}selected{% endif %}>{{ e.nom }}</option>
+                                      {% endfor %}
+                                  </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lieu_affectation" class="form-label fw-bold text-primary">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Lieu d'affectation
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-map-marker-alt icon-blue"></i></span>
+                                  <input type="text" class="form-control" id="lieu_affectation" name="lieu_affectation">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="date_affectation" class="form-label fw-bold text-primary">
+                                    <i class="fas fa-calendar me-1"></i>Date d'affectation
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-calendar icon-blue"></i></span>
+                                  <input type="date" class="form-control" id="date_affectation" name="date_affectation">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="region" class="form-label fw-bold text-primary">
+                                    <i class="fas fa-globe me-1"></i>Région
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-globe icon-blue"></i></span>
+                                  <input type="text" class="form-control" id="region" name="region">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="zone" class="form-label fw-bold text-primary">
+                                    <i class="fas fa-map me-1"></i>Zone
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-map icon-blue"></i></span>
+                                  <input type="text" class="form-control" id="zone" name="zone" value="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Formations suivies du Pasteur -->
+                <div class="card mb-4 shadow-sm" style="border: 2px solid #9C27B0; border-radius: 15px;">
+                    <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2); border-radius: 13px 13px 0 0;">
+                        <h5 class="mb-0 fw-bold" style="color:#fff;">
+                            <i class="fas fa-graduation-cap me-2"></i>Section 4 : Formations Suivies du Pasteur
+                        </h5>
+                    </div>
+                    <div class="card-body" style="background-color: #faf0ff;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="statut_actuel" class="form-label fw-bold" style="color: #9C27B0;">
+                                    <i class="fas fa-star me-1"></i>Diplômes Obtenus du Pasteur
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-star icon-purple"></i></span>
+                                  <input type="text" class="form-control" id="statut_actuel" name="statut_actuel" list="diplomes_list" placeholder="Saisissez ou sélectionnez un diplôme...">
+                                </div>
+                                <datalist id="diplomes_list">
+                                    <option value="En formation">
+                                    <option value="Diplômé">
+                                    <option value="Certifié">
+                                    <option value="Ordonné">
+                                    <option value="Licence en Théologie">
+                                    <option value="Master en Théologie">
+                                    <option value="Doctorat en Théologie">
+                                    <option value="Certificat Pastoral">
+                                    <option value="Diplôme Biblique">
+                                    <option value="Autre">
+                                </datalist>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="types_formations" class="form-label fw-bold" style="color: #9C27B0;">
+                                    <i class="fas fa-book me-1"></i>Types de formations
+                                </label>
+                                <div class="input-group">
+                                  <span class="input-group-text bg-soft"><i class="fas fa-book icon-purple"></i></span>
+                                  <textarea class="form-control" id="types_formations" name="types_formations" rows="3" placeholder="Décrivez les formations suivies..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Téléchargement de la pièce d'enregistrement -->
+                <div class="card mb-4 shadow-sm" style="border: 2px solid #F44336; border-radius: 15px;">
+                    <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #F44336, #D32F2F); border-radius: 13px 13px 0 0;">
+                        <h5 class="mb-0 fw-bold" style="color: #fff;">
+                            <i class="fas fa-file-upload me-2"></i>Section 5 : Téléchargement de la Pièce d'Enregistrement
+                        </h5>
+                    </div>
+                    <div class="card-body" style="background-color: #fff0f0;">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="alert alert-info" style="white-space: nowrap; overflow-x: auto; font-size: 0.9rem;">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Numérisation des documents :</strong> Assurez-vous que tous les documents sont clairement lisibles et numérisés en haute qualité.
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="document_fichier" class="form-label fw-bold text-danger">
+                                    <i class="fas fa-paperclip me-1"></i>Joindre la fiche à partir d'un répertoire local
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-soft"><i class="fas fa-paperclip icon-red"></i></span>
+                                    <input type="file" class="form-control" id="document_fichier" name="document_fichier" accept=".doc,.docx,.pdf">
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    Fichiers autorisés : Word (.doc, .docx), PDF (.pdf)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="card shadow-sm mx-auto" style="max-width: 450px; width: 100%; border: none; border-radius: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-center py-4">
+                        <div class="d-flex justify-content-center gap-3 flex-row">
+                            <button type="submit" id="enregistrerPasteurBtn" class="btn btn-light px-3 py-2 fw-bold" style="border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); white-space: nowrap;" aria-label="Enregistrer le Pasteur">
+    <i class="fas fa-save me-2"></i>Enregistrer le Pasteur
+</button>
+                            <button type="reset" class="btn btn-outline-light px-3 py-2 fw-bold" style="border-radius: 20px;">
+                                <i class="fas fa-undo me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+         
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+            <!-- Tableau: Personnel Pastoral -->
+            <style>
+              .pp-header {
+                background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+                color: #fff;
+                border-radius: 13px 13px 0 0;
+                padding: 1rem 1.25rem;
+              }
+              .pp-title {
+                display: flex; align-items: center; gap: .75rem; margin: 0;
+                font-weight: 700;
+              }
+              .pp-title-text { color: #fff !important; }
+              .pp-badge {
+                background: rgba(255,255,255,.15);
+                color: #fff;
+                border: 1px solid rgba(255,255,255,.25);
+                padding: .4rem .7rem; border-radius: 50rem; font-weight: 600;
+                backdrop-filter: blur(2px);
+              }
+              .pp-search .input-group-text { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+              .pp-search input {
+                background: rgba(255,255,255,.12);
+                color: #fff;
+                border: 1px solid rgba(255,255,255,.3);
+              }
+              .pp-search input::placeholder { color: rgba(255,255,255,.8); }
+              /* Masquer la recherche DataTables par défaut */
+              .dataTables_filter { display: none !important; }
+              /* Entête du tableau colorée (et collante si applicable) */
+              #tablePersonnelPastoral thead th,
+              .dataTables_scrollHead thead th {
+                background: linear-gradient(135deg, #6f42c1 0%, #0d6efd 100%) !important;
+                color: #fff !important;
+                border-bottom: none !important;
+                position: sticky;
+                top: 0; /* reste visible au scroll vertical */
+                z-index: 5;
+                white-space: nowrap;
+              }
+              #tablePersonnelPastoral thead th a,
+              .dataTables_scrollHead thead th a { color: #fff !important; }
+              #tablePersonnelPastoral thead th:first-child,
+              .dataTables_scrollHead thead th:first-child { border-top-left-radius: 8px; }
+              #tablePersonnelPastoral thead th:last-child,
+              .dataTables_scrollHead thead th:last-child { border-top-right-radius: 8px; }
+            </style>
+            <div class="card shadow-sm mt-4" style="border-radius: 15px;">
+                <div class="pp-header d-flex flex-column flex-lg-row gap-3 gap-lg-4 align-items-lg-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <h5 class="pp-title">
+                          <span class="d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle" style="width: 38px; height: 38px;">
+                            <i class="fas fa-users"></i>
+                          </span>
+                          <span class="pp-title-text">Personnel Pastoral enregistré</span>
+                        </h5>
+                        <span class="pp-badge" id="totalPasteursBadge">Total: {{ pasteurs|length|default:'0' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 ms-lg-auto">
+                        <a href="{% url 'main:voir_personnel_pastoral' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i> Voir les Personnels
+                        </a>
+                        <div class="pp-search" style="min-width: 280px; max-width: 420px; width: 100%;">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="customSearch" class="form-control" placeholder="Rechercher … (nom, contact, église, etc.)" autocomplete="off"/>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+                        <table class="table table-hover table-striped table-nowrap mb-0" id="tablePersonnelPastoral" style="font-size: 0.85rem; min-width: 2500px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="text-center" style="width: 80px;">Photo</th>
+                                    <th scope="col">Nom & Prénoms</th>
+                                    <th scope="col">Fonction</th>
+                                    <th scope="col">Sexe</th>
+                                    <th scope="col">Date de naissance</th>
+                                    <th scope="col">Lieu de naissance</th>
+                                    <th scope="col">Nationalité</th>
+                                    <th scope="col">Domicile</th>
+                                    <th scope="col">État civil</th>
+                                    <th scope="col">Nb d'enfants</th>
+                                    <th scope="col">Profession</th>
+                                    <th scope="col">Téléphone</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Date de consécration</th>
+                                    <th scope="col">Lieu de consécration</th>
+                                    <th scope="col">Consacré par qui ?</th>
+                                    <th scope="col">Prénoms du Père</th>
+                                    <th scope="col">Prénoms & Nom de la Mère</th>
+                                    <th scope="col">Église affectée</th>
+                                    <th scope="col">Lieu d'affectation</th>
+                                    <th scope="col">Date d'affectation</th>
+                                    <th scope="col">Région</th>
+                                    <th scope="col">Zone</th>
+                                    <th scope="col">Types de formations</th>
+                                    <th scope="col">Statut actuel du Pasteur</th>
+                                    <th scope="col">Fiche ci-joint</th>
+                                    <th scope="col" class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pasteur in pasteurs %}
+                                <tr data-id="{{ pasteur.id }}" class="pasteur-row">
+                                    <td class="text-center">
+                                        {% if pasteur.photo %}
+                                        <img src="{{ pasteur.photo.url }}" alt="Photo" class="rounded-circle" width="50" height="50">
+                                        {% else %}
+                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; margin: 0 auto;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ pasteur.nom }} {{ pasteur.prenom }}</td>
+                                    <td>{{ pasteur.fonction|default:"-" }}</td>
+                                    <td>{{ pasteur.sexe|default:"-" }}</td>
+                                    <td>{{ pasteur.date_naissance|date:"d/m/Y"|default:"-" }}</td>
+                                    <td>{{ pasteur.lieu_naissance|default:"-" }}</td>
+                                    <td>{{ pasteur.nationalite|default:"-" }}</td>
+                                    <td>{{ pasteur.domicile|default:"-" }}</td>
+                                    <td>{{ pasteur.etat_civil|default:"-" }}</td>
+                                    <td>{{ pasteur.nombre_enfants|default:"0" }}</td>
+                                    <td>{{ pasteur.profession|default:"-" }}</td>
+                                    <td>{{ pasteur.telephone|default:"-" }}</td>
+                                    <td>{{ pasteur.email|default:"-" }}</td>
+                                    <td>{{ pasteur.date_consecration|date:"d/m/Y"|default:"-" }}</td>
+                                    <td>{{ pasteur.lieu_consecration|default:"-" }}</td>
+                                    <td>{{ pasteur.consacre_par|default:"-" }}</td>
+                                    <td>{{ pasteur.prenoms_pere|default:"-" }}</td>
+                                    <td>{{ pasteur.prenoms_nom_mere|default:"-" }}</td>
+                                    <td>{% if pasteur.eglise %}{{ pasteur.eglise.nom }}{% else %}-{% endif %}</td>
+                                    <td>{{ pasteur.lieu_affectation|default:"-" }}</td>
+                                    <td>{{ pasteur.date_affectation|date:"d/m/Y"|default:"-" }}</td>
+                                    <td>{{ pasteur.region|default:"-" }}</td>
+                                    <td>{{ pasteur.zone|default:"-" }}</td>
+                                    <td>{{ pasteur.types_formations|default:"-" }}</td>
+                                    <td>{{ pasteur.statut_actuel|default:"-" }}</td>
+                                    <td>
+                                        {% if pasteur.document_fichier %}
+                                        <a href="{{ pasteur.document_fichier.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-download"></i>
+                                        </a>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-info view-pasteur" data-id="{{ pasteur.id }}" title="Voir détails">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-primary edit-pasteur" data-id="{{ pasteur.id }}" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger delete-pasteur" data-id="{{ pasteur.id }}" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-muted">
+                        Page <span id="currentPage">1</span> sur <span id="totalPages">1</span>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Pagination personnalisée">
+                        <button type="button" class="btn btn-outline-primary" id="firstPageBtn" title="Première page">
+                            <i class="fas fa-angle-double-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="prevPageBtn" title="Page précédente">
+                            <i class="fas fa-angle-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="nextPageBtn" title="Page suivante">
+                            <i class="fas fa-angle-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="lastPageBtn" title="Dernière page">
+                            <i class="fas fa-angle-double-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+<script>
+let stream = null;
+let video = null;
+let selectedDeviceId = null;
+
+// Utilitaires caméra
+async function listVideoInputs() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return [];
+    try {
+        // Certaines plateformes ne listent les labels et devices qu'après permission
+        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }).catch(() => null);
+        if (tmp) { tmp.getTracks().forEach(t => t.stop()); }
+    } catch (_) {}
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        return devices.filter(d => d.kind === 'videoinput');
+    } catch (_) {
+        return [];
+    }
+}
+
+async function retryCameraDetection() {
+    const cameraBtn = document.getElementById('cameraBtn');
+    const preview = document.getElementById('photoPreview');
+    if (cameraBtn) {
+        cameraBtn.disabled = true;
+        cameraBtn.classList.remove('btn-outline-primary', 'btn-success');
+        cameraBtn.classList.add('btn-secondary');
+        cameraBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Vérification caméra...';
+    }
+    const cams = await listVideoInputs();
+    if (cams.length > 0) {
+        selectedDeviceId = cams[0].deviceId || null;
+        await startCamera();
+    } else {
+        preview.innerHTML = `
+            <div class="alert alert-info" role="alert">
+                <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Aucune caméra détectée</h6>
+                <p class="mb-2">Votre ordinateur ne dispose pas de caméra ou elle n'est pas accessible.</p>
+                <hr>
+                <p class="mb-2 small"><strong>Solutions possibles :</strong></p>
+                <ul class="small mb-3">
+                    <li>Vérifiez que votre caméra est bien branchée (pour caméra externe)</li>
+                    <li>Autorisez l'accès à la caméra dans les paramètres de votre navigateur</li>
+                    <li>Vérifiez que la caméra n'est pas utilisée par une autre application</li>
+                    <li>Utilisez le bouton "Importer photo" ci-dessous pour charger une image depuis votre ordinateur</li>
+                </ul>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="retryCameraDetection()">
+                        <i class="fas fa-sync-alt me-1"></i>Réessayer
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm" onclick="document.getElementById('importBtn').click()">
+                        <i class="fas fa-upload me-1"></i>Importer une photo
+                    </button>
+                </div>
+            </div>
+        `;
+        if (cameraBtn) {
+            cameraBtn.disabled = false;
+            cameraBtn.classList.remove('btn-secondary', 'btn-success');
+            cameraBtn.classList.add('btn-outline-primary');
+            cameraBtn.innerHTML = '<i class="fas fa-camera me-1"></i>Caméra photo';
+        }
+    }
+}
+
+// Gestion de l'import de photo
+document.getElementById('importBtn').addEventListener('click', function() {
+    document.getElementById('photoInput').click();
+});
+
+// Binding robuste du bouton Caméra
+window.addEventListener('DOMContentLoaded', function() {
+    const camBtn = document.getElementById('cameraBtn');
+    if (camBtn) {
+        camBtn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            startCamera();
+        });
+    }
+});
+
+document.getElementById('photoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = `
+                <div class="position-relative">
+                    <img src="${e.target.result}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;">
+                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2" onclick="removePhoto()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            // Fermer la caméra si elle est ouverte
+            if (stream) {
+                stopCamera();
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Gestion de la caméra (binding déjà effectué plus haut; pas de doublon)
+
+async function startCamera() {
+    // Rendre ces variables disponibles même en cas d'erreur avant leur définition locale
+    let preview = document.getElementById('photoPreview');
+    let cameraBtn = document.getElementById('cameraBtn');
+    try {
+        // Vérifier si l'API getUserMedia est supportée
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('L\'API caméra n\'est pas supportée par votre navigateur. Veuillez utiliser un navigateur moderne (Chrome, Firefox, Safari, Edge).');
+        }
+
+        // DIAGNOSTIC PRÉALABLE (non bloquant) : essayer d'énumérer les caméras
+        console.log('=== DIAGNOSTIC CAMÉRA ===');
+        try {
+            if (navigator.mediaDevices && typeof navigator.mediaDevices.enumerateDevices === 'function') {
+                const allDevices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = allDevices.filter(device => device.kind === 'videoinput');
+                console.log('Périphériques vidéo (pré-enum) :', videoDevices.length);
+                videoDevices.forEach((device, index) => {
+                    console.log(`Caméra ${index + 1}:`, device.label || 'Sans nom', '- ID:', device.deviceId);
+                });
+                // Sélectionner automatiquement la première caméra si aucune sélection disponible
+                if (!selectedDeviceId && videoDevices.length > 0) {
+                    selectedDeviceId = videoDevices[0].deviceId;
+                    console.log('Sélection automatique de la caméra:', videoDevices[0].label || 'Caméra 1');
+                }
+            } else {
+                console.log('enumerateDevices() non disponible sur ce navigateur. On continue.');
+            }
+        } catch (diagErr) {
+            console.log('Impossible d\'énumérer les périphériques avant permission. On continue.', diagErr);
+        }
+
+        // Vérifier contexte sécurisé (HTTPS/localhost)
+        if (!window.isSecureContext) {
+            const preview = document.getElementById('photoPreview');
+            preview.innerHTML = `
+                <div class="alert alert-info" role="alert">
+                    <strong>Contexte non sécurisé :</strong> l'accès à la caméra nécessite HTTPS ou localhost.
+                    <div class="small mt-1">Ouvrez l'application en <strong>https://</strong> ou en <strong>localhost</strong>, puis réessayez.</div>
+                </div>
+            `;
+            // On ne jette pas d'exception dure; certains navigateurs autorisent encore sur 127.0.0.1
+        }
+
+        // Arrêter la caméra si elle est déjà active
+        if (stream) {
+            stopCamera();
+        }
+
+        // Afficher un indicateur de chargement
+        // S'assurer de (ré)obtenir les éléments si nécessaire
+        preview = document.getElementById('photoPreview');
+        cameraBtn = document.getElementById('cameraBtn');
+        // état bouton: chargement
+            if (cameraBtn) {
+            cameraBtn.disabled = true;
+            cameraBtn.classList.remove('btn-outline-primary', 'btn-success');
+            cameraBtn.classList.add('btn-secondary');
+            cameraBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Ouverture caméra...';
+        }
+        preview.innerHTML = `
+            <div class="position-relative">
+                <div class="position-absolute top-0 end-0 m-2">
+                    <select id="cameraSelect" class="form-select form-select-sm" style="width: auto; display: none;"></select>
+                </div>
+                <video id="cameraVideo" autoplay playsinline style="width: 100%; max-height: 180px; border-radius: 10px;"></video>
+                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-2">
+    <button type="button" class="btn btn-success btn-sm me-2" onclick="capturePhoto()">
+        <i class="fas fa-camera me-1"></i>Capturer
+    </button>
+    <button type="button" class="btn btn-secondary btn-sm" onclick="stopCamera()">
+        <i class="fas fa-times me-1"></i>Fermer
+    </button>
+</div>
+            </div>
+        `;
+
+        // Demander l'accès à la caméra avec des contraintes optimisées
+        const constraints = selectedDeviceId ? {
+            video: { deviceId: { exact: selectedDeviceId } },
+            audio: false
+        } : {
+            video: {
+                width: { ideal: 640, max: 1280 },
+                height: { ideal: 480, max: 720 },
+                facingMode: 'user'
+            },
+            audio: false
+        };
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (e1) {
+            try {
+                // Fallback 1: essayer caméra arrière/environnement
+                if (!selectedDeviceId) {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { ideal: 'environment' } },
+                        audio: false
+                    });
+                } else {
+                    throw e1;
+                }
+            } catch (e2) {
+                // Fallback 2: contraintes minimales
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                } catch (e3) {
+                    throw e3;
+                }
+            }
+        }
+
+        // Connecter le stream à la vidéo
+        video = document.getElementById('cameraVideo');
+        video.srcObject = stream;
+        // S'assurer que la lecture démarre
+        if ('onloadedmetadata' in video) {
+            video.onloadedmetadata = () => {
+                try { video.play(); } catch (_) {}
+            };
+        } else {
+            try { await video.play(); } catch (_) {}
+        }
+
+        // Changer le texte du bouton
+        if (cameraBtn) {
+            cameraBtn.innerHTML = '<i class="fas fa-video me-1"></i>Caméra Active';
+            cameraBtn.classList.remove('btn-secondary', 'btn-outline-primary');
+            cameraBtn.classList.add('btn-success');
+            cameraBtn.disabled = false;
+        }
+
+        // Lister les caméras disponibles et afficher un sélecteur si > 1
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const cams = devices.filter(d => d.kind === 'videoinput');
+            const camSelect = document.getElementById('cameraSelect');
+            if (cams.length > 0 && camSelect) {
+                camSelect.innerHTML = cams.map((c, i) => `<option value="${c.deviceId}">${c.label || ('Caméra ' + (i+1))}</option>`).join('');
+                const currentId = (stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings && stream.getVideoTracks()[0].getSettings().deviceId) || '';
+                if (currentId) {
+                    selectedDeviceId = currentId;
+                    camSelect.value = currentId;
+                }
+                camSelect.style.display = cams.length > 1 ? 'inline-block' : 'none';
+                camSelect.onchange = async (e) => {
+                    selectedDeviceId = e.target.value;
+                    stopCamera();
+                    await startCamera();
+                };
+            }
+        } catch(_) {}
+
+    } catch (error) {
+        let title = 'Erreur caméra';
+        let message = 'Un problème est survenu lors de l\'accès à la caméra';
+        let help = '';
+        switch (error.name) {
+            case 'NotAllowedError':
+            case 'PermissionDeniedError':
+                message = 'Accès à la caméra refusé par le navigateur.';
+                help = 'Autorisez la caméra dans la barre d\'adresse, puis réessayez.';
+                break;
+            case 'NotFoundError':
+            case 'DevicesNotFoundError':
+                message = 'Aucune caméra détectée sur cet ordinateur.';
+                help = 'Vous pouvez importer une photo depuis votre ordinateur ou votre téléphone en utilisant le bouton "Importer photo".';
+                break;
+            case 'NotReadableError':
+            case 'TrackStartError':
+                message = 'La caméra est déjà utilisée par une autre application.';
+                help = 'Fermez les autres applications utilisant la caméra (Zoom, Teams, etc.) et réessayez.';
+                break;
+            case 'OverconstrainedError':
+                message = 'Impossible de satisfaire les contraintes vidéo.';
+                help = 'Réessayez sans autre application caméra et redémarrez le navigateur.';
+                break;
+            default:
+                message = `${message} (${error.message || 'Erreur inconnue'})`;
+        }
+        preview.innerHTML = `
+            <div class="alert alert-warning" role="alert">
+                <strong>${title} :</strong> ${message}
+                ${help ? `<div class="small mt-1">${help}</div>` : ''}
+                ${(['NotFoundError','DevicesNotFoundError'].includes(error.name)) ? `
+                <div class="mt-2 d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="retryCameraDetection()">
+                        <i class="fas fa-sync-alt me-1"></i>Réessayer
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm" onclick="document.getElementById('importBtn').click()">
+                        <i class="fas fa-upload me-1"></i>Importer photo
+                    </button>
+                </div>` : `
+                <div class="mt-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="retryCameraDetection()">
+                        <i class="fas fa-sync-alt me-1"></i>Réessayer
+                    </button>
+                </div>`}
+            </div>
+        `;
+        // Réinitialiser le bouton
+        cameraBtn.disabled = false;
+        cameraBtn.classList.remove('btn-secondary', 'btn-success');
+        cameraBtn.classList.add('btn-outline-primary');
+        cameraBtn.innerHTML = '<i class="fas fa-camera me-1"></i>Caméra photo';
+    }
+}
+
+function stopCamera() {
+    if (stream) {
+        // Arrêter tous les tracks du stream
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+        video = null;
+        // Restaurer l'interface par défaut (placeholder vidéo/photo)
+        removePhoto();
+        // Restaurer le bouton Caméra
+        const cameraBtn = document.getElementById('cameraBtn');
+        if (cameraBtn) {
+            cameraBtn.innerHTML = '<i class="fas fa-camera me-1"></i>Caméra photo';
+            cameraBtn.classList.remove('btn-success');
+            cameraBtn.classList.add('btn-outline-primary');
+            cameraBtn.disabled = false;
+        }
+    }
+}
+
+function removePhoto() {
+    document.getElementById('photoInput').value = '';
+    document.getElementById('photoPreview').innerHTML = `
+        <div class="border border-dashed border-success rounded p-2" style="width: 140px; height: 180px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; margin: 0 auto;">
+            <div>
+                <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
+                <p class="text-muted">Aucune photo sélectionnée</p>
+            </div>
+        </div>
+    `;
+}
+
+function capturePhoto() {
+    if (video) {
+        // Créer un canvas pour capturer l'image
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        // Convertir en base64
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        // Afficher la photo capturée
+        const preview = document.getElementById('photoPreview');
+        preview.innerHTML = `
+            <div class="position-relative">
+                <img src="${imageData}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;">
+                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2" onclick="removePhoto()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        // Créer un fichier blob pour le formulaire et l'injecter dans l'input file caché
+        canvas.toBlob(function(blob) {
+            const file = new File([blob], 'photo_camera.jpg', { type: 'image/jpeg' });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            document.getElementById('photoInput').files = dataTransfer.files;
+            // Couper le flux caméra et réinitialiser le bouton, sans effacer l'aperçu capturé
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video = null;
+            }
+            const cameraBtn = document.getElementById('cameraBtn');
+            if (cameraBtn) {
+                cameraBtn.innerHTML = '<i class="fas fa-camera me-1"></i>Caméra photo';
+                cameraBtn.classList.remove('btn-success');
+                cameraBtn.classList.add('btn-outline-primary');
+                cameraBtn.disabled = false;
+            }
+        }, 'image/jpeg', 0.8);
+    }
+}
+
+    </script>
+    <script src="{% static 'main/js/personnel_pastoral_validation.js' %}"></script>
+    <!-- DataTables CSS/JS & Buttons -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script>
+    $(document).ready(function() {
+
+        const dt = $('#tablePersonnelPastoral').DataTable({
+            scrollX: true,
+            scrollY: '50vh',
+            scrollCollapse: true,
+            autoWidth: false,
+            responsive: false,
+            ordering: false,
+            dom: 'frtip',
+            columnDefs: [
+                { targets: 0,  width: 60,  className: 'text-center' }, // Photo
+                { targets: 1,  width: 200 }, // Nom & Prénoms
+                { targets: 2,  width: 140 }, // Fonction
+                { targets: 3,  width: 70,  className: 'text-center' }, // Sexe
+                { targets: 4,  width: 120, className: 'text-center' }, // Date de naissance
+                { targets: 5,  width: 150 }, // Lieu de naissance
+                { targets: 6,  width: 130 }, // Nationalité
+                { targets: 7,  width: 160 }, // Domicile
+                { targets: 8,  width: 110 }, // État civil
+                { targets: 9,  width: 90,  className: 'text-center' }, // Nb d'enfants
+                { targets: 10, width: 150 }, // Profession
+                { targets: 11, width: 130 }, // Téléphone
+                { targets: 12, width: 200 }, // Email
+                { targets: 13, width: 130, className: 'text-center' }, // Date de consécration
+                { targets: 14, width: 160 }, // Lieu de consécration
+                { targets: 15, width: 160 }, // Consacré par qui ?
+                { targets: 16, width: 160 }, // Prénoms du Père
+                { targets: 17, width: 200 }, // Prénoms & Nom de la Mère
+                { targets: 18, width: 160 }, // Église affectée
+                { targets: 19, width: 160 }, // Lieu d'affectation
+                { targets: 20, width: 130, className: 'text-center' }, // Date d'affectation
+                { targets: 21, width: 120 }, // Région
+                { targets: 22, width: 120 }, // Zone
+                { targets: 23, width: 200 }, // Types de formations
+                { targets: 24, width: 160 }, // Statut actuel du Pasteur
+                { targets: 25, width: 110, className: 'text-center', orderable: false }, // Fiche ci-joint
+                { targets: 26, width: 120, className: 'text-center', orderable: false }  // Actions
+            ],
+            language: {
+                "decimal": ",",
+                "emptyTable": "Aucune donnée disponible dans le tableau",
+                "info": "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+                "infoEmpty": "Affichage de 0 à 0 sur 0 entrées",
+                "infoFiltered": "(filtré à partir de _MAX_ entrées au total)",
+                "infoPostFix": "",
+                "thousands": " ",
+                "lengthMenu": "Afficher _MENU_ entrées",
+                "loadingRecords": "Chargement...",
+                "processing": "Traitement...",
+                "search": "Rechercher :",
+                "zeroRecords": "Aucun enregistrement correspondant trouvé",
+                "paginate": {
+                    "first": "Premier",
+                    "last": "Dernier",
+                    "next": "",
+                    "previous": "Précédent"
+                },
+                "aria": {
+                    "sortAscending": ": activer pour trier la colonne par ordre croissant",
+                    "sortDescending": ": activer pour trier la colonne par ordre décroissant"
+                },
+                "select": {
+                    "rows": {
+                        "_": "%d lignes sélectionnées",
+                        "0": "",
+                        "1": "1 ligne sélectionnée"
+                    }
+                },
+                "buttons": {
+                    "copy": "Copier",
+                    "excel": "Exporter Excel",
+                    "pdf": "Exporter PDF",
+                    "print": "Imprimer"
+                }
+            },
+            pageLength: 10,
+            lengthMenu: [ [10, 25, 50, -1], [10, 25, 50, "Tous"] ]
+        });
+
+        // Mettre à jour l'affichage "Page X sur Y"
+        function updatePageInfo() {
+            const info = dt.page.info();
+            const current = document.getElementById('currentPage');
+            const total = document.getElementById('totalPages');
+            if (current) current.textContent = (info.page + 1).toString();
+            if (total) total.textContent = info.pages.toString();
+        }
+        dt.on('draw', updatePageInfo);
+        updatePageInfo();
+
+        // Boutons de pagination personnalisés
+        const firstBtn = document.getElementById('firstPageBtn');
+        const prevBtn = document.getElementById('prevPageBtn');
+        const nextBtn = document.getElementById('nextPageBtn');
+        const lastBtn = document.getElementById('lastPageBtn');
+        if (firstBtn) firstBtn.addEventListener('click', () => dt.page('first').draw('page'));
+        if (prevBtn) prevBtn.addEventListener('click', () => dt.page('previous').draw('page'));
+        if (nextBtn) nextBtn.addEventListener('click', () => dt.page('next').draw('page'));
+        if (lastBtn) lastBtn.addEventListener('click', () => dt.page('last').draw('page'));
+
+        // Recherche personnalisée (en-tête)
+        const searchInput = document.getElementById('customSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                dt.search(this.value).draw();
+            });
+        }
+    });
+    </script>
+            </div>
+        </div>
+</div>
+</div>
+</div>
+{% include 'main/includes/modal_edit_pasteur.html' %}
+<script src="{% static 'js/personnel_pastoral_edit.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,2483 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Actualités & Événements - {{ block.super }}{% endblock %}
+{% block body_class %}bg-evenements{% endblock %}
+{% block extra_css %}
+<style>
+
+    /* Image de fond pour la page ÉVÉNEMENTS */
+    body.bg-evenements {
+        background: url('{% static "main/images/fondevemnt1.png" %}') center/cover no-repeat;
+        background-attachment: scroll; /* compatible mobile */
+    }
+    
+    /* Supprimer le fond blanc des modals (formulaires d'événement) */
+    #addEventModal .modal-content,
+    #planificationModal .modal-content {
+        background: transparent;
+        box-shadow: none;
+    }
+    #addEventModal .modal-body,
+    #planificationModal .modal-body,
+    #addEventModal .modal-footer,
+    #planificationModal .modal-footer {
+        background: transparent;
+    }
+    #addEventModal .modal-footer,
+    #planificationModal .modal-footer {
+        border-top: 0;
+    }
+    
+    /* En-tête avec image de fond */
+    .header-banner {
+        background: linear-gradient(to right, rgba(66, 103, 178, 0.9), rgba(41, 128, 185, 0.9)), url('{% static "main/images/ev1.jpg" %}') center/cover no-repeat;
+        position: relative;
+        overflow: hidden;
+        border: 5px solid rgba(255,255,255,0.2);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    /* En-tête de la page avec animation */
+    .events-header {
+        background: linear-gradient(135deg, #4e73df, #224abe);
+        background-size: 200% 200%;
+        animation: gradientBG 15s ease infinite;
+        color: white;
+        padding: 30px;
+        border-radius: 12px 12px 0 0;
+        margin-bottom: 0;
+        text-align: center;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Sections d'événements */
+    .event-section {
+        background-color: rgba(255, 255, 255, 0.85);
+        border-radius: 10px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-left-width: 5px !important;
+    }
+
+    .event-section:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transform: translateY(-5px);
+    }
+    
+    .section-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        font-weight: 700;
+        letter-spacing: 0.7px;
+    }
+    
+    .section-header i {
+        transition: transform 0.3s ease;
+    }
+    
+    .event-section:hover .section-header i {
+        transform: scale(1.2) rotate(5deg);
+    }
+    
+    /* Cartes d'événements */
+    .event-card {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .event-image {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .event-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .event-card:hover .event-image img {
+        transform: scale(1.1);
+    }
+    
+    .event-date {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(78, 115, 223, 0.9);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    .event-content {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .event-title {
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #2e59d9;
+    }
+    
+    .event-description {
+        color: #6c757d;
+        margin-bottom: 15px;
+        flex-grow: 1;
+    }
+    
+    .event-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+    
+    .event-location {
+        display: flex;
+        align-items: center;
+        color: #5a5c69;
+    }
+    
+    .event-location i {
+        margin-right: 5px;
+        color: #e74a3b;
+    }
+    
+    /* Légendes des sections */
+    .section-legend {
+        background-color: rgba(78, 115, 223, 0.1);
+        border-left: 4px solid #4e73df;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 0 5px 5px 0;
+    }
+    
+    .section-legend p {
+        margin-bottom: 0;
+        color: #5a5c69;
+    }
+    
+    /* Boutons */
+    .btn-event {
+        padding: 8px 15px;
+        border-radius: 5px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-event:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Formulaire */
+    .form-control {
+        border-radius: 8px;
+        padding: 12px 15px;
+        border: 1px solid #d1d3e2;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #5a5c69;
+        margin-bottom: 8px;
+    }
+    
+    /* Animation d'entrée pour les sections */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .event-section {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .event-section:nth-child(1) { animation-delay: 0.1s; }
+    .event-section:nth-child(2) { animation-delay: 0.2s; }
+    
+    /* Badge pour type d'événement */
+    .event-type {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    .type-worship {
+        background-color: rgba(28, 200, 138, 0.9);
+        color: white;
+    }
+    
+    .type-conference {
+        background-color: rgba(246, 194, 62, 0.9);
+        color: white;
+    }
+    
+    .type-community {
+        background-color: rgba(54, 185, 204, 0.9);
+        color: white;
+    }
+    
+    .type-special {
+        background-color: rgba(231, 74, 59, 0.9);
+        color: white;
+    }
+    
+    /* Effets d'overlay pour les images */
+    .overlay-dark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
+        z-index: 0;
+    }
+    
+    .overlay-gradient {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.5) 100%);
+        z-index: 0;
+    }
+    
+    /* Effet de texte avec ombre pour meilleure lisibilité */
+    .text-shadow {
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+    
+    /* Animation pour l'image principale */
+    .event-image-showcase {
+        overflow: hidden;
+        transition: all 0.5s ease;
+    }
+    
+    .event-image-showcase img {
+        transition: transform 0.8s ease;
+    }
+    
+    .event-image-showcase:hover img {
+        transform: scale(1.05);
+    }
+    
+    /* Styles pour les légendes sous les images */
+    .badge {
+        transition: all 0.3s ease;
+    }
+    
+    .badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Animation pour les particules flottantes */
+    @keyframes float {
+        0% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(10deg); }
+        100% { transform: translateY(0) rotate(0deg); }
+    }
+    
+    /* Styles pour les onglets d'événements */
+    .nav-event-item {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border-radius: 15px;
+        margin: 0 5px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+    
+    .nav-event-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .nav-event-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+        z-index: 1;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.5s ease;
+        pointer-events: none; /* ne pas bloquer les clics sur le bouton */
+    }
+    
+    .nav-event-item:hover::before {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+    
+    .nav-event-item a,
+    .nav-event-item button {
+        position: relative;
+        z-index: 2;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .nav-event-item.active {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+    
+    /* Styles pour le contenu des onglets */
+    .tab-content {
+        background-color: transparent;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        margin-bottom: 0;
+    }
+    
+    /* Animation pour les changements d'onglets */
+    .tab-pane.fade {
+        transition: opacity 0.5s ease-in-out;
+    }
+    
+    /* Styles pour les titres de section */
+    .section-header {
+        border-radius: 0.5rem 0.5rem 0 0;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 3px solid rgba(0,0,0,0.1);
+    }
+
+    /* Réduire les espaces en bas pour éviter les pages vides */
+    .tab-pane .event-section:last-child { margin-bottom: 0; }
+    .tab-pane > :last-child { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+    .container > :last-child { margin-bottom: 0 !important; }
+    .container-fluid { padding-bottom: 0 !important; }
+    
+    /* Supprimer les espaces inutiles dans les sections */
+    .event-section { margin-bottom: 0 !important; }
+    .px-4 { padding-bottom: 0 !important; }
+    #etude-biblique .px-4:last-child { padding-bottom: 1rem !important; }
+    #culte-dominical .px-4:last-child { padding-bottom: 1rem !important; }
+    
+    /* Effet de survol pour les cartes d'événements */
+    .event-card {
+        transition: all 0.4s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .event-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+    }
+
+    /* Désactiver le zoom des images dans la section Étude Biblique */
+    #etude-biblique .event-image-showcase:hover img,
+    #etude-biblique .event-card:hover .event-image img {
+        transform: none !important;
+    }
+    #etude-biblique .event-image img,
+    #etude-biblique .event-image img {
+        transition: none !important;
+    }
+
+    /* Formulaire EFFECTIF DU CULTE compact */
+    #culteEffectifForm.compact .form-label {
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+    #culteEffectifForm.compact .input-group-text,
+    #culteEffectifForm.compact .form-control,
+    #culteEffectifForm.compact .form-select {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.85rem;
+        height: auto;
+    }
+    #culteEffectifForm.compact .input-group-text i {
+        font-size: 0.9rem;
+    }
+    #culteEffectifForm.compact .input-group {
+        --bs-gutter-x: 0.5rem;
+    }
+    /* Réduire les espacements verticaux */
+    #culteEffectifForm.compact .row.g-2 { --bs-gutter-y: 0.25rem; }
+
+    /* Tableau Historique: une seule ligne par enregistrement */
+    #culteHistoryTable {
+        table-layout: auto; /* laisser le navigateur dimensionner, on scrollera si nécessaire */
+        font-size: 0.85rem;
+    }
+    #culteHistoryTable th,
+    #culteHistoryTable td {
+        padding: 0.35rem 0.5rem;
+        white-space: nowrap; /* pas de retour à la ligne */
+        vertical-align: middle;
+    }
+    /* En-tête coloré */
+    #culteHistoryTable thead th {
+        background: linear-gradient(135deg, #4e73df, #224abe);
+        color: #fff;
+        border-color: rgba(255,255,255,0.2);
+    }
+    /* Pied avec fond léger */
+    #culteHistoryTable tfoot th,
+    #culteHistoryTable tfoot td {
+        background: #f8f9fc;
+        font-weight: 600;
+    }
+    /* Aligner chiffres à droite déjà présent via classes; forcer la date en non wrap */
+    #culteHistoryTable td:nth-child(2),
+    #culteHistoryTable th:nth-child(2) { white-space: nowrap; }
+
+    /* Couleurs des icônes des champs (EFFECTIF DU CULTE) */
+    /* Église */
+    #culteEffectifForm .input-group-text .bi-building { color: #6c757d; }
+    /* Nombres */
+    #culteEffectifForm .input-group-text .fa-male { color: #0d6efd; }         /* bleu */
+    #culteEffectifForm .input-group-text .fa-female { color: #d63384; }       /* rose */
+    #culteEffectifForm .input-group-text .fa-child { color: #fd7e14; }        /* orange */
+    #culteEffectifForm .input-group-text .fa-children { color: #6f42c1; }     /* violet */
+    #culteEffectifForm .input-group-text .fa-user-plus { color: #198754; }    /* vert */
+    #culteEffectifForm .input-group-text .fa-users { color: #20c997; }        /* turquoise */
+    /* Date */
+    #culteEffectifForm .input-group-text .fa-calendar-day { color: #dc3545; } /* rouge */
+    
+    /* Logo animé */
+    .logo-container {
+        display: inline-block;
+        animation: floatLogo 3s ease-in-out infinite;
+    }
+    
+    .logo-animated {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        filter: drop-shadow(0 5px 15px rgba(139, 0, 0, 0.4));
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 8px;
+        transition: transform 0.3s ease;
+    }
+    
+    .logo-animated:hover {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    @keyframes floatLogo {
+        0%, 100% { 
+            transform: translateY(0) rotate(0deg); 
+        }
+        25% {
+            transform: translateY(-10px) rotate(2deg);
+        }
+        50% { 
+            transform: translateY(-5px) rotate(0deg); 
+        }
+        75% {
+            transform: translateY(-10px) rotate(-2deg);
+        }
+    }
+    
+    .events-main-title {
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: white;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        letter-spacing: 2px;
+    }
+    
+    /* =============================================
+       CULTE DOMINICAL - DESIGN MODERNE
+       ============================================= */
+    .culte-hero {
+        position: relative;
+        background: linear-gradient(135deg, #1e5631 0%, #2d7a46 50%, #1e5631 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(30, 86, 49, 0.3);
+    }
+    
+    .culte-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("{% static 'main/images/Evmnt2.jpg' %}") center/cover no-repeat;
+        opacity: 0.2;
+    }
+    
+    .culte-hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+    
+    .culte-hero-icon {
+        font-size: 4rem;
+        color: #ffd700;
+        margin-bottom: 1rem;
+        animation: pulseIcon 2s ease-in-out infinite;
+        text-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+    }
+    
+    @keyframes pulseIcon {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    
+    .culte-hero-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    .culte-hero-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        margin-bottom: 1.5rem;
+    }
+    
+    .culte-hero-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #ffd700, #ffb700);
+        color: #1e5631;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    }
+    
+    .culte-info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        border-left: 5px solid #2d7a46;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .culte-info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(45, 122, 70, 0.2);
+    }
+    
+    .culte-info-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #2d7a46, #1e5631);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    .culte-info-title {
+        font-weight: 700;
+        color: #1e5631;
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .culte-info-text {
+        color: #555;
+        margin: 0;
+    }
+    
+    .culte-program-card {
+        background: linear-gradient(135deg, #f8fff8, #e8f5e9);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid rgba(45, 122, 70, 0.2);
+    }
+    
+    .culte-program-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1e5631;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .culte-program-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    
+    .culte-program-item:hover {
+        border-left-color: #ffd700;
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(45, 122, 70, 0.15);
+    }
+    
+    .culte-program-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #2d7a46, #1e5631);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .culte-program-name {
+        flex-grow: 1;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .culte-program-duration {
+        background: linear-gradient(135deg, #2d7a46, #1e5631);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .culte-description-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .culte-description-card::before {
+        content: '"';
+        position: absolute;
+        top: -20px;
+        left: 20px;
+        font-size: 8rem;
+        color: rgba(45, 122, 70, 0.1);
+        font-family: Georgia, serif;
+    }
+    
+    .culte-verse {
+        background: linear-gradient(135deg, rgba(45, 122, 70, 0.1), rgba(30, 86, 49, 0.1));
+        border-left: 4px solid #ffd700;
+        padding: 1.5rem;
+        border-radius: 0 10px 10px 0;
+        margin-top: 1.5rem;
+    }
+    
+    .culte-verse p {
+        font-style: italic;
+        color: #1e5631;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .culte-verse cite {
+        color: #2d7a46;
+        font-weight: 700;
+    }
+    
+    /* =============================================
+       EN-TÊTE ACTUALITÉS & ÉVÉNEMENTS
+       ============================================= */
+    .events-header-section {
+        background: linear-gradient(135deg, #1a0a00 0%, #3d1a00 50%, #1a0a00 100%);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .events-header-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("{% static 'main/images/hero/fond6.jpg' %}") center/cover no-repeat;
+        opacity: 0.2;
+    }
+    
+    .events-header-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+    
+    .events-main-title {
+        font-weight: 900;
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        color: white;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 0;
+    }
+    
+    .events-main-title .highlight-gold {
+        background: linear-gradient(135deg, #daa520, #ffd700, #daa520);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmerGold 3s linear infinite;
+    }
+    
+    @keyframes shimmerGold {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+    
+    /* =============================================
+       ÉTUDE BIBLIQUE - DESIGN MODERNE
+       ============================================= */
+    .etude-hero {
+        position: relative;
+        background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #b45309 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(180, 83, 9, 0.3);
+    }
+    
+    .etude-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("{% static 'main/images/Etudebi1.jpg' %}") center/cover no-repeat;
+        opacity: 0.2;
+    }
+    
+    .etude-hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+    }
+    
+    .etude-hero-icon {
+        font-size: 4rem;
+        color: #fef3c7;
+        margin-bottom: 1rem;
+        animation: pulseIcon 2s ease-in-out infinite;
+        text-shadow: 0 0 30px rgba(254, 243, 199, 0.6);
+    }
+    
+    .etude-hero-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    .etude-hero-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        margin-bottom: 1.5rem;
+    }
+    
+    .etude-hero-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #b45309;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(254, 243, 199, 0.4);
+    }
+    
+    .etude-info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        border-left: 5px solid #d97706;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .etude-info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(217, 119, 6, 0.2);
+    }
+    
+    .etude-info-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #d97706, #b45309);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    .etude-info-title {
+        font-weight: 700;
+        color: #b45309;
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .etude-info-text {
+        color: #555;
+        margin: 0;
+    }
+    
+    .etude-section-card {
+        background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid rgba(217, 119, 6, 0.2);
+    }
+    
+    .etude-section-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #b45309;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .etude-theme-item {
+        display: inline-block;
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        margin: 0.3rem;
+        font-weight: 600;
+        color: #b45309;
+        border: 2px solid rgba(217, 119, 6, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .etude-theme-item:hover {
+        background: linear-gradient(135deg, #d97706, #b45309);
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .etude-description-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .etude-description-card::before {
+        content: '📖';
+        position: absolute;
+        top: -10px;
+        right: 20px;
+        font-size: 5rem;
+        opacity: 0.1;
+    }
+    
+    .etude-verse {
+        background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), rgba(180, 83, 9, 0.1));
+        border-left: 4px solid #fbbf24;
+        padding: 1.5rem;
+        border-radius: 0 10px 10px 0;
+        margin-top: 1.5rem;
+    }
+    
+    .etude-verse p {
+        font-style: italic;
+        color: #b45309;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .etude-verse cite {
+        color: #d97706;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Conteneur principal avec image de fond -->
+       
+        <!-- En-tête de la page avec style amélioré -->
+        <div class="row mb-2">
+            <div class="col-12">
+                <!-- Header banner removed as requested -->
+            </div>
+        </div>
+        
+        <!-- En-tête Actualités & Événements -->
+        <div class="events-header-section mb-4">
+            <div class="events-header-content">
+                <div class="logo-container mb-3">
+                    <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo EPAG" class="logo-animated">
+                </div>
+                <h1 class="events-main-title">
+                    <span class="highlight-gold">Actualités</span> & <span class="highlight-gold">Événements</span>
+                </h1>
+                <p style="color: rgba(255,255,255,0.8); margin-top: 1rem; font-size: 1.1rem;">
+                    <i class="fas fa-cross me-2"></i>Église Pentecôte Alléluia de Guinée
+                </p>
+            </div>
+        </div>
+        
+        <!-- Navigation horizontale des sections avec style amélioré -->
+        <div class="nav-section mb-2">
+            <div class="bg-white rounded-4 shadow p-2">
+                <ul class="nav nav-pills" id="eventTabs" role="tablist">
+                    <li class="col nav-item" role="presentation">
+                        <div class="nav-event-item active" style="background-color: #f6c23e;">
+                            <button class="nav-link py-2 text-white d-block w-100 active" id="culte-dominical-tab" data-tab-target="culte-dominical" type="button">
+                                <i class="fas fa-church fa-lg mb-1 d-block"></i>
+                                <span style="white-space: nowrap;">CULTE</span>
+                            </button>
+                        </div>
+                    </li>
+                    <li class="col nav-item" role="presentation">
+                        <div class="nav-event-item" style="background-color: #36b9cc;">
+                            <button class="nav-link py-2 text-white d-block w-100" id="etude-biblique-tab" data-tab-target="etude-biblique" type="button">
+                                <i class="fas fa-book-open fa-lg mb-1 d-block"></i>
+                                <span style="white-space: nowrap;">ÉTUDE BIBLIQUE</span>
+                            </button>
+                        </div>
+                    </li>
+                    <li class="col nav-item" role="presentation">
+                        <div class="nav-event-item" style="background-color: #6f42c1;">
+                            <button class="nav-link py-2 text-white d-block w-100" id="cours-biblique-tab" data-tab-target="cours-biblique" type="button">
+                                <i class="fas fa-graduation-cap fa-lg mb-1 d-block"></i>
+                                <span style="white-space: nowrap;">COURS BIBLIQUE</span>
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Contenu principal avec onglets -->
+        <div class="tab-content">
+            
+            <!-- Section : Culte Dominical -->
+            <div class="tab-pane fade show active" id="culte-dominical">
+                
+                <!-- Hero Section Culte -->
+                <div class="culte-hero">
+                    <div class="culte-hero-content">
+                        <div class="culte-hero-icon">
+                            <i class="fas fa-church"></i>
+                        </div>
+                        <h1 class="culte-hero-title">Culte Dominical</h1>
+                        <p class="culte-hero-subtitle">Un moment de communion avec Dieu et nos frères et sœurs en Christ</p>
+                        <span class="culte-hero-badge"><i class="fas fa-calendar-check me-2"></i>Chaque Dimanche</span>
+                    </div>
+                </div>
+                
+                <!-- Informations principales -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="culte-info-card h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="culte-info-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="culte-info-title">Jour</div>
+                                    <p class="culte-info-text">Chaque Dimanche</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="culte-info-card h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="culte-info-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div>
+                                    <div class="culte-info-title">Horaires</div>
+                                    <p class="culte-info-text">9h00 - 12h00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="culte-info-card h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="culte-info-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="culte-info-title">Lieu</div>
+                                    <p class="culte-info-text">Bellevue, face Ecobanque</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="culte-info-card h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="culte-info-icon">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div>
+                                    <div class="culte-info-title">Officiants</div>
+                                    <p class="culte-info-text">Évêque B. LENO</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="culte-description-card mb-4">
+                    <h3 style="color: #1e5631; font-weight: 700; margin-bottom: 1rem;">
+                        <i class="fas fa-info-circle me-2"></i>À propos du Culte
+                    </h3>
+                    <p style="color: #555; line-height: 1.8;">
+                        Notre culte principal hebdomadaire est un moment essentiel pour le corps de Christ où nous nous réunissons pour adorer ensemble et recevoir la Parole de Dieu. Il comprend un temps de louange dynamique, des témoignages inspirants, une prédication basée sur la Bible et un moment de prière communautaire.
+                    </p>
+                    <div class="culte-verse">
+                        <p>"Car là où deux ou trois sont assemblés en mon nom, je suis au milieu d'eux."</p>
+                        <a href="https://www.bible.com/fr/bible/93/MAT.18.20.LSG" target="_blank" style="text-decoration: none;">
+                            <cite><i class="fas fa-bible me-1"></i>Matthieu 18:20 <i class="fas fa-external-link-alt ms-1" style="font-size: 0.7rem;"></i></cite>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Programme du Culte -->
+                <div class="culte-program-card">
+                    <h3 class="culte-program-title">
+                        <i class="fas fa-list-ol"></i> Programme du Culte
+                    </h3>
+                    
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-school"></i></div>
+                                <span class="culte-program-name">École de dimanche</span>
+                                <span class="culte-program-duration">60 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-music"></i></div>
+                                <span class="culte-program-name">Louange</span>
+                                <span class="culte-program-duration">20 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-user-plus"></i></div>
+                                <span class="culte-program-name">Accueil nouveaux</span>
+                                <span class="culte-program-duration">5 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-microphone"></i></div>
+                                <span class="culte-program-name">Chorale</span>
+                                <span class="culte-program-duration">10 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-heart"></i></div>
+                                <span class="culte-program-name">Adoration</span>
+                                <span class="culte-program-duration">15 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-praying-hands"></i></div>
+                                <span class="culte-program-name">Temps de prière</span>
+                                <span class="culte-program-duration">10 min</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-bible"></i></div>
+                                <span class="culte-program-name">Prédication</span>
+                                <span class="culte-program-duration">60 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-bread-slice"></i></div>
+                                <span class="culte-program-name">Sainte-Cène</span>
+                                <span class="culte-program-duration">15 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                                <span class="culte-program-name">Dîmes et Offrandes</span>
+                                <span class="culte-program-duration">10 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-bullhorn"></i></div>
+                                <span class="culte-program-name">Annonces</span>
+                                <span class="culte-program-duration">10 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-hands"></i></div>
+                                <span class="culte-program-name">Prière finale</span>
+                                <span class="culte-program-duration">5 min</span>
+                            </div>
+                            <div class="culte-program-item">
+                                <div class="culte-program-icon"><i class="fas fa-users"></i></div>
+                                <span class="culte-program-name">Communion fraternelle</span>
+                                <span class="culte-program-duration">5 min</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <div class="d-inline-block px-4 py-2 rounded-pill" style="background: linear-gradient(135deg, #ffd700, #ffb700); color: #1e5631; font-weight: 700;">
+                            <i class="fas fa-clock me-2"></i>Durée totale estimée : 3h55 (235 min)
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Image du culte -->
+                <div class="mb-4">
+                    <img src="{% static 'main/images/Evmnt2.jpg' %}" alt="Culte dominical" class="img-fluid rounded-4 shadow-lg w-100" style="max-height: 400px; object-fit: cover;">
+                </div>
+                
+                <!-- Tags et bouton -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                    <div class="event-tags">
+                        <span class="badge bg-light text-dark me-1">#Culte</span>
+                        <span class="badge bg-light text-dark me-1">#Louange</span>
+                        <span class="badge bg-light text-dark me-1">#Adoration</span>
+                        <span class="badge bg-light text-dark">#Communion</span>
+                    </div>
+                    <a href="#" class="btn btn-lg" style="background: linear-gradient(135deg, #2d7a46, #1e5631); color: white;">
+                        <i class="fas fa-church me-2"></i>Église Alléluia
+                    </a>
+                </div>
+                
+            </div>
+            
+
+            <!-- Section : Étude Biblique -->
+            <div class="tab-pane fade" id="etude-biblique">
+                
+                <!-- Hero Section Étude Biblique -->
+                <div class="etude-hero">
+                    <div class="etude-hero-content">
+                        <div class="etude-hero-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h1 class="etude-hero-title">Étude Biblique</h1>
+                        <p class="etude-hero-subtitle">Approfondir la Parole de Dieu et grandir dans la foi</p>
+                        <span class="etude-hero-badge"><i class="fas fa-calendar-check me-2"></i>Chaque Mercredi</span>
+                    </div>
+                </div>
+                
+                <!-- Informations principales -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="etude-info-card h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="etude-info-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="etude-info-title">Jour</div>
+                                    <p class="etude-info-text">Chaque Mercredi</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="etude-info-card h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="etude-info-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div>
+                                    <div class="etude-info-title">Horaires</div>
+                                    <p class="etude-info-text">18h30 - 20h00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="etude-info-card h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="etude-info-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="etude-info-title">Lieu</div>
+                                    <p class="etude-info-text">Salle d'étude</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="etude-info-card h-100">
+                            <div class="d-flex align-items-center">
+                                <div class="etude-info-icon">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </div>
+                                <div>
+                                    <div class="etude-info-title">Enseignant</div>
+                                    <p class="etude-info-text">Diacre responsable</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="etude-description-card mb-4">
+                    <h3 style="color: #b45309; font-weight: 700; margin-bottom: 1rem;">
+                        <i class="fas fa-info-circle me-2"></i>À propos de l'Étude Biblique
+                    </h3>
+                    <p style="color: #555; line-height: 1.8;">
+                        Nos sessions hebdomadaires d'étude biblique permettent d'explorer les Écritures en profondeur et de discuter de leur application dans notre vie quotidienne. Chaque session comprend un temps d'enseignement, suivi d'une discussion en groupe et d'un temps de questions-réponses.
+                    </p>
+                    <div class="etude-verse">
+                        <p>"Ta parole est une lampe à mes pieds, Et une lumière sur mon sentier."</p>
+                        <a href="https://www.bible.com/fr/bible/93/PSA.119.105.LSG" target="_blank" style="text-decoration: none;">
+                            <cite><i class="fas fa-bible me-1"></i>Psaume 119:105 <i class="fas fa-external-link-alt ms-1" style="font-size: 0.7rem;"></i></cite>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Thèmes d'étude -->
+                <div class="etude-section-card mb-4">
+                    <h3 class="etude-section-title">
+                        <i class="fas fa-bookmark"></i> Thèmes d'Étude Actuels
+                    </h3>
+                    <div class="text-center">
+                        <span class="etude-theme-item"><i class="fas fa-scroll me-1"></i>Les épîtres de Paul</span>
+                        <span class="etude-theme-item"><i class="fas fa-music me-1"></i>Les Psaumes</span>
+                        <span class="etude-theme-item"><i class="fas fa-eye me-1"></i>L'Apocalypse</span>
+                        <span class="etude-theme-item"><i class="fas fa-comment-dots me-1"></i>Les prophéties</span>
+                        <span class="etude-theme-item"><i class="fas fa-cross me-1"></i>La vie de Jésus</span>
+                        <span class="etude-theme-item"><i class="fas fa-dove me-1"></i>Le Saint-Esprit</span>
+                        <span class="etude-theme-item"><i class="fas fa-praying-hands me-1"></i>La prière</span>
+                        <span class="etude-theme-item"><i class="fas fa-heart me-1"></i>L'amour de Dieu</span>
+                        <span class="etude-theme-item"><i class="fas fa-baby me-1"></i>La naissance de Jésus-Christ</span>
+                        <span class="etude-theme-item"><i class="fas fa-gift me-1"></i>Les Dons Spirituels</span>
+                        <span class="etude-theme-item"><i class="fas fa-star me-1"></i>La Sanctification</span>
+                        <span class="etude-theme-item"><i class="fas fa-balance-scale me-1"></i>La loyauté / Déloyauté</span>
+                        <span class="etude-theme-item"><i class="fas fa-water me-1"></i>Cours de Baptême</span>
+                        <span class="etude-theme-item"><i class="fas fa-seedling me-1"></i>La nouvelle naissance</span>
+                    </div>
+                </div>
+                
+                <!-- Section La vie de Jésus -->
+                <div class="row mb-4 align-items-stretch">
+                    <!-- Texte à gauche -->
+                    <div class="col-lg-6 mb-4 mb-lg-0">
+                        <div class="h-100 p-4 rounded-4" style="background: linear-gradient(135deg, #d97706, #b45309); color: white;">
+                            <h3 class="fw-bold mb-2"><i class="fas fa-cross me-2"></i>La vie de Jésus</h3>
+                            <p class="mb-3" style="font-size: 0.95rem; opacity: 0.9;">
+                                <i class="fas fa-user-friends me-1"></i>Avec mentor • 
+                                <i class="fas fa-book me-1"></i>16 leçons • 
+                                <i class="fas fa-users me-1"></i>23.189 étudiants
+                            </p>
+                            <p style="line-height: 1.7;">
+                                Bienvenue au cours "La vie de Jésus"! Regardez la vie de Jésus selon l'Evangile de Luc dans le film avec le plus grand nombre de spectateurs au monde.
+                            </p>
+                            <p style="line-height: 1.7;">
+                                Il y a 15 leçons, chacune en rapport avec une partie du film, suivies de questions. Vous aurez un mentor qui vérifiera vos réponses et à qui vous pourrez poser des questions. Ce cours vous aidera à comprendre à quel point Christ est indispensable aujourd'hui.
+                            </p>
+                            <p style="line-height: 1.7; font-style: italic; opacity: 0.95;">
+                                Nous vous conseillons de ne pas traiter plus d'une ou deux leçons à chaque fois que vous étudiez. Cela vous permettra de réfléchir profondément au contenu spirituel des leçons et de développer une relation avec votre mentor pour échanger sur vos questions et votre vie spirituelle.
+                            </p>
+                            <div class="text-center mt-4">
+                                <a href="https://parolesdelabible.learnnn.com/la-vie-de-jesus" target="_blank" class="btn btn-light btn-lg">
+                                    <i class="fas fa-arrow-right me-2"></i>Suite...
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Image Jésus à droite avec texte en bas -->
+                    <div class="col-lg-5">
+                        <div class="text-center" style="margin-top: 50px;">
+                            <img src="{% static 'main/images/jesus.jpeg' %}" alt="La vie de Jésus" class="img-fluid rounded-4 shadow-lg" style="max-height: 350px; width: 100%; object-fit: cover;">
+                            <div class="mt-3 p-3 rounded-3" style="background: linear-gradient(135deg, #d97706, #b45309); color: white;">
+                                <h5 class="fw-bold mb-1"><i class="fas fa-cross me-2" style="color: #dc3545;"></i>La vie de Jésus</h5>
+                                <p class="mb-0" style="font-size: 0.9rem;">
+                                    <i class="fas fa-baby me-1"></i>Sa naissance • 
+                                    <i class="fas fa-hands me-1"></i>Son ministère • 
+                                    <i class="fas fa-book-open me-1"></i>Ses enseignements
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tags -->
+                <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
+                    <span class="badge bg-light text-dark">#ÉtudeBiblique</span>
+                    <span class="badge bg-light text-dark">#Formation</span>
+                    <span class="badge bg-light text-dark">#Spiritualité</span>
+                    <span class="badge bg-light text-dark">#Prière</span>
+                    <span class="badge bg-light text-dark">#LaVieDeJésus</span>
+                </div>
+                        
+                <!-- Carrousel Étude Biblique -->
+            <div id="etudeBibleCarousel" class="carousel slide carousel-fade mt-4" data-bs-ride="carousel" data-bs-interval="6000">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                    <button type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                    <button type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+                    <button type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide-to="5" aria-label="Slide 6"></button>
+                    <button type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide-to="6" aria-label="Slide 7"></button>
+                </div>
+                <div class="carousel-inner rounded shadow" style="height: 400px;">
+                    <div class="carousel-item active" data-bs-interval="6000">
+                        <img src="{% static 'main/images/jesus.jpeg' %}" class="d-block w-100" alt="Étude biblique - Image 1" style="height:400px; object-fit:cover;">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Lecture et Méditation</h5>
+                            <p>Exploration des Écritures, verset par verset.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="6000">
+                        <img src="{% static 'main/images/Etudebi2.jpg' %}" class="d-block w-100" alt="Étude biblique - Image 2" style="height:400px; object-fit:cover;">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Partage en Groupe</h5>
+                            <p>Discussion et édification mutuelle.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="6000">
+                        <img src="{% static 'main/images/Etudebi3.jpg' %}" class="d-block w-100" alt="Étude biblique - Image 3" style="height:400px; object-fit:cover;">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Prières</h5>
+                            <p>Intercession et actions de grâce.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="6000">
+                        <img src="{% static 'main/images/Etudebi4.jpg' %}" class="d-block w-100" alt="Étude biblique - Image 4" style="height:400px; object-fit:cover;">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Approfondissement</h5>
+                            <p>Thèmes doctrinaux et applications pratiques.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="6000">
+                        <img src="{% static 'main/images/Etudebi5.jpg' %}" class="d-block w-100" alt="Étude biblique - Image 5" style="height:400px; object-fit:cover;">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Étude Guidée</h5>
+                            <p>Accompagnement par l'enseignant.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="6000">
+                        <img src="{% static 'main/images/Etudebi6.jpg' %}" class="d-block w-100" alt="Étude biblique - Image 6" style="height:400px; object-fit:cover;">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Vie en Communauté</h5>
+                            <p>Grandir ensemble dans la foi.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="6000">
+                        <img src="{% static 'main/images/Etudebi7.jpg' %}" class="d-block w-100" alt="Étude biblique - Image 7" style="height:400px; object-fit:cover;">
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5>Louange</h5>
+                            <p>Chants et adoration.</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Précédent</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#etudeBibleCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Suivant</span>
+                </button>
+            </div>
+
+            
+            <!-- Section Jeûne & Prière -->
+
+                <div class="event-section border-start border-warning border-4">
+                    <div class="section-header bg-light text-warning">
+                        <h4 class="mb-0"><i class="fas fa-hands-praying me-2"></i>Jeûne & Prière</h4>
+                    </div>
+                    <div class="px-4 pt-4">
+                        <div class="row g-4">
+                            <div class="col-lg-4">
+                                <div class="event-card p-4 border rounded-3 shadow-sm h-100">
+                                    <h5 class="mb-3"><i class="fas fa-bullseye text-warning me-2"></i>Objectifs</h5>
+                                    <ul class="mb-0">
+                                        <li>Approfondir notre intimité avec Dieu</li>
+                                        <li>Intercéder pour l'Église et la communauté</li>
+                                        <li>Rechercher direction, guérison et restauration</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="event-card p-4 border rounded-3 shadow-sm h-100">
+                                    <h5 class="mb-3"><i class="fas fa-calendar-day text-warning me-2"></i>Période</h5>
+                                    <p class="mb-2"><span class="badge bg-warning text-dark me-2">Confirmé</span> 21 jours</p>
+                                    <p class="mb-0"><strong>Début:</strong> Lundi 25/08/2025<br><strong>Fin:</strong> Dimanche 14/09/2025</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="event-card p-4 border rounded-3 shadow-sm h-100">
+                                    <h5 class="mb-3"><i class="fas fa-utensils text-warning me-2"></i>Modalités</h5>
+                                    <ul class="mb-0">
+                                        <li>Jeûne partiel (ex: 6h–18h) ou Daniel</li>
+                                        <li>Hydratation recommandée (eau/thé)</li>
+                                        <li>Temps de prière matin, midi, soir</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-4 mt-1">
+                            <div class="col-lg-7">
+                                <div class="event-card p-4 border rounded-3 shadow-sm h-100">
+                                    <h5 class="mb-3"><i class="fas fa-book-open text-warning me-2"></i>Thèmes hebdomadaires (suggestions)</h5>
+                                    <ol class="mb-0">
+                                        <li>Semaine 1: Repentance, consécration, sanctification</li>
+                                        <li>Semaine 2: Guérison, délivrance, restauration familiale</li>
+                                        <li>Semaine 3: Réveil, croissance de l'Église, évangélisation</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="event-card p-4 border rounded-3 shadow-sm h-100">
+                                    <h5 class="mb-3"><i class="fas fa-clock text-warning me-2"></i>Horaires de prière collective</h5>
+                                    <ul class="mb-3">
+                                        <li>Lundi–Vendredi: 05h30–06h00 (téléconf.) • 18h00–20h00 (église)</li>
+                                        <li>Samedi: 16h30–18h30 (église)</li>
+                                        <li>Dimanche: Clôture pendant le culte (10h)</li>
+                                    </ul>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-light text-dark"><i class="fas fa-phone me-1"></i>Ligne de prière: (+224) 622 36 81 48</span>
+                                        <span class="badge bg-light text-dark"><i class="fas fa-location-dot me-1"></i>Sanctuaire principal</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-4 mt-1">
+                            <div class="col-lg-7">
+                                <div class="event-card p-4 border rounded-3 shadow-sm h-100">
+                                    <h5 class="mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>Conseils pratiques</h5>
+                                    <ul class="mb-0">
+                                        <li>Planifiez vos temps de prière dans l'agenda</li>
+                                        <li>Réduisez réseaux sociaux/écrans, augmentez la Parole</li>
+                                        <li>Tenez un journal de prière et de gratitudes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="event-card p-4 border rounded-3 shadow-sm h-100">
+                                    <h5 class="mb-3"><i class="fas fa-bible text-warning me-2"></i>Versets d'appui</h5>
+                                    <ul class="mb-0">
+                                        <li>Esdras 8:21 • Joël 2:12–13</li>
+                                        <li>Ésaïe 58:6–11 • Matthieu 6:16–18</li>
+                                        <li>Actes 13:2–3</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end mt-4">
+                            <div class="d-inline-flex gap-2">
+                                <a href="{% static 'main/docs/Guide_Jeune_Priere.pdf' %}" class="btn btn-warning" target="_blank" rel="noopener" download>
+                                    <i class="fas fa-file-pdf me-2"></i>Guide PDF (Statique)
+                                </a>
+                                <a href="/media/eglises/documents/Guide_Jeune_Priere.pdf" class="btn btn-outline-warning" target="_blank" rel="noopener" download>
+                                    <i class="fas fa-cloud me-2"></i>Guide PDF (Media)
+                                </a>
+                            </div>
+                        </div>
+                        <!-- Études bibliques visuelles -->
+                        <div class="mt-4">
+                            <h5 class="mb-3"><i class="fas fa-book-open text-warning me-2"></i>En cherchant la face du Seigneur</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <figure class="figure w-100 m-0">
+                                        <img src="{% static 'main/images/Etudebi2.jpg' %}" class="figure-img img-fluid rounded shadow" alt="Étude biblique — Thème 1" style="width:100%; height:auto; object-fit:contain;">
+                                        <figcaption class="figure-caption text-center fw-semibold mt-2">
+                                            La prière qui transforme — Jacques 5:16-18
+                                        </figcaption>
+                                        <div class="d-flex justify-content-center">
+                                            <button class="btn btn-sm btn-outline-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#verseJas" aria-expanded="true" aria-controls="verseJas">
+                                                <i class="fas fa-book-open me-1"></i> Afficher/Masquer le verset
+                                            </button>
+                                        </div>
+                                        <div id="verseJas" class="collapse show small text-muted mt-2 border rounded p-3" style="line-height:1.4">
+                                            <div class="verse-text">
+                                                <strong>Jas 5:16-18</strong><br>
+                                                16 Confessez donc vos péchés les uns aux autres, et priez les uns pour les autres, afin que vous soyez guéris. La prière fervente du juste a une grande efficace.<br>
+                                                17 Élie était un homme de la même nature que nous: il pria avec instance pour qu’il ne plût point, et il ne tomba point de pluie sur la terre pendant trois ans et six mois.<br>
+                                                18 Puis il pria de nouveau, et le ciel donna de la pluie, et la terre produisit son fruit.
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <a href="https://apps.microsoft.com/store/detail/bible-multi-version/9PPRWS532N91" target="_blank" rel="noopener">Source</a>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" data-copy-target="verseJas">
+                                                    <i class="fas fa-copy me-1"></i> Copier le verset
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </figure>
+                                </div>
+                                <div class="col-md-6">
+                                    <figure class="figure w-100 m-0">
+                                        <img src="{% static 'main/images/Etudebi3.jpg' %}" class="figure-img img-fluid rounded shadow" alt="Étude biblique — Thème 2" style="width:100%; height:auto; object-fit:contain;">
+                                        <figcaption class="figure-caption text-center fw-semibold mt-2">
+                                            Jeûne et consécration — Ésaïe 58:6-11
+                                        </figcaption>
+                                        <div class="d-flex justify-content-center">
+                                            <button class="btn btn-sm btn-outline-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#verseIsa" aria-expanded="true" aria-controls="verseIsa">
+                                                <i class="fas fa-book-open me-1"></i> Afficher/Masquer le verset
+                                            </button>
+                                        </div>
+                                        <div id="verseIsa" class="collapse show small text-muted mt-2 border rounded p-3" style="line-height:1.4">
+                                            <div class="verse-text">
+                                                <strong>És 58:6-11</strong><br>
+                                                6 Voici le jeûne auquel je prends plaisir: détache les liens de la méchanceté, dénoue les liens de la servitude, renvoie libres ceux qu’on opprime, et que l’on rompe toute espèce de joug;<br>
+                                                7 Partage ton pain avec celui qui a faim, et fais entrer dans ta maison les malheureux sans asile; si tu vois un homme nu, couvre-le, et ne te détourne pas de celui qui est ta propre chair!<br>
+                                                8 Alors ta lumière poindra comme l’aurore, et ta guérison germera promptement; ta justice marchera devant toi, et la gloire de l’Éternel t’accompagnera.<br>
+                                                9 Alors tu appelleras, et l’Éternel répondra; tu crieras, et il dira: Me voici! Si tu ôtes du milieu de toi le joug, les gestes menaçants et les paroles injurieuses,<br>
+                                                10 Si tu donnes ta propre subsistance à celui qui a faim, si tu rassasies l’âme indigente, ta lumière se lèvera sur l’obscurité, et tes ténèbres seront comme le midi.<br>
+                                                11 L’Éternel sera toujours ton guide, il rassasiera ton âme dans les lieux arides, et il redonnera de la vigueur à tes membres; tu seras comme un jardin arrosé, comme une source dont les eaux ne tarissent pas.
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <a href="https://apps.microsoft.com/store/detail/bible-multi-version/9PPRWS532N91" target="_blank" rel="noopener">Source</a>
+                                                <button type="button" class="btn btn-sm btn-outline-warning" data-copy-target="verseIsa">
+                                                    <i class="fas fa-copy me-1"></i> Copier le verset
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <script>
+                        // Gestion du bouton "Copier le verset"
+                        document.addEventListener('click', function (e) {
+                            const btn = e.target.closest('button[data-copy-target]');
+                            if (!btn) return;
+                            const targetId = btn.getAttribute('data-copy-target');
+                            const container = document.getElementById(targetId);
+                            if (!container) return;
+                            const verseBlock = container.querySelector('.verse-text');
+                            if (!verseBlock) return;
+                            const text = verseBlock.innerText.trim();
+
+                            const originalHtml = btn.innerHTML;
+                            const setDone = () => {
+                                btn.innerHTML = '<i class="fas fa-check me-1"></i> Copié!';
+                                setTimeout(() => (btn.innerHTML = originalHtml), 1500);
+                            };
+
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(text).then(setDone).catch(() => {
+                                    // Fallback simple
+                                    const textarea = document.createElement('textarea');
+                                    textarea.value = text;
+                                    document.body.appendChild(textarea);
+                                    textarea.select();
+                                    try { document.execCommand('copy'); setDone(); } finally { document.body.removeChild(textarea); }
+                                });
+                            } else {
+                                // Vieux navigateurs
+                                const textarea = document.createElement('textarea');
+                                textarea.value = text;
+                                document.body.appendChild(textarea);
+                                textarea.select();
+                                try { document.execCommand('copy'); setDone(); } finally { document.body.removeChild(textarea); }
+                            }
+                        });
+                        </script>
+
+                        <!-- Sujets de prière (accordéon) -->
+                        <div class="mt-4">
+                            <h5 class="mb-3"><i class="fas fa-list-check text-warning me-2"></i>Sujets de prière</h5>
+                            <div class="accordion" id="prayerAccordion">
+                                <!-- Consécration personnelle -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingCons">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCons" aria-expanded="true" aria-controls="collapseCons">
+                                            1. Consécration personnelle — Psaume 51; Romains 12:1-2
+                                        </button>
+                                    </h2>
+                                    <div id="collapseCons" class="accordion-collapse collapse show" aria-labelledby="headingCons" data-bs-parent="#prayerAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr1">
+                                                        <label class="form-check-label" for="pr1">Repentance, purification et pardon (Ps 51)</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr2">
+                                                        <label class="form-check-label" for="pr2">Soif de Dieu, sanctification et obéissance (Mt 5:6)</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr3">
+                                                        <label class="form-check-label" for="pr3">Renouvellement de l’intelligence (Rm 12:2)</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Église -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingEglise">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEglise" aria-expanded="false" aria-controls="collapseEglise">
+                                            2. L’Église — Unité, sainteté, croissance (Jean 17; Éph 4:1–6)
+                                        </button>
+                                    </h2>
+                                    <div id="collapseEglise" class="accordion-collapse collapse" aria-labelledby="headingEglise" data-bs-parent="#prayerAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr4">
+                                                        <label class="form-check-label" for="pr4">Unité et amour fraternel (Jn 17)</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr5">
+                                                        <label class="form-check-label" for="pr5">Sainteté, zèle et fidélité</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr6">
+                                                        <label class="form-check-label" for="pr6">Ouvriers fidèles et leadership intègre (Mt 9:37–38)</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Réveil & évangélisation -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingReveil">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReveil" aria-expanded="false" aria-controls="collapseReveil">
+                                            3. Réveil & évangélisation — Actes 4:29–31; Matthieu 28:19–20
+                                        </button>
+                                    </h2>
+                                    <div id="collapseReveil" class="accordion-collapse collapse" aria-labelledby="headingReveil" data-bs-parent="#prayerAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr7">
+                                                        <label class="form-check-label" for="pr7">Fardeau pour les âmes et compassion</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr8">
+                                                        <label class="form-check-label" for="pr8">Audace et onction pour témoigner (Ac 4:29–31)</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr9">
+                                                        <label class="form-check-label" for="pr9">Impact durable dans notre ville/quartier (Jr 29:7)</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Guérison & restauration -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingGuerison">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGuerison" aria-expanded="false" aria-controls="collapseGuerison">
+                                            4. Guérison & restauration — Jacques 5:14–16; Ésaïe 53:4–5
+                                        </button>
+                                    </h2>
+                                    <div id="collapseGuerison" class="accordion-collapse collapse" aria-labelledby="headingGuerison" data-bs-parent="#prayerAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr10">
+                                                        <label class="form-check-label" for="pr10">Guérison des malades et restaurations familiales</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr11">
+                                                        <label class="form-check-label" for="pr11">Délivrances et consolations</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Nation & autorités -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingNation">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNation" aria-expanded="false" aria-controls="collapseNation">
+                                            5. Nation & autorités — 1 Timothée 2:1–2; Proverbes 21:1
+                                        </button>
+                                    </h2>
+                                    <div id="collapseNation" class="accordion-collapse collapse" aria-labelledby="headingNation" data-bs-parent="#prayerAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr12">
+                                                        <label class="form-check-label" for="pr12">Paix, justice et bonne gouvernance</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="pr13">
+                                                        <label class="form-check-label" for="pr13">Protection des autorités et sagesse</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Image ajoutée après "Sujets de prière" -->
+                        <div class="my-4">
+                            <figure class="m-0">
+                                <img src="{% static 'main/images/evmentpriere1.jpg' %}" alt="Sujets de prière - Illustration" class="img-fluid rounded shadow w-100" style="height:auto; object-fit:contain;">
+                                <figcaption class="figure-caption text-center fw-semibold mt-2">Sujets de prière — Illustration</figcaption>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Fin Section Jeûne & Prière -->
+            
+            <!-- Troisième section : Cours Biblique -->
+            <div class="tab-pane fade" id="cours-biblique">
+                <div class="event-section border-start border-4" style="border-color: #6f42c1 !important;">
+                    <div class="section-header bg-light" style="color: #6f42c1;">
+                        <h4><i class="fas fa-graduation-cap me-2"></i>Cours Biblique</h4>
+                    </div>
+                    <div class="px-4 pt-4">
+                        
+                        <!-- Image à gauche + Texte à droite -->
+                        <div class="row mb-4 align-items-stretch">
+                            <!-- Image à gauche -->
+                            <div class="col-lg-6 mb-4 mb-lg-0">
+                                <img src="{% static 'main/images/coursbiblique.jpg' %}" alt="Cours Biblique" class="img-fluid rounded shadow-lg h-100" style="width: 100%; object-fit: cover;">
+                            </div>
+                            <!-- Texte à droite -->
+                            <div class="col-lg-6">
+                                <div class="h-100 p-4 rounded-4" style="background: linear-gradient(135deg, #6f42c1, #8b5cf6); color: white;">
+                                    <!-- Comment pouvons-nous vous aider -->
+                                    <h4 class="fw-bold mb-3"><i class="fas fa-hands-helping me-2"></i>Comment pouvons-nous vous aider?</h4>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">
+                                        <a href="#" class="btn btn-light btn-sm"><i class="fas fa-pray me-1"></i>Demander la prière</a>
+                                        <a href="https://whatsapp.com/channel/0029VbBiWy10VycDcvV68w1d" target="_blank" class="btn btn-success btn-sm"><i class="fab fa-whatsapp me-1"></i>Live chat</a>
+                                        <a href="tel:+224622368148" class="btn btn-info btn-sm text-white" onclick="event.preventDefault(); alert('📞 Appelez-nous au:\n+224 622 36 81 48'); if(confirm('Voulez-vous appeler ce numéro?')) window.location.href='tel:+224622368148';"><i class="fas fa-phone me-1"></i>Appel</a>
+                                    </div>
+                                    
+                                    <!-- À Propos -->
+                                    <h5 class="fw-bold mb-2"><i class="fas fa-info-circle me-2"></i>À Propos</h5>
+                                    <div class="d-flex flex-wrap gap-2 mb-4">
+                                        <a href="{% url 'main:historique' %}" class="btn btn-outline-light btn-sm">Qui sommes-nous ?</a>
+                                        <a href="{% url 'main:contact' %}" class="btn btn-outline-light btn-sm">Contact</a>
+                                        <a href="{% url 'main:contact' %}" class="btn btn-outline-light btn-sm">Nos emplois bénévoles</a>
+                                    </div>
+                                    
+                                    <!-- Grandir dans la foi -->
+                                    <h5 class="fw-bold mb-2"><i class="fas fa-seedling me-2"></i>Grandir dans la foi</h5>
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        <a href="#" class="btn btn-warning btn-sm text-dark"><i class="fas fa-graduation-cap me-1"></i>Cours bibliques</a>
+                                        <a href="#" class="btn btn-warning btn-sm text-dark"><i class="fas fa-book me-1"></i>Sujets</a>
+                                        <a href="https://whatsapp.com/channel/0029VbBiWy10VycDcvV68w1d" target="_blank" class="btn btn-warning btn-sm text-dark"><i class="fas fa-bible me-1"></i>Plans de lecture bibliques</a>
+                                    </div>
+                                    
+                                    <!-- Bouton Voir les cours -->
+                                    <div class="text-center mt-3">
+                                        <a href="https://parolesdelabible.learnnn.com/?_gl=1*g2vqpx*_gcl_au*MTQ4MzE5NTI1Ni4xNzY0NjgxOTQ5" target="_blank" class="btn btn-light btn-lg w-100"><i class="fas fa-eye me-2"></i>Voir les cours</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Description du cours -->
+                        <div class="row mb-5">
+                            <div class="col-12">
+                                <div class="event-card p-4 border rounded-3 shadow-sm mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h4 class="event-title mb-0" style="color: #6f42c1;">Formation Biblique Approfondie</h4>
+                                        <span class="badge" style="background-color: #6f42c1;">Formation Continue</span>
+                                    </div>
+                                    
+                                    <div class="event-details mb-4">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p><i class="fas fa-calendar-alt me-2" style="color: #6f42c1;"></i> <strong>Jour:</strong> Chaque samedi</p>
+                                                <p><i class="fas fa-clock me-2" style="color: #6f42c1;"></i> <strong>Horaires:</strong> 14h00 - 17h00</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p><i class="fas fa-map-marker-alt text-danger me-2"></i> <strong>Lieu:</strong> Salle de formation</p>
+                                                <p><i class="fas fa-user me-2" style="color: #6f42c1;"></i> <strong>Formateur:</strong> Pasteur enseignant</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="event-description">
+                                        <h5 class="border-bottom pb-2">Description du programme</h5>
+                                        <p>Le cours biblique est un programme de formation structuré destiné à approfondir la connaissance des Écritures et à équiper les croyants pour le service dans l'Église.</p>
+                                        <p>Ce programme comprend des modules sur l'Ancien et le Nouveau Testament, la théologie systématique, l'herméneutique biblique et la vie pratique du chrétien.</p>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <h5 class="border-bottom pb-2">Modules de formation</h5>
+                                        <div class="row g-3 mt-2">
+                                            <div class="col-md-6">
+                                                <div class="p-3 border rounded" style="border-left: 4px solid #6f42c1 !important;">
+                                                    <h6><i class="fas fa-book me-2" style="color: #6f42c1;"></i>Module 1: Introduction à la Bible</h6>
+                                                    <ul class="small mb-0">
+                                                        <li>Histoire et formation du canon biblique</li>
+                                                        <li>Les différentes versions de la Bible</li>
+                                                        <li>Comment étudier la Bible</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="p-3 border rounded" style="border-left: 4px solid #6f42c1 !important;">
+                                                    <h6><i class="fas fa-scroll me-2" style="color: #6f42c1;"></i>Module 2: Ancien Testament</h6>
+                                                    <ul class="small mb-0">
+                                                        <li>La Genèse et la création</li>
+                                                        <li>L'histoire d'Israël</li>
+                                                        <li>Les prophètes et leurs messages</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="p-3 border rounded" style="border-left: 4px solid #6f42c1 !important;">
+                                                    <h6><i class="fas fa-cross me-2" style="color: #6f42c1;"></i>Module 3: Nouveau Testament</h6>
+                                                    <ul class="small mb-0">
+                                                        <li>La vie et le ministère de Jésus</li>
+                                                        <li>Les Actes des Apôtres</li>
+                                                        <li>Les épîtres pauliniennes</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="p-3 border rounded" style="border-left: 4px solid #6f42c1 !important;">
+                                                    <h6><i class="fas fa-dove me-2" style="color: #6f42c1;"></i>Module 4: Vie Chrétienne</h6>
+                                                    <ul class="small mb-0">
+                                                        <li>La prière et la communion avec Dieu</li>
+                                                        <li>Les dons spirituels</li>
+                                                        <li>Le service dans l'Église</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="event-footer mt-4 d-flex justify-content-between align-items-center">
+                                        <div class="event-tags">
+                                            <span class="badge bg-light text-dark me-1">#CoursBiblique</span>
+                                            <span class="badge bg-light text-dark me-1">#Formation</span>
+                                            <span class="badge bg-light text-dark">#Disciples</span>
+                                        </div>
+                                        <a href="#" class="btn btn-event" style="background-color: #6f42c1; color: white;" onclick="toggleCoursBibliqueForm(); return false;"><i class="fas fa-user-plus me-1"></i>S'inscrire au cours</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Formulaire d'inscription (caché par défaut) -->
+                        <div id="coursBibliqueFormContainer" class="mb-4" style="display: none;">
+                            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                                <!-- En-tête du formulaire -->
+                                <div class="card-header text-white py-4" style="background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 50%, #6f42c1 100%); border: none;">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3" style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-graduation-cap fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="mb-1 fw-bold">Inscription au Cours Biblique</h4>
+                                                <p class="mb-0 opacity-75"><i class="fas fa-book-open me-1"></i>Église Pentecôte Alléluia de Guinée</p>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-light btn-sm rounded-circle" onclick="toggleCoursBibliqueForm()" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Corps du formulaire -->
+                                <div class="card-body p-4" style="background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);">
+                                    <!-- Message d'introduction -->
+                                    <div class="alert mb-4 border-0" style="background: linear-gradient(135deg, rgba(111, 66, 193, 0.1), rgba(139, 92, 246, 0.1)); border-left: 4px solid #6f42c1 !important; border-radius: 10px;">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-info-circle fa-lg me-3" style="color: #6f42c1;"></i>
+                                            <div>
+                                                <strong style="color: #6f42c1;">Bienvenue dans notre programme de formation !</strong>
+                                                <p class="mb-0 small text-muted">Remplissez ce formulaire pour vous inscrire aux cours bibliques. Les champs marqués d'un * sont obligatoires.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <form id="coursBibliqueForm">
+                                        <!-- Section Informations personnelles -->
+                                        <div class="mb-4 p-3 bg-white rounded-3 shadow-sm">
+                                            <h6 class="mb-3 pb-2" style="color: #6f42c1; border-bottom: 2px solid #e9d5ff;">
+                                                <i class="fas fa-user-circle me-2"></i>Informations personnelles
+                                            </h6>
+                                            <div class="row g-3">
+                                                <div class="col-md-4">
+                                                    <label for="cbNom" class="form-label fw-semibold small text-muted">
+                                                        <i class="fas fa-user me-1" style="color: #6f42c1;"></i>Nom complet <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text" class="form-control form-control-lg" id="cbNom" placeholder="Votre nom complet" required style="border-radius: 10px; border: 2px solid #e9d5ff;">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="cbTelephone" class="form-label fw-semibold small text-muted">
+                                                        <i class="fas fa-phone me-1" style="color: #6f42c1;"></i>Téléphone <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                            <button class="btn dropdown-toggle d-flex align-items-center" type="button" id="countryDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border: 2px solid #e9d5ff; border-right: none; border-radius: 10px 0 0 10px; background: white; height: 100%;">
+                                                                <img src="https://flagcdn.com/w20/gn.png" alt="GN" class="me-1" id="selectedFlag" style="width: 20px;">
+                                                                <span id="selectedCode">+224</span>
+                                                            </button>
+                                                            <ul class="dropdown-menu" aria-labelledby="countryDropdown" style="max-height: 300px; overflow-y: auto;">
+                                                                <li class="dropdown-header fw-bold text-primary">Afrique de l'Ouest</li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+224" data-country="gn"><img src="https://flagcdn.com/w20/gn.png" class="me-2" style="width: 20px;"> Guinée +224</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+225" data-country="ci"><img src="https://flagcdn.com/w20/ci.png" class="me-2" style="width: 20px;"> Côte d'Ivoire +225</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+221" data-country="sn"><img src="https://flagcdn.com/w20/sn.png" class="me-2" style="width: 20px;"> Sénégal +221</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+223" data-country="ml"><img src="https://flagcdn.com/w20/ml.png" class="me-2" style="width: 20px;"> Mali +223</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+226" data-country="bf"><img src="https://flagcdn.com/w20/bf.png" class="me-2" style="width: 20px;"> Burkina Faso +226</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+227" data-country="ne"><img src="https://flagcdn.com/w20/ne.png" class="me-2" style="width: 20px;"> Niger +227</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+228" data-country="tg"><img src="https://flagcdn.com/w20/tg.png" class="me-2" style="width: 20px;"> Togo +228</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+229" data-country="bj"><img src="https://flagcdn.com/w20/bj.png" class="me-2" style="width: 20px;"> Bénin +229</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+220" data-country="gm"><img src="https://flagcdn.com/w20/gm.png" class="me-2" style="width: 20px;"> Gambie +220</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+232" data-country="sl"><img src="https://flagcdn.com/w20/sl.png" class="me-2" style="width: 20px;"> Sierra Leone +232</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+231" data-country="lr"><img src="https://flagcdn.com/w20/lr.png" class="me-2" style="width: 20px;"> Liberia +231</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+233" data-country="gh"><img src="https://flagcdn.com/w20/gh.png" class="me-2" style="width: 20px;"> Ghana +233</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+234" data-country="ng"><img src="https://flagcdn.com/w20/ng.png" class="me-2" style="width: 20px;"> Nigeria +234</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li class="dropdown-header fw-bold text-primary">Afrique Centrale</li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+237" data-country="cm"><img src="https://flagcdn.com/w20/cm.png" class="me-2" style="width: 20px;"> Cameroun +237</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+241" data-country="ga"><img src="https://flagcdn.com/w20/ga.png" class="me-2" style="width: 20px;"> Gabon +241</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+242" data-country="cg"><img src="https://flagcdn.com/w20/cg.png" class="me-2" style="width: 20px;"> Congo +242</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+243" data-country="cd"><img src="https://flagcdn.com/w20/cd.png" class="me-2" style="width: 20px;"> RD Congo +243</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li class="dropdown-header fw-bold text-primary">Afrique du Nord</li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+212" data-country="ma"><img src="https://flagcdn.com/w20/ma.png" class="me-2" style="width: 20px;"> Maroc +212</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+213" data-country="dz"><img src="https://flagcdn.com/w20/dz.png" class="me-2" style="width: 20px;"> Algérie +213</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+216" data-country="tn"><img src="https://flagcdn.com/w20/tn.png" class="me-2" style="width: 20px;"> Tunisie +216</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+20" data-country="eg"><img src="https://flagcdn.com/w20/eg.png" class="me-2" style="width: 20px;"> Égypte +20</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li class="dropdown-header fw-bold text-primary">Afrique de l'Est</li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+254" data-country="ke"><img src="https://flagcdn.com/w20/ke.png" class="me-2" style="width: 20px;"> Kenya +254</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+255" data-country="tz"><img src="https://flagcdn.com/w20/tz.png" class="me-2" style="width: 20px;"> Tanzanie +255</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+256" data-country="ug"><img src="https://flagcdn.com/w20/ug.png" class="me-2" style="width: 20px;"> Ouganda +256</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+250" data-country="rw"><img src="https://flagcdn.com/w20/rw.png" class="me-2" style="width: 20px;"> Rwanda +250</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+257" data-country="bi"><img src="https://flagcdn.com/w20/bi.png" class="me-2" style="width: 20px;"> Burundi +257</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+27" data-country="za"><img src="https://flagcdn.com/w20/za.png" class="me-2" style="width: 20px;"> Afrique du Sud +27</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li class="dropdown-header fw-bold text-primary">Europe</li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+33" data-country="fr"><img src="https://flagcdn.com/w20/fr.png" class="me-2" style="width: 20px;"> France +33</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+32" data-country="be"><img src="https://flagcdn.com/w20/be.png" class="me-2" style="width: 20px;"> Belgique +32</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+41" data-country="ch"><img src="https://flagcdn.com/w20/ch.png" class="me-2" style="width: 20px;"> Suisse +41</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+44" data-country="gb"><img src="https://flagcdn.com/w20/gb.png" class="me-2" style="width: 20px;"> Royaume-Uni +44</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+49" data-country="de"><img src="https://flagcdn.com/w20/de.png" class="me-2" style="width: 20px;"> Allemagne +49</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+34" data-country="es"><img src="https://flagcdn.com/w20/es.png" class="me-2" style="width: 20px;"> Espagne +34</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+39" data-country="it"><img src="https://flagcdn.com/w20/it.png" class="me-2" style="width: 20px;"> Italie +39</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+351" data-country="pt"><img src="https://flagcdn.com/w20/pt.png" class="me-2" style="width: 20px;"> Portugal +351</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li class="dropdown-header fw-bold text-primary">Amérique</li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+1" data-country="us"><img src="https://flagcdn.com/w20/us.png" class="me-2" style="width: 20px;"> États-Unis +1</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+1" data-country="ca"><img src="https://flagcdn.com/w20/ca.png" class="me-2" style="width: 20px;"> Canada +1</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+55" data-country="br"><img src="https://flagcdn.com/w20/br.png" class="me-2" style="width: 20px;"> Brésil +55</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li class="dropdown-header fw-bold text-primary">Asie & Moyen-Orient</li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+86" data-country="cn"><img src="https://flagcdn.com/w20/cn.png" class="me-2" style="width: 20px;"> Chine +86</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+91" data-country="in"><img src="https://flagcdn.com/w20/in.png" class="me-2" style="width: 20px;"> Inde +91</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+81" data-country="jp"><img src="https://flagcdn.com/w20/jp.png" class="me-2" style="width: 20px;"> Japon +81</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+971" data-country="ae"><img src="https://flagcdn.com/w20/ae.png" class="me-2" style="width: 20px;"> Émirats Arabes +971</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+966" data-country="sa"><img src="https://flagcdn.com/w20/sa.png" class="me-2" style="width: 20px;"> Arabie Saoudite +966</a></li>
+                                                                <li><a class="dropdown-item d-flex align-items-center" href="#" data-code="+90" data-country="tr"><img src="https://flagcdn.com/w20/tr.png" class="me-2" style="width: 20px;"> Turquie +90</a></li>
+                                                            </ul>
+                                                        </div>
+                                                        <input type="hidden" id="cbPays" value="+224">
+                                                        <input type="tel" class="form-control form-control-lg" id="cbTelephone" placeholder="6XX XX XX XX" required style="border-radius: 0 10px 10px 0; border: 2px solid #e9d5ff;">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="cbEmail" class="form-label fw-semibold small text-muted">
+                                                        <i class="fas fa-envelope me-1" style="color: #6f42c1;"></i>Email
+                                                    </label>
+                                                    <input type="email" class="form-control form-control-lg" id="cbEmail" placeholder="votre@email.com" style="border-radius: 10px; border: 2px solid #e9d5ff;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Section Formation -->
+                                        <div class="mb-4 p-3 bg-white rounded-3 shadow-sm">
+                                            <h6 class="mb-3 pb-2" style="color: #6f42c1; border-bottom: 2px solid #e9d5ff;">
+                                                <i class="fas fa-book-reader me-2"></i>Choix de la formation
+                                            </h6>
+                                            <div class="row g-3">
+                                                <div class="col-md-4">
+                                                    <label for="cbEglise" class="form-label fw-semibold small text-muted">
+                                                        <i class="fas fa-church me-1" style="color: #6f42c1;"></i>Église locale <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select form-select-lg" id="cbEglise" required style="border-radius: 10px; border: 2px solid #e9d5ff;">
+                                                        <option value="">Sélectionnez votre église</option>
+                                                        <option value="siege">Siège - Bellevue</option>
+                                                        <option value="annexe1">Annexe 1</option>
+                                                        <option value="annexe2">Annexe 2</option>
+                                                        <option value="autre">Autre</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="cbModule" class="form-label fw-semibold small text-muted">
+                                                        <i class="fas fa-book-open me-1" style="color: #6f42c1;"></i>Module souhaité <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select form-select-lg" id="cbModule" required style="border-radius: 10px; border: 2px solid #e9d5ff;">
+                                                        <option value="">Sélectionnez un module</option>
+                                                        <option value="module1">Module 1: Introduction à la Bible</option>
+                                                        <option value="module2">Module 2: Ancien Testament</option>
+                                                        <option value="module3">Module 3: Nouveau Testament</option>
+                                                        <option value="module4">Module 4: Vie Chrétienne</option>
+                                                        <option value="tous">Tous les modules</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="cbNiveau" class="form-label fw-semibold small text-muted">
+                                                        <i class="fas fa-layer-group me-1" style="color: #6f42c1;"></i>Niveau d'étude
+                                                    </label>
+                                                    <select class="form-select form-select-lg" id="cbNiveau" style="border-radius: 10px; border: 2px solid #e9d5ff;">
+                                                        <option value="debutant">Débutant</option>
+                                                        <option value="intermediaire">Intermédiaire</option>
+                                                        <option value="avance">Avancé</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Section Motivation -->
+                                        <div class="mb-4 p-3 bg-white rounded-3 shadow-sm">
+                                            <h6 class="mb-3 pb-2" style="color: #6f42c1; border-bottom: 2px solid #e9d5ff;">
+                                                <i class="fas fa-heart me-2"></i>Motivation
+                                            </h6>
+                                            <div class="mb-3">
+                                                <label for="cbMotivation" class="form-label fw-semibold small text-muted">
+                                                    <i class="fas fa-comment-dots me-1" style="color: #6f42c1;"></i>Vos motivations et attentes
+                                                </label>
+                                                <textarea class="form-control" id="cbMotivation" rows="3" placeholder="Décrivez vos motivations et ce que vous attendez de cette formation..." style="border-radius: 10px; border: 2px solid #e9d5ff;"></textarea>
+                                            </div>
+                                            <div class="form-check p-3 rounded-3" style="background: linear-gradient(135deg, rgba(111, 66, 193, 0.05), rgba(139, 92, 246, 0.05));">
+                                                <input class="form-check-input" type="checkbox" id="cbEngagement" required style="width: 20px; height: 20px; margin-top: 0;">
+                                                <label class="form-check-label ms-2 fw-semibold" for="cbEngagement" style="color: #6f42c1;">
+                                                    <i class="fas fa-hand-holding-heart me-1"></i>Je m'engage à suivre assidûment les cours et à participer activement aux sessions <span class="text-danger">*</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Boutons d'action -->
+                                        <div class="d-flex justify-content-between align-items-center pt-3">
+                                            <button type="reset" class="btn btn-outline-secondary btn-lg px-4" style="border-radius: 10px;">
+                                                <i class="fas fa-undo me-2"></i>Réinitialiser
+                                            </button>
+                                            <button type="submit" class="btn btn-lg px-5 text-white" style="background: linear-gradient(135deg, #6f42c1, #8b5cf6); border-radius: 10px; box-shadow: 0 4px 15px rgba(111, 66, 193, 0.4);">
+                                                <i class="fas fa-paper-plane me-2"></i>Soumettre l'inscription
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                                <!-- Pied du formulaire -->
+                                <div class="card-footer text-center py-3" style="background: linear-gradient(135deg, #6f42c1 0%, #8b5cf6 100%); border: none;">
+                                    <p class="mb-0 text-white small opacity-75">
+                                        <i class="fas fa-cross me-1"></i>"Ta parole est une lampe à mes pieds et une lumière sur mon sentier" - Psaume 119:105
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Calendrier des sessions -->
+                        <div class="event-card p-4 border rounded-3 shadow-sm mb-4">
+                            <h5 class="mb-4" style="color: #6f42c1;"><i class="fas fa-calendar-alt me-2"></i>Calendrier des prochaines sessions</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead style="background-color: #6f42c1; color: white;">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Module</th>
+                                            <th>Thème</th>
+                                            <th>Formateur</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="badge bg-light text-dark">Samedi 07/12</span></td>
+                                            <td>Module 1</td>
+                                            <td>Introduction à la Bible</td>
+                                            <td>Pasteur enseignant</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-light text-dark">Samedi 14/12</span></td>
+                                            <td>Module 1</td>
+                                            <td>Comment étudier la Bible</td>
+                                            <td>Pasteur enseignant</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-light text-dark">Samedi 21/12</span></td>
+                                            <td>Module 2</td>
+                                            <td>La Genèse et la création</td>
+                                            <td>Pasteur enseignant</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <!-- Fin Section Cours Biblique -->
+            
+<script>
+    // Fonction pour prévisualiser l'image sélectionnée
+    function previewEventImage(input) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const preview = document.getElementById('imagePreview');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion du carousel d'horaires
+        const horairesCarousel = document.getElementById('horaires-carousel');
+        if (horairesCarousel) {
+            const horaireItems = horairesCarousel.querySelectorAll('.horaire-item');
+            let currentIndex = 0;
+            
+            // Fonction pour faire défiler les horaires
+            function rotateHoraires() {
+                // Cacher tous les horaires
+                horaireItems.forEach(item => {
+                    item.classList.add('d-none');
+                    item.classList.remove('active');
+                });
+                
+                // Afficher l'horaire actuel
+                horaireItems[currentIndex].classList.remove('d-none');
+                horaireItems[currentIndex].classList.add('active');
+                
+                // Passer au prochain horaire
+                currentIndex = (currentIndex + 1) % horaireItems.length;
+            }
+            
+            // Démarrer le carousel avec un intervalle de 8 secondes
+            setInterval(rotateHoraires, 8000);
+        }
+        
+        // Gestion du formulaire d'ajout d'événement
+        const eventModal = document.getElementById('addEventModal');
+        const eventForm = document.getElementById('eventForm');
+        const saveEventBtn = document.getElementById('saveEventBtn');
+        
+        // Réinitialiser le formulaire quand le modal est ouvert
+        if (eventModal) {
+            eventModal.addEventListener('show.bs.modal', function() {
+                resetEventForm();
+            });
+        }
+        
+        // Fonction pour réinitialiser le formulaire
+        function resetEventForm() {
+            if (eventForm) {
+                eventForm.reset();
+                // Réinitialiser les validations visuelles
+                const invalidFields = eventForm.querySelectorAll('.is-invalid');
+                invalidFields.forEach(field => {
+                    field.classList.remove('is-invalid');
+                });
+                
+                // Réinitialiser la prévisualisation d'image
+                const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+                if (imagePreviewContainer) {
+                    imagePreviewContainer.style.display = 'none';
+                }
+                
+                // Réinitialiser le champ de fichier
+                const imageInput = document.getElementById('eventImage');
+                if (imageInput) {
+                    imageInput.value = '';
+                }
+            }
+        }
+        
+        // Validation et soumission du formulaire
+        if (saveEventBtn && eventForm) {
+            saveEventBtn.addEventListener('click', function() {
+                // Ajouter la classe was-validated pour activer les styles de validation Bootstrap
+                eventForm.classList.add('was-validated');
+                
+                if (eventForm.checkValidity()) {
+                    // Collecter les données du formulaire
+                    const formData = {
+                        title: document.getElementById('eventTitle').value,
+                        type: document.getElementById('eventType').value,
+                        date: document.getElementById('eventDate').value,
+                        startTime: document.getElementById('eventStartTime').value,
+                        endTime: document.getElementById('eventEndTime').value,
+                        description: document.getElementById('eventDescription').value,
+                        location: document.getElementById('eventLocation').value,
+                        organizer: document.getElementById('eventOrganizer').value,
+                        section: document.getElementById('eventSection').value,
+                        recurrence: document.getElementById('eventRecurrence').value,
+                        featured: document.getElementById('eventFeatured').checked
+                    };
+                    
+                    // Ici, vous pourriez envoyer les données à un backend
+                    console.log('Données de l\'événement :', formData);
+                    
+                    // Simuler l'enregistrement réussi
+                    alert('Événement enregistré avec succès!');
+                    
+                    // Fermer le modal et réinitialiser le formulaire
+                    const modal = bootstrap.Modal.getInstance(eventModal);
+                    if (modal) {
+                        modal.hide();
+                        // Réinitialiser le formulaire après fermeture
+                        eventModal.addEventListener('hidden.bs.modal', function() {
+                            resetEventForm();
+                            eventForm.classList.remove('was-validated');
+                        }, { once: true });
+                    }
+                } else {
+                    // Mettre en évidence les champs invalides
+                    const invalidFields = eventForm.querySelectorAll(':invalid');
+                    invalidFields.forEach(field => {
+                        field.classList.add('is-invalid');
+                    });
+                }
+            });
+        }
+        
+        // Solution simple et directe pour les onglets
+        window.addEventListener('load', function() {
+            // Fonction pour activer un onglet spécifique
+            function activateTab(tabId) {
+                // Masquer tous les contenus d'onglets
+                document.querySelectorAll('.tab-pane').forEach(function(pane) {
+                    pane.classList.remove('show', 'active');
+                });
+                
+                // Désactiver tous les boutons d'onglets
+                document.querySelectorAll('#eventTabs .nav-link').forEach(function(tab) {
+                    tab.classList.remove('active');
+                });
+                
+                // Désactiver tous les conteneurs d'onglets
+                document.querySelectorAll('.nav-event-item').forEach(function(item) {
+                    item.classList.remove('active');
+                });
+
+                // Activer l'onglet sélectionné
+                const selectedTab = document.getElementById(tabId + '-tab');
+                if (selectedTab) {
+                    selectedTab.classList.add('active');
+                    
+                    // Activer le conteneur de l'onglet
+                    const activeTabContainer = selectedTab.closest('.nav-event-item');
+                    if (activeTabContainer) {
+                        activeTabContainer.classList.add('active');
+                    }
+                }
+                
+                // Afficher le contenu de l'onglet sélectionné
+                const selectedPane = document.getElementById(tabId);
+                if (selectedPane) {
+                    selectedPane.classList.add('show', 'active');
+                }
+                
+                // Initialiser/relancer le carrousel Étude Biblique quand l'onglet est activé
+                if (tabId === 'etude-biblique') {
+                    initEtudeBibleCarousel();
+                }
+            }
+            
+            // Initialisation explicite du carrousel Étude Biblique
+            let etudeBibleCarouselInstance = null;
+            function initEtudeBibleCarousel() {
+                const el = document.getElementById('etudeBibleCarousel');
+                if (el && typeof bootstrap !== 'undefined' && bootstrap.Carousel) {
+                    if (!etudeBibleCarouselInstance) {
+                        etudeBibleCarouselInstance = new bootstrap.Carousel(el, {
+                            interval: 6000,
+                            ride: 'carousel',
+                            pause: false,
+                            wrap: true,
+                            touch: true
+                        });
+                    } else {
+                        etudeBibleCarouselInstance.cycle();
+                    }
+                }
+            }
+            
+            // Ajouter des écouteurs d'événements à tous les boutons d'onglets
+            document.querySelectorAll('#eventTabs button[data-tab-target]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-tab-target');
+                    activateTab(targetId);
+                });
+            });
+            
+            // Vérifier si un paramètre tab est présent dans l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            
+            // Masquer la barre de navigation des onglets si un tab spécifique est demandé
+            const navSection = document.querySelector('.nav-section');
+            
+            if (tabParam === 'culte') {
+                activateTab('culte-dominical');
+                if (navSection) navSection.style.display = 'none';
+            } else if (tabParam === 'etude') {
+                activateTab('etude-biblique');
+                if (navSection) navSection.style.display = 'none';
+            } else if (tabParam === 'cours') {
+                activateTab('cours-biblique');
+                if (navSection) navSection.style.display = 'none';
+            } else {
+                // Afficher tous les onglets par défaut
+                activateTab('culte-dominical');
+                if (navSection) navSection.style.display = 'block';
+            }
+        });  
+    });
+    
+    // Gestion du sélecteur de pays pour le téléphone
+    document.querySelectorAll('#countryDropdown + .dropdown-menu .dropdown-item').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const code = this.getAttribute('data-code');
+            const country = this.getAttribute('data-country');
+            document.getElementById('selectedFlag').src = 'https://flagcdn.com/w20/' + country + '.png';
+            document.getElementById('selectedCode').textContent = code;
+            document.getElementById('cbPays').value = code;
+        });
+    });
+    
+    // Fonction pour afficher/masquer le formulaire d'inscription au Cours Biblique
+    function toggleCoursBibliqueForm() {
+        const formContainer = document.getElementById('coursBibliqueFormContainer');
+        if (formContainer) {
+            if (formContainer.style.display === 'none') {
+                formContainer.style.display = 'block';
+                // Animation d'apparition
+                formContainer.style.opacity = '0';
+                formContainer.style.transform = 'translateY(-20px)';
+                setTimeout(function() {
+                    formContainer.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    formContainer.style.opacity = '1';
+                    formContainer.style.transform = 'translateY(0)';
+                }, 10);
+                // Scroll vers le formulaire
+                setTimeout(function() {
+                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    document.getElementById('cbNom').focus();
+                }, 350);
+            } else {
+                formContainer.style.opacity = '0';
+                formContainer.style.transform = 'translateY(-20px)';
+                setTimeout(function() {
+                    formContainer.style.display = 'none';
+                }, 300);
+            }
+        }
+    }
+</script>
+{% endblock %}

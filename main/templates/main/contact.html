@@ -1,0 +1,996 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Contactez-nous - {{ block.super }}{% endblock %}
+
+{% block content %}
+
+    <div class="contact-background"></div>
+   
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Hero Section amélioré -->
+        <div class="contact-hero text-center mb-5 position-relative">
+            <div class="hero-icon-wrapper">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <h1 class="contact-title mb-2">Contactez-nous</h1>
+            <div class="contact-underline mx-auto"></div>
+            <p class="contact-subtitle mt-3">Pour toute question ou information, n'hésitez pas à nous contacter</p>
+        </div>
+        
+        <!-- Cartes d'information -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="contact-card h-100 text-center p-4">
+                    <div class="contact-icon-wrapper">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="icon-pulse"></div>
+                    </div>
+                    <h6 class="h5 mt-3">Email</h6>
+                    <p class="mb-0 text-muted">eglisealleluiagn@gmail.com</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="contact-card h-100 text-center p-4">
+                    <div class="contact-icon-wrapper">
+                        <div class="contact-icon phone">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div class="icon-pulse phone"></div>
+                    </div>
+                    <h6 class="h5 mt-3">Téléphone</h6>
+                    <p class="mb-0 text-muted">(+224) 622 36 81 48</p>
+                    <p class="mb-0 text-muted">(+224) 664 35 33 82</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="contact-card h-100 text-center p-4">
+                    <div class="contact-icon-wrapper">
+                        <div class="contact-icon location">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="icon-pulse location"></div>
+                    </div>
+                    <h6 class="h5 mt-3">Adresse</h6>
+                    <p class="mb-0 text-muted">Église Alléluia de Guinée</p>
+                    <p class="mb-0 text-muted">Siège : C-Dixinn/Q-Bellevue</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Formulaire de contact modernisé -->
+        <div class="contact-form-wrapper">
+            <div class="contact-form">
+                <!-- En-tête du formulaire avec animation -->
+                <div class="form-header">
+                    <div class="header-decoration">
+                        <span class="decoration-circle"></span>
+                        <span class="decoration-circle"></span>
+                        <span class="decoration-circle"></span>
+                    </div>
+                    <div class="header-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <h2 style="font-size: 2rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 0.8rem;">
+                        <i class="fas fa-envelope me-2"></i>Envoyez-nous un message
+                    </h2>
+                    <p class="form-subtitle" style="font-size: 1.2rem; opacity: 1; font-weight: 500; background: rgba(255,255,255,0.2); padding: 0.5rem 1.5rem; border-radius: 50px; display: inline-block;">
+                        <i class="fas fa-clock me-2"></i>Nous vous répondrons dans les plus brefs délais
+                    </p>
+                </div>
+                
+                <div class="contact-grid">
+                    <div class="contact-grid-left">
+                        <form method="post" class="contact-form-container" id="contactForm">
+                            {% csrf_token %}
+                            <div class="row g-4">
+                                <!-- Nom complet -->
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <div class="input-wrapper">
+                                            <span class="input-icon-left"><i class="fas fa-user"></i></span>
+                                            <input type="text" id="name" name="name" class="form-input" placeholder=" " required minlength="3" value="{{ form_data.name|default:'' }}">
+                                            <label for="name" class="floating-label">Nom complet</label>
+                                            <span class="input-border"></span>
+                                        </div>
+                                        <small class="input-hint"><i class="fas fa-info-circle me-1"></i>Ex: Evêque Bandjou LENO</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Email -->
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <div class="input-wrapper">
+                                            <span class="input-icon-left"><i class="fas fa-envelope"></i></span>
+                                            <input type="email" id="email" name="email" class="form-input" placeholder=" " required value="{{ form_data.email|default:'' }}">
+                                            <label for="email" class="floating-label">Adresse email</label>
+                                            <span class="input-border"></span>
+                                        </div>
+                                        <small class="input-hint"><i class="fas fa-info-circle me-1"></i>Ex: contact@exemple.com</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Téléphone -->
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <div class="input-wrapper">
+                                            <span class="input-icon-left"><i class="fas fa-phone"></i></span>
+                                            <input type="tel" id="telephone" name="telephone" class="form-input" placeholder=" " pattern="[+()\d\s-]{8,20}" value="{{ form_data.telephone|default:'' }}">
+                                            <label for="telephone" class="floating-label">Téléphone (optionnel)</label>
+                                            <span class="input-border"></span>
+                                        </div>
+                                        <small class="input-hint"><i class="fas fa-info-circle me-1"></i>Ex: +224 622 36 81 48</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Sujet -->
+                                <div class="col-md-6">
+                                    <div class="form-group-modern">
+                                        <div class="input-wrapper">
+                                            <span class="input-icon-left"><i class="fas fa-tag"></i></span>
+                                            <input type="text" id="subject" name="subject" class="form-input" placeholder=" " required minlength="3" value="{{ form_data.subject|default:'' }}">
+                                            <label for="subject" class="floating-label">Sujet du message</label>
+                                            <span class="input-border"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Message -->
+                                <div class="col-12">
+                                    <div class="form-group-modern">
+                                        <div class="input-wrapper textarea-wrapper">
+                                            <span class="input-icon-left textarea-icon"><i class="fas fa-comment-alt"></i></span>
+                                            <textarea id="message" name="message" class="form-input form-textarea" placeholder=" " rows="5" required minlength="20">{{ form_data.message|default:'' }}</textarea>
+                                            <label for="message" class="floating-label">Votre message</label>
+                                            <span class="input-border"></span>
+                                        </div>
+                                        <div class="textarea-counter">
+                                            <span id="charCount">0</span> / 500 caractères
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Bouton d'envoi -->
+                            <div class="form-actions mt-4">
+                                <button type="submit" class="btn-submit-modern">
+                                    <span class="btn-text">Envoyer le message</span>
+                                    <span class="btn-icon"><i class="fas fa-paper-plane"></i></span>
+                                    <span class="btn-loader"><i class="fas fa-spinner fa-spin"></i></span>
+                                </button>
+                                <div class="submit-note">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Nous répondons sous 24 à 48 heures ouvrées
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Panneau d'informations -->
+                    <div class="contact-grid-right">
+                        <div class="info-panel">
+                            <div class="info-section">
+                                <div class="info-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                                <div class="info-content">
+                                    <h5>Nous trouver</h5>
+                                    <p>L'Église mère de la Mission Pentecôte Alléluia de Guinée</p>
+                                    <p class="address">
+                                        <i class="fas fa-map-pin me-1"></i>
+                                        Dixinn, Bellevue en face de l'Ecobank<br>
+                                        Conakry, Guinée
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="info-divider"></div>
+                            
+                            <div class="info-section">
+                                <div class="info-icon clock"><i class="bi bi-clock-fill"></i></div>
+                                <div class="info-content">
+                                    <h6>Horaires d'accueil</h6>
+                                    <ul class="schedule-list">
+                                        <li><span class="day">Mar - Ven</span><span class="time">10:00 - 17:00</span></li>
+                                        <li><span class="day">Samedi</span><span class="time">10:00 - 14:00</span></li>
+                                        <li><span class="day">Dimanche</span><span class="time">Après le culte</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="info-divider"></div>
+                            
+                            <div class="info-section">
+                                <div class="info-icon phone"><i class="bi bi-telephone-fill"></i></div>
+                                <div class="info-content">
+                                    <h6>Contacts directs</h6>
+                                    <p class="phone-number"><i class="fas fa-phone-alt me-2"></i>(+224) 622 36 81 48</p>
+                                    <p class="phone-number"><i class="fas fa-phone-alt me-2"></i>(+224) 664 35 33 82</p>
+                                </div>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                <a href="tel:+224622368148" class="btn-action call">
+                                    <i class="bi bi-telephone-outbound"></i>
+                                    <span>Appeler maintenant</span>
+                                </a>
+                                <a href="mailto:eglisealleluiagn@gmail.com" class="btn-action email">
+                                    <i class="bi bi-envelope"></i>
+                                    <span>Écrire un email</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ========== PAGE CONTACT - DESIGN MODERNE ========== */
+.contact-page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    padding-bottom: 3rem;
+}
+
+.contact-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("{% static 'main/images/hero/contacteznous1.jpg' %}");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    z-index: -1;
+    opacity: 0.08;
+}
+
+/* ========== HERO SECTION ========== */
+.contact-hero {
+    position: relative;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 2.5rem 2rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.35);
+    overflow: hidden;
+}
+
+.contact-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.hero-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.hero-icon-wrapper i {
+    font-size: 2rem;
+    color: #fff;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+    50% { box-shadow: 0 0 0 15px rgba(255,255,255,0); }
+}
+
+.contact-title {
+    font-weight: 800;
+    font-size: 2.5rem;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    margin-bottom: 0.5rem;
+}
+
+.contact-underline {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #fff, rgba(255,255,255,0.5));
+    border-radius: 2px;
+}
+
+.contact-subtitle {
+    color: rgba(255,255,255,0.9);
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+/* ========== CARTES D'INFORMATION ========== */
+.contact-card {
+    background: #fff;
+    border-radius: 20px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+}
+
+.contact-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.contact-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(102, 126, 234, 0.2);
+}
+
+.contact-card:hover::before {
+    transform: scaleX(1);
+}
+
+.contact-icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.contact-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.5rem;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+}
+
+.contact-card:hover .contact-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.contact-icon.phone {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+}
+
+.contact-icon.location {
+    background: linear-gradient(135deg, #eb3349, #f45c43);
+}
+
+.icon-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    opacity: 0;
+    animation: icon-pulse 2s ease-out infinite;
+}
+
+.icon-pulse.phone {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+}
+
+.icon-pulse.location {
+    background: linear-gradient(135deg, #eb3349, #f45c43);
+}
+
+@keyframes icon-pulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+}
+
+.contact-card h6 {
+    color: #2d3748;
+    font-weight: 700;
+}
+
+/* ========== FORMULAIRE PRINCIPAL ========== */
+.contact-form-wrapper {
+    perspective: 1000px;
+}
+
+.contact-form {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.12);
+    overflow: hidden;
+    transition: all 0.4s ease;
+    border: none;
+}
+
+.contact-form:hover {
+    box-shadow: 0 30px 100px rgba(102, 126, 234, 0.2);
+}
+
+/* En-tête du formulaire */
+.form-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 2rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-header::before {
+    content: "";
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150%;
+    height: 100px;
+    background: #fff;
+    border-radius: 50%;
+}
+
+.header-decoration {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    display: flex;
+    gap: 6px;
+}
+
+.decoration-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+}
+
+.decoration-circle:nth-child(1) { background: #ff6b6b; }
+.decoration-circle:nth-child(2) { background: #feca57; }
+.decoration-circle:nth-child(3) { background: #48dbfb; }
+
+.header-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1rem;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.header-icon i {
+    font-size: 1.8rem;
+    color: #fff;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.form-header h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.form-subtitle {
+    margin: 0;
+    opacity: 0.9;
+    font-weight: 400;
+    position: relative;
+    z-index: 1;
+}
+
+/* Grille du formulaire */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.contact-grid-left, .contact-grid-right {
+    min-width: 0;
+}
+
+.contact-form-container {
+    padding: 0;
+}
+
+/* ========== CHAMPS DE FORMULAIRE MODERNES ========== */
+.form-group-modern {
+    margin-bottom: 0.5rem;
+}
+
+.input-wrapper {
+    position: relative;
+    background: #f8fafc;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.input-wrapper:hover {
+    background: #f1f5f9;
+}
+
+.input-wrapper:focus-within {
+    background: #fff;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+.input-icon-left {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.textarea-icon {
+    top: 20px;
+    transform: none;
+}
+
+.input-wrapper:focus-within .input-icon-left {
+    color: #667eea;
+}
+
+.form-input {
+    width: 100%;
+    padding: 16px 16px 16px 48px;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    color: #1e293b;
+    outline: none;
+    border-radius: 12px;
+}
+
+.form-input::placeholder {
+    color: transparent;
+}
+
+.floating-label {
+    position: absolute;
+    left: 48px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    font-size: 1rem;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    padding: 0 4px;
+}
+
+.textarea-wrapper .floating-label {
+    top: 20px;
+    transform: none;
+}
+
+.form-input:focus ~ .floating-label,
+.form-input:not(:placeholder-shown) ~ .floating-label {
+    top: -10px;
+    left: 12px;
+    font-size: 0.8rem;
+    color: #667eea;
+    background: #fff;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.textarea-wrapper .form-input:focus ~ .floating-label,
+.textarea-wrapper .form-input:not(:placeholder-shown) ~ .floating-label {
+    top: -10px;
+    transform: none;
+}
+
+.input-border {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: all 0.3s ease;
+    border-radius: 0 0 12px 12px;
+}
+
+.input-wrapper:focus-within .input-border {
+    left: 0;
+    width: 100%;
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+    padding-top: 16px;
+}
+
+.input-hint {
+    display: block;
+    margin-top: 6px;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.input-hint i {
+    color: #667eea;
+}
+
+.textarea-counter {
+    text-align: right;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* ========== BOUTON D'ENVOI ========== */
+.form-actions {
+    text-align: center;
+    padding-top: 1rem;
+}
+
+.btn-submit-modern {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-submit-modern::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-submit-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+}
+
+.btn-submit-modern:hover::before {
+    left: 100%;
+}
+
+.btn-submit-modern:active {
+    transform: translateY(-1px);
+}
+
+.btn-icon {
+    transition: transform 0.3s ease;
+}
+
+.btn-submit-modern:hover .btn-icon {
+    transform: translateX(5px);
+}
+
+.btn-loader {
+    display: none;
+}
+
+.btn-submit-modern.loading .btn-text,
+.btn-submit-modern.loading .btn-icon {
+    display: none;
+}
+
+.btn-submit-modern.loading .btn-loader {
+    display: inline-block;
+}
+
+.submit-note {
+    margin-top: 1rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.submit-note i {
+    color: #667eea;
+}
+
+/* ========== PANNEAU D'INFORMATIONS ========== */
+.info-panel {
+    background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    height: 100%;
+}
+
+.info-section {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.info-icon {
+    width: 45px;
+    height: 45px;
+    min-width: 45px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.info-icon.clock {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.info-icon.phone {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+}
+
+.info-content h5, .info-content h6 {
+    margin: 0 0 0.5rem;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.info-content p {
+    margin: 0 0 0.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.info-content .address {
+    background: #f1f5f9;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.info-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2), transparent);
+    margin: 1rem 0;
+}
+
+.schedule-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.schedule-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.schedule-list li:last-child {
+    border-bottom: none;
+}
+
+.schedule-list .day {
+    color: #64748b;
+}
+
+.schedule-list .time {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.phone-number {
+    font-size: 0.9rem !important;
+    color: #1e293b !important;
+}
+
+.phone-number i {
+    color: #11998e;
+}
+
+/* Boutons d'action */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.btn-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-action.call {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: #fff;
+    box-shadow: 0 5px 20px rgba(17, 153, 142, 0.3);
+}
+
+.btn-action.call:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(17, 153, 142, 0.4);
+    color: #fff;
+}
+
+.btn-action.email {
+    background: #fff;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.btn-action.email:hover {
+    background: #667eea;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .contact-grid-right {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .contact-hero {
+        padding: 2rem 1.5rem;
+    }
+    
+    .contact-title {
+        font-size: 2rem;
+    }
+    
+    .form-header {
+        padding: 1.5rem 1rem 2rem;
+    }
+    
+    .form-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .contact-grid {
+        padding: 1.5rem;
+    }
+    
+    .btn-submit-modern {
+        width: 100%;
+        padding: 14px 30px;
+    }
+    
+    .info-panel {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .contact-page {
+        padding-bottom: 2rem;
+    }
+    
+    .hero-icon-wrapper {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .hero-icon-wrapper i {
+        font-size: 1.5rem;
+    }
+    
+    .contact-card {
+        padding: 1.5rem !important;
+    }
+    
+    .contact-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.2rem;
+    }
+    
+    .icon-pulse {
+        width: 55px;
+        height: 55px;
+    }
+}
+</style>
+
+<script>
+// Compteur de caractères pour le textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const messageTextarea = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    
+    if (messageTextarea && charCount) {
+        messageTextarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+        // Initialiser le compteur
+        charCount.textContent = messageTextarea.value.length;
+    }
+    
+    // Animation du bouton lors de l'envoi
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.querySelector('.btn-submit-modern');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            submitBtn.classList.add('loading');
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1337 @@
+{% extends "main/base.html" %}
+{% load i18n static %}
+{% block body_class %}nos-fideles-page{% endblock %}
+
+{% block title %}Adhésions — Gestion Église{% endblock %}
+
+{% block content %}
+  <style>
+    /* Couleur noire pour les textes des champs uniquement sur cette page */
+    .nos-fideles-page .form-label,
+    .nos-fideles-page .form-check-label,
+    .nos-fideles-page .form-control,
+    .nos-fideles-page .form-select,
+    .nos-fideles-page .form-control::placeholder,
+    .nos-fideles-page .form-select option {
+      color: #000 !important;
+    }
+    /* Icônes dans les labels gardent leur couleur héritée, le texte reste noir */
+    .nos-fideles-page .form-label i,
+    .nos-fideles-page .form-check-label i { color: inherit; }
+
+    /* Spécifique au champ Département */
+    .nos-fideles-page label[for="departement_select"] { color:#000 !important; }
+    .nos-fideles-page #departement_select { color:#000 !important; background-color:#fff !important; }
+    .nos-fideles-page #departement_select::placeholder { color:#000 !important; opacity:1; }
+  </style>
+<!div class="container py-4">
+  <style>
+    /* Entête attractive pour le formulaire d'adhésion (orange foncé) */
+    .adhesion-header {
+      background: linear-gradient(135deg, #ff8c00, #cc6600);
+      color: #fff;
+      border: none;
+      box-shadow: 0 8px 20px rgba(204, 102, 0, 0.35) inset, 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .adhesion-title {
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+    }
+    .icon-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12) inset;
+      transition: transform .25s ease;
+    }
+    .icon-badge:hover { transform: scale(1.05) rotate(2deg); }
+    .adhesion-subtitle {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.25);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      font-size: 0.9rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08) inset;
+    }
+    .gradient-bar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #ffd54f, #ff8a65, #ff7043, #ffa726, #ffcc80);
+      opacity: 0.85;
+    }
+  </style>
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      <!-- Header -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header table-header form-header adhesion-header position-relative py-4">
+          <div class="d-flex justify-content-center align-items-center text-center">
+            <div class="form-header-title d-flex align-items-center gap-2 flex-wrap">
+              <span class="icon-badge"><i class="bi bi-people-fill fs-5 text-white opacity-100"></i></span>
+              <h5 class="mb-0 text-white fw-bold lh-sm adhesion-title fs-3">FORMULAIRE D'ADHÉSION À L'ÉGLISE</h5>
+            </div>
+          </div>
+          <div class="w-100 d-flex justify-content-center mt-2">
+            <span class="form-header-inline adhesion-subtitle fw-semibold text-center" title="(À remplir par le nouveau membre)">(À remplir par le nouveau membre)</span>
+          </div>
+          <div class="gradient-bar"></div>
+        </div>
+      </div>
+
+      <!-- Alerte de succès enregistrement -->
+      <div id="adhesionAlert" class="alert alert-success alert-dismissible fade d-none" role="alert">
+        <span class="alert-message">Enregistrement réussi.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+      </div>
+
+      <!-- Formulaire d'adhésion -->
+      <style>
+        /* Scope spécifique à la page Nos Fidèles */
+        body.nos-fideles-page {
+          background-image: url('{% static "main/images/hero/enrgE.jpg" %}');
+          background-size: cover;
+          background-position: center center;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+        }
+
+        .nos-fideles-page .card-beauty { border: 0; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+        
+        
+        
+        .nos-fideles-page .section-title { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .3px; font-size: 1.25rem; flex-wrap: nowrap; }
+        .nos-fideles-page .section-title > span { white-space: nowrap; text-transform: uppercase; }
+        .nos-fideles-page .section-title i { font-size: 1.25rem; }
+        /* Badge proche du titre */
+        .nos-fideles-page .section-title .badge-chip { margin-left: 8px; }
+        /* On masque la petite barre devant les titres pour que le trait coloré ne soit que sur le bloc de section */
+        .nos-fideles-page .section-title::before { display: none !important; }
+        .nos-fideles-page .soft-hr { height: 1px; border: 0; background: linear-gradient(90deg, transparent, rgba(0,0,0,.12), transparent); }
+        .nos-fideles-page .input-group-text { background: #fff; border-right: 0; color: #cc6600; }
+        .nos-fideles-page .input-icon .form-control { border-left: 0; }
+        .nos-fideles-page .form-control, .nos-fideles-page .form-select { border-radius: 10px; }
+        /* Par défaut, pas de focus coloré global: il sera défini par section */
+        .nos-fideles-page .form-control:focus, .nos-fideles-page .form-select:focus { box-shadow: none; border-color: #ced4da; }
+        .nos-fideles-page .badge-chip { padding: .35rem .55rem; border-radius: 999px; font-weight: 600; }
+        .nos-fideles-page .gradient-btn { background: linear-gradient(135deg,#ff8c00,#cc6600); border-color:#cc6600; }
+        .nos-fideles-page .gradient-btn:hover { filter: brightness(.95); }
+        .nos-fideles-page .help-hint { font-size: .85rem; color: #7a7a7a; }
+        .nos-fideles-page .card-header { border-top-left-radius: 14px !important; border-top-right-radius: 14px !important; }
+        /* Embellissement de l'entête du formulaire */
+        .nos-fideles-page .form-header {
+          position: relative;
+          padding-top: .9rem !important;
+          padding-bottom: .9rem !important;
+          box-shadow: inset 0 -1px 0 rgba(255,255,255,.18);
+        }
+        .nos-fideles-page .form-header::after{
+          content: "";
+          position: absolute; inset: 0; pointer-events: none;
+          background: radial-gradient(1200px 120px at 0% -40%, rgba(255,255,255,.08), transparent 60%);
+          border-top-left-radius: 14px; border-top-right-radius: 14px;
+        }
+        .nos-fideles-page .form-header-title h5{ letter-spacing: .3px; }
+        .nos-fideles-page .form-header-subtitle{ margin-top: 2px; }
+        .nos-fideles-page .form-header-inline{ 
+          opacity: .65; 
+          display: inline-block; 
+          max-width: 40ch; 
+          white-space: nowrap; 
+          overflow: hidden; 
+          text-overflow: ellipsis; 
+        }
+        @media (max-width: 576px){
+          .nos-fideles-page .form-header-inline{ 
+            display: block; 
+            width: 100%; 
+            margin-top: 2px; 
+            max-width: 100%; 
+            white-space: normal; 
+            overflow: visible; 
+            text-overflow: clip; 
+          }
+        }
+        .nos-fideles-page .header-actions .btn{ backdrop-filter: saturate(1.2); border-width: 1px; }
+        .nos-fideles-page .header-actions .btn:hover{ background: rgba(255,255,255,.15); }
+        .nos-fideles-page .header-actions .btn:active{ transform: translateY(0); }
+        
+        /* Wrappers par section avec fond doux et bordure à gauche */
+        .nos-fideles-page .section-wrap { 
+          --accent: #999999;                 /* couleur d'accent par défaut, surchargée par section */
+          --chip-bg: #f5f5f5;                /* fond badge chip */
+          --chip-border: #e0e0e0;            /* bordure chip */
+          --chip-text: #555555;              /* texte chip */
+          background: #eaf6ff; 
+          padding: .5rem; border-radius: 10px;
+          border: 1px solid #d7e9ff;
+          border-left: 4px solid var(--accent);
+          box-shadow: 0 4px 12px rgba(0,0,0,.045);
+          transition: box-shadow .2s ease, transform .1s ease;
+        }
+        .nos-fideles-page .section-wrap:hover {
+          box-shadow: 0 8px 18px rgba(0,0,0,.06);
+          transform: translateY(-1px);
+        }
+        /* Styles scoped dans chaque section */
+        /* Appliquer la couleur d'accent au titre (icône + texte) et au badge */
+        .nos-fideles-page .section-title i { color: var(--accent) !important; }
+        .nos-fideles-page .section-title > span { color: var(--accent); }
+        .nos-fideles-page .section-title .badge-chip { background: var(--chip-bg); color: var(--chip-text); border: 1px solid var(--chip-border); box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+        .nos-fideles-page .section-wrap .input-group-text { color: var(--accent); }
+        .nos-fideles-page .section-wrap .form-control:focus,
+        .nos-fideles-page .section-wrap .form-select:focus { box-shadow: 0 0 0 .25rem color-mix(in oklab, var(--accent) 25%, transparent); border-color: var(--accent); }
+        .nos-fideles-page .section-wrap a.badge.bg-info { background-color: color-mix(in oklab, var(--accent) 20%, white) !important; border: 1px solid color-mix(in oklab, var(--accent) 45%, white); color: #0c5460; }
+
+        /* Déclinaisons par section (couleurs dédiées) */
+        /* Définir les variables d'accent par section (s'appliquent au titre et au contenu) */
+        .nos-fideles-page .sec-profil { --accent: #ff7a00; --chip-bg: #fff3e6; --chip-border: #ffdcbc; --chip-text: #9a4700; }
+        .nos-fideles-page .sec-foi { --accent: #5fbf6a; --chip-bg: #f4fff6; --chip-border: #daf0de; --chip-text: #2d6a33; }
+        .nos-fideles-page .sec-service { --accent: #5b8cff; --chip-bg: #eef3ff; --chip-border: #cdd9ff; --chip-text: #2b4aa3; }
+        .nos-fideles-page .sec-soutien { --accent: #b85c96; --chip-bg: #fff0f7; --chip-border: #f0cade; --chip-text: #723157; }
+        .nos-fideles-page .sec-signature { --accent: #8a8a8a; --chip-bg: #f6f6f6; --chip-border: #e4e4e4; --chip-text: #565656; }
+
+        /* Appliquer le fond doux uniquement aux blocs de contenu */
+        .nos-fideles-page .section-wrap.sec-profil { background: linear-gradient(0deg,#f3faff, #eaf6ff); }
+        .nos-fideles-page .section-wrap.sec-foi { background: linear-gradient(0deg,#f3faff, #eaf6ff); }
+        .nos-fideles-page .section-wrap.sec-service { background: linear-gradient(0deg,#f3faff, #eaf6ff); }
+        .nos-fideles-page .section-wrap.sec-soutien { background: linear-gradient(0deg,#f3faff, #eaf6ff); }
+        .nos-fideles-page .section-wrap.sec-signature { background: linear-gradient(0deg,#f3faff, #eaf6ff); }
+        /* Espacements harmonisés entre sections */
+        .nos-fideles-page .section-title + .section-wrap { margin-top: .2rem; }
+        .nos-fideles-page .soft-hr { margin: 1.1rem 0; }
+        
+        /* Améliorations visuelles: Section 3 (Engagement et participation) */
+        /* Légèrement décalé vers la droite */
+        .nos-fideles-page .section-wrap.sec-service .col-12 > .d-flex { justify-content: flex-start; padding-left: 24px; }
+        .nos-fideles-page .section-wrap.sec-service .form-check {
+          display: flex; align-items: center;
+          padding: 8px 12px; margin: 4px 0;
+          background: #f6faff;
+          border: 1px solid color-mix(in oklab, var(--accent) 20%, #dfe7ff);
+          border-radius: 10px;
+          box-shadow: 0 2px 6px rgba(0,0,0,.04);
+          transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+        }
+        .nos-fideles-page .section-wrap.sec-service .form-check:hover {
+          border-color: color-mix(in oklab, var(--accent) 55%, #cbd6ff);
+          box-shadow: 0 4px 12px rgba(0,0,0,.06);
+          background-color: #eef6ff;
+        }
+        .nos-fideles-page .section-wrap.sec-service .form-check-input {
+          width: 1.05rem; height: 1.05rem; cursor: pointer;
+          border-color: color-mix(in oklab, var(--accent) 35%, #a3b8ff);
+        }
+        .nos-fideles-page .section-wrap.sec-service .form-check-input:checked {
+          background-color: var(--accent); border-color: var(--accent);
+        }
+        .nos-fideles-page .section-wrap.sec-service .form-check-label {
+          margin-left: 8px; cursor: pointer; font-weight: 600; color: #2b4aa3;
+        }
+        .nos-fideles-page .section-wrap.sec-service .form-check-input:checked ~ .form-check-label {
+          color: color-mix(in oklab, var(--accent) 80%, black);
+        }
+        /* Groupe "Autre" */
+        .nos-fideles-page .section-wrap.sec-service .d-flex.align-items-center > .form-check {
+          margin: 0; background: transparent; border: 0; box-shadow: none; padding: 0;
+        }
+        .nos-fideles-page .section-wrap.sec-service #srv_autre {
+          width: min(100%, 520px);
+          max-width: 520px;
+          border-radius: 8px;
+          border: 1px solid color-mix(in oklab, var(--accent) 30%, #dfe7ff);
+          padding: 8px 12px; height: 40px; font-size: .95rem;
+          transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+        }
+        @media (max-width: 768px){
+          .nos-fideles-page .section-wrap.sec-service #srv_autre {
+            width: 100%;
+            max-width: 100%;
+          }
+        }
+        .nos-fideles-page .section-wrap.sec-service #srv_autre:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 .2rem color-mix(in oklab, var(--accent) 25%, transparent);
+          background: #f6faff;
+        }
+        .nos-fideles-page .section-wrap.sec-service #srv_autre:disabled {
+          opacity: .7; background: #f3f6ff;
+        }
+      /* Tableau moderne */
+      .nos-fideles-page .table-modern-wrapper { border-radius: 12px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.06); background: #fff; }
+      .nos-fideles-page .table-modern { margin: 0; }
+      .nos-fideles-page .table-modern thead tr {
+        position: sticky; top: 0; z-index: 2;
+        box-shadow: 0 2px 0 rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.06);
+      }
+      .nos-fideles-page .table-modern thead th {
+        background: linear-gradient(135deg, #5b8cff, #2b4aa3) !important;
+        color: #fff !important;
+        font-weight: 800; letter-spacing: .35px; text-transform: uppercase;
+        font-size: .85rem; line-height: 1.1;
+        padding: .75rem .8rem;
+        border: 0 !important;
+        border-right: 1px solid rgba(255,255,255,.22) !important;
+        vertical-align: middle;
+      }
+      .nos-fideles-page .table-modern thead th:last-child {
+        border-right-color: transparent !important;
+      }
+      .nos-fideles-page .table-modern thead th:first-child {
+        border-top-left-radius: 10px;
+      }
+      .nos-fideles-page .table-modern thead th:last-child {
+        border-top-right-radius: 10px;
+      }
+      .nos-fideles-page .table-modern thead th i { color: rgba(255,255,255,.95); }
+      .nos-fideles-page .table-modern tbody tr { transition: background-color .2s ease, box-shadow .2s ease; }
+      .nos-fideles-page .table-modern tbody tr:hover { background: #fbfcff; box-shadow: inset 0 0 0 9999px rgba(91,140,255,.05); }
+      .nos-fideles-page .table-modern tbody td { vertical-align: middle; }
+      .nos-fideles-page .table-modern .badge { font-weight: 600; border-radius: 8px; }
+      .nos-fideles-page .table-modern .btn-group .btn { border-radius: 8px !important; }
+      .nos-fideles-page .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 8px !important; padding: .25rem .6rem !important; margin: 0 .1rem;
+      }
+      .nos-fideles-page .dataTables_wrapper .dataTables_filter input { border-radius: 10px; }
+      .nos-fideles-page .dataTables_wrapper .dataTables_length select { border-radius: 10px; }
+      .nos-fideles-page .table-responsive { border-radius: 12px; }
+      /* En-tête carte tableau en dégradé bleu */
+      .nos-fideles-page .table-header {
+        background: linear-gradient(135deg, #5b8cff, #2b4aa3) !important;
+        color: #fff !important;
+        border-bottom: none !important;
+      }
+      .nos-fideles-page .table-header .btn { box-shadow: none; }
+      .nos-fideles-page .table-header .fw-semibold { color: #fff !important; }
+      /* Première colonne collante */
+      .nos-fideles-page .table-modern th.sticky-col { position: sticky; left: 0; z-index: 3; box-shadow: 2px 0 0 rgba(0,0,0,.05); }
+      .nos-fideles-page .table-modern td.sticky-col { position: sticky; left: 0; z-index: 1; box-shadow: 2px 0 0 rgba(0,0,0,.03); background: #fff; }
+      .nos-fideles-page .table-modern tbody tr:hover td.sticky-col { background: #fbfcff; }
+      /* Ellipses sur les colonnes longues */
+      .nos-fideles-page .table-modern th.ellipsis,
+      .nos-fideles-page .table-modern td.ellipsis { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      /* Aides largeur/retour-ligne pour DataTables */
+      .nos-fideles-page .table-modern td, .nos-fideles-page .table-modern th { white-space: nowrap; }
+      .nos-fideles-page .text-wrap { white-space: normal !important; }
+      </style>
+      <div class="card card-beauty shadow-sm mb-4">
+        <div class="card-body">
+          <div id="adhesionForm" class="collapse show">
+            <form id="formAdhesion" novalidate>
+              {% csrf_token %}
+              <!-- Section 1: Informations personnelles -->
+              <h6 class="section-title sec-profil mb-3"><i class="bi bi-person-vcard"></i><span>1. Informations personnelles</span> <span class="badge-chip">Profil</span></h6>
+              <div class="section-wrap sec-profil">
+                <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="nom" class="form-label">Nom</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                    <input type="text" class="form-control" id="nom" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="prenom" class="form-label">Prénom</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" class="form-control" id="prenom" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="sexe" class="form-label">Sexe</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-gender-ambiguous"></i></span>
+                    <select id="sexe" class="form-select" required>
+                      <option value="" selected disabled>Choisir...</option>
+                      <option>Masculin</option>
+                      <option>Féminin</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="date_naissance" class="form-label">Date de naissance</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
+                    <input type="date" class="form-control" id="date_naissance" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="lieu_naissance" class="form-label">Lieu de naissance</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                    <input type="text" class="form-control" id="lieu_naissance">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="nationalite" class="form-label">Nationalité</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-flag"></i></span>
+                    <input type="text" class="form-control" id="nationalite">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="adresse" class="form-label">Adresse</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-house"></i></span>
+                    <input type="text" class="form-control" id="adresse">
+                  </div>
+                  <div class="help-hint">Indiquez l'adresse complète si possible</div>
+                </div>
+                <div class="col-md-3">
+                  <label for="telephone" class="form-label">Téléphone</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                    <input type="tel" class="form-control" id="telephone" required>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="email" class="form-label">Email</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control" id="email">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="profession" class="form-label">Profession</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
+                    <input type="text" class="form-control" id="profession">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="eglise_id" class="form-label">Église d'appartenance</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-building"></i></span>
+                    <select id="eglise_id" class="form-select" required>
+                      <option value="" selected disabled>Choisir une église...</option>
+                      {% for e in eglises %}
+                        <option value="{{ e.id }}">{{ e.nom }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="situation_familiale" class="form-label">Situation familiale</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-people"></i></span>
+                    <select id="situation_familiale" class="form-select">
+                      <option value="" selected>Choisir...</option>
+                      <option>Célibataire</option>
+                      <option>Marié(e)</option>
+                      <option>Divorcé(e)</option>
+                      <option>Veuf(ve)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="nb_enfants" class="form-label">Nombre d'enfants</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-123"></i></span>
+                    <input type="number" min="0" class="form-control" id="nb_enfants" value="0">
+                  </div>
+                </div>
+                </div>
+              </div>
+
+              <hr class="my-4 soft-hr">
+
+              <!-- Section 2: Informations spirituelles -->
+              <h6 class="section-title sec-foi mb-3"><i class="bi bi-stars"></i><span>2. Informations spirituelles</span> <span class="badge-chip">Foi</span></h6>
+              <div class="section-wrap sec-foi">
+                <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                  <label class="form-label">Baptisé(e)</label>
+                  <select id="bapteme" class="form-select" required>
+                    <option value="" selected disabled>Choisir...</option>
+                    <option value="oui">Oui</option>
+                    <option value="non">Non</option>
+                  </select>
+                </div>
+                <div class="col-md-3 d-none" id="bapteme_par_group">
+                  <label for="bapteme_par" class="form-label">Par qui</label>
+                  <input type="text" id="bapteme_par" class="form-control">
+                </div>
+                <div class="col-md-3 d-none" id="bapteme_lieu_group">
+                  <label for="bapteme_lieu" class="form-label">Lieu</label>
+                  <input type="text" id="bapteme_lieu" class="form-control">
+                </div>
+                <div class="col-md-3 d-none" id="bapteme_date_group">
+                  <label for="bapteme_date" class="form-label">Date</label>
+                  <input type="date" id="bapteme_date" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label for="eglise_precedente" class="form-label">Église précédente</label>
+                  <input type="text" id="eglise_precedente" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label for="motivation" class="form-label">Motivation</label>
+                  <input type="text" id="motivation" class="form-control" placeholder="Pourquoi souhaitez-vous adhérer ?">
+                </div>
+              </div>
+
+              <hr class="my-4 soft-hr">
+
+              <!-- Section 3: Engagement et participation -->
+              <style>
+                /* Compacter l'interligne des libellés uniquement pour cette section */
+                .section-wrap.sec-service .form-check-label { line-height: 1.15; }
+                .section-wrap.sec-service .form-check { margin-bottom: 0; }
+              </style>
+              <h6 class="section-title sec-service mb-3"><i class="bi bi-people"></i><span>3. Engagement et participation</span> <span class="badge-chip">Service</span></h6>
+              <div class="section-wrap sec-service">
+                <div class="row g-3">
+                <div class="col-12">
+                  <div class="d-flex flex-wrap align-items-center" style="gap: 32px;">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="Prédication" id="srv_predication">
+                      <label class="form-check-label" for="srv_predication"><i class="bi bi-mic me-1"></i>Prédication</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="Chorale / Louange" id="srv_chorale">
+                      <label class="form-check-label" for="srv_chorale"><i class="bi bi-music-note-beamed me-1"></i>Chorale / Louange</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="Accueil et service d’ordre (Huissiers)" id="srv_accueil">
+                      <label class="form-check-label" for="srv_accueil"><i class="bi bi-door-open me-1"></i>Accueil et service d’ordre (Huissiers)</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="Enseignement" id="srv_enseignement">
+                      <label class="form-check-label" for="srv_enseignement"><i class="bi bi-book me-1"></i>Enseignement</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="Aide sociale" id="srv_aide">
+                      <label class="form-check-label" for="srv_aide"><i class="bi bi-heart me-1"></i>Aide sociale</label>
+                    </div>
+                    
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="Groupe de prière" id="srv_groupe_priere">
+                      <label class="form-check-label" for="srv_groupe_priere"><i class="bi bi-people me-1"></i>Groupe de prière</label>
+                    </div>
+                    <div class="d-flex align-items-center" style="gap:10px;">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="srv_autre_chk">
+                        <label class="form-check-label" for="srv_autre_chk">Autre</label>
+                      </div>
+                      <input type="text" id="srv_autre" class="form-control form-control-sm" placeholder="Préciser" disabled>
+                    </div>
+
+                    <hr class="my-3">
+                    <div class="row g-2 align-items-center">
+                      <div class="col-md-12">
+                        <label for="departement_select" class="form-label mb-1">Département où vous souhaitez servir le Seigneur</label>
+                        <div class="input-group input-icon">
+                          <span class="input-group-text"><i class="bi bi-diagram-3"></i></span>
+                          <input type="text" id="departement_select" class="form-control" placeholder="Saisir le département (auto-suggestion)" list="departement_options" aria-label="Département de service">
+                        </div>
+                        <datalist id="departement_options">
+                          <option value="Département des Hommes">
+                          <option value="Département des Femmes">
+                          <option value="Département de la Jeunesse">
+                          <option value="Département des Enfants (École du dimanche)">
+                          <option value="Département Musique / Louange">
+                          <option value="Département Enseignement / Bible">
+                          <option value="Département Évangélisation / Mission">
+                          <option value="Département Intercession / Prière">
+                          <option value="Département Accueil / Protocole">
+                          <option value="Département Médias / Communication">
+                          <option value="Département Technique / Sonorisation">
+                          <option value="Département Social / Action sociale">
+                          <option value="Département Visite & Assistance">
+                          <option value="Département Logistique">
+                          <option value="Département Hygiène & Entretien">
+                        </datalist>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr class="my-4 soft-hr">
+
+              <!-- Section 4: Dons et contributions -->
+              <h6 class="section-title sec-soutien mb-3"><i class="bi bi-piggy-bank"></i><span>4. Dons et contributions</span> <span class="badge-chip">Soutien</span></h6>
+              <div class="section-wrap sec-soutien">
+                <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="soutien_financier" class="form-label">Souhaitez-vous apporter un soutien financier ?</label>
+                  <select id="soutien_financier" class="form-select">
+                    <option value="Non" selected>Non</option>
+                    <option value="Oui">Oui</option>
+                  </select>
+                </div>
+                <div class="col-md-6 d-none" id="montant_group">
+                  <label for="montant_souhaite" class="form-label">Montant (optionnel) — GNF</label>
+                  <input type="text" inputmode="numeric" id="montant_souhaite" class="form-control" placeholder="Ex: 50 000 GNF" disabled autocomplete="off" />
+                  <div class="form-text">Devise: Franc guinéen (GNF)</div>
+                </div>
+              </div>
+
+              <hr class="my-4 soft-hr">
+
+              <!-- Section 5: Attestation et consentement -->
+              <h6 class="section-title sec-signature mb-3"><i class="bi bi-pencil-square"></i><span>5. Attestation et consentement</span> <span class="badge-chip">Signature</span></h6>
+              <div class="section-wrap sec-signature">
+                <div class="row g-3">
+                <div class="col-12">
+                  <div class="form-text mb-2">En soumettant ce formulaire, je déclare sur l'honneur que les informations fournies sont exactes et j'accepte de respecter les statuts et règlements intérieurs de l'Église.</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="date_signature" class="form-label">Date</label>
+                  <input type="date" id="date_signature" class="form-control" required>
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <!-- Section 6: Pièces jointes -->
+              <h6 class="fw-bold text-uppercase text-secondary mb-3">6. Pièces jointes</h6>
+              <div class="row g-3">
+                <div class="col-md-12">
+                  <label for="certificat_bapteme" class="form-label">Certificat de baptême (si applicable)</label>
+                  <input type="file" id="certificat_bapteme" class="form-control" accept="image/*,application/pdf">
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="submit" class="btn btn-primary gradient-btn">
+                  <i class="bi bi-check2-circle me-1"></i>Soumettre la demande
+                </button>
+                <button type="reset" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau dynamique des adhésions -->
+      <div class="card shadow-sm">
+        <div class="card-header table-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold d-flex align-items-center">
+            <i class="bi bi-list-ul me-2"></i>Liste des Adhésions enregistrées
+            <span id="adhCount" class="ms-2 text-white-50">(0 adhésions)</span>
+          </span>
+          <div class="d-flex align-items-center gap-2">
+            <button id="exportExcel" class="btn btn-success btn-sm"><i class="bi bi-file-earmark-excel me-1"></i>Excel</button>
+            <button id="exportPDF" class="btn btn-danger btn-sm"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</button>
+            <button id="printTable" class="btn btn-primary btn-sm"><i class="bi bi-printer me-1"></i>Imprimer</button>
+          </div>
+        </div>
+        <div class="card-body table-modern-wrapper">
+          <div id="membersTableHost" class="table-responsive">
+            <table id="membersTable" class="table table-sm table-hover table-striped align-middle table-modern" style="width:100%">
+              <thead class="table-light">
+                <tr>
+                  <th class="sticky-col">#</th>
+                  <th>Nom complet</th>
+                  <th>Sexe</th>
+                  <th>Naissance</th>
+                  <th>Contact</th>
+                  <th>Baptême</th>
+                  <th class="ellipsis">Motivation</th>
+                  <th class="ellipsis">Services</th>
+                  <th>Église</th>
+                  <th><i class="bi bi-diagram-3 me-1"></i>Départements</th>
+                  <th>Soutien</th>
+                  <th><i class="bi bi-cash-coin me-1"></i>Montant</th>
+                  <th><i class="bi bi-folder2-open me-1"></i>Docs</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer bg-white d-flex justify-content-center">
+          <a href="{% url 'main:membres_eglise' %}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-people"></i> Voir tous les Adhérents
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <!-- DataTables & Buttons CDN -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" />
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
+  <script>
+    (function(){
+      // Init popovers (ex: bouton Informations dans le header)
+      if(window.bootstrap){
+        document.querySelectorAll('[data-bs-toggle="popover"]').forEach(el=>{
+          if(!el._popoverInited){ new bootstrap.Popover(el); el._popoverInited = true; }
+        });
+      }
+
+      const form = document.getElementById('formAdhesion');
+      const bapteme = document.getElementById('bapteme');
+      const grpPar = document.getElementById('bapteme_par_group');
+      const grpLieu = document.getElementById('bapteme_lieu_group');
+      const grpDate = document.getElementById('bapteme_date_group');
+      const autreChk = document.getElementById('srv_autre_chk');
+      const autreInput = document.getElementById('srv_autre');
+      const egliseSelect = document.getElementById('eglise_id');
+      const soutienSel = document.getElementById('soutien_financier');
+      const montantGroup = document.getElementById('montant_group');
+      const montantInput = document.getElementById('montant_souhaite');
+
+      // Toggle détails baptême
+      function toggleBapteme(){
+        const show = bapteme.value === 'oui';
+        [grpPar, grpLieu, grpDate].forEach(el => el.classList.toggle('d-none', !show));
+      }
+      bapteme.addEventListener('change', toggleBapteme);
+
+      // Autre service
+      autreChk.addEventListener('change', () => {
+        autreInput.disabled = !autreChk.checked;
+        if(!autreChk.checked){ autreInput.value = ''; }
+      });
+
+      // Formatage live du montant avec séparateurs de milliers
+      if(montantInput){
+        montantInput.addEventListener('input', () => {
+          const digits = normalizeMontant(montantInput.value);
+          if(digits === ''){ montantInput.value = ''; return; }
+          montantInput.value = new Intl.NumberFormat('fr-FR').format(Number(digits));
+        });
+      }
+
+      // Toggle Montant selon soutien financier
+      function toggleMontant(){
+        const show = soutienSel && soutienSel.value === 'Oui';
+        if(montantGroup){ montantGroup.classList.toggle('d-none', !show); }
+        if(montantInput){ montantInput.disabled = !show; if(!show) montantInput.value = ''; }
+      }
+      if(soutienSel){
+        soutienSel.addEventListener('change', toggleMontant);
+        // init état au chargement
+        toggleMontant();
+      }
+
+      // Date par défaut aujourd'hui
+      const dateSig = document.getElementById('date_signature');
+      if(dateSig && !dateSig.value){
+        const t = new Date();
+        const mm = String(t.getMonth()+1).padStart(2,'0');
+        const dd = String(t.getDate()).padStart(2,'0');
+        dateSig.value = `${t.getFullYear()}-${mm}-${dd}`;
+      }
+
+      // Réinitialisation manuelle du formulaire (bouton Reset)
+      if(form){
+        form.addEventListener('reset', function(){
+          // Attendre que le navigateur ait effectué le reset HTML
+          setTimeout(()=>{
+            // Remettre l'état des sections dynamiques
+            try { toggleBapteme(); } catch(_){ }
+            try {
+              if(autreChk){ autreChk.checked = false; }
+              if(autreInput){ autreInput.disabled = true; autreInput.value = ''; }
+            } catch(_){ }
+            try {
+              if(soutienSel){
+                // Valeur par défaut visuelle
+                if ([...soutienSel.options].some(o=>o.value==='Non')) soutienSel.value = 'Non';
+              }
+              toggleMontant();
+            } catch(_){ }
+            try {
+              if(dateSig){
+                const t = new Date();
+                const mm = String(t.getMonth()+1).padStart(2,'0');
+                const dd = String(t.getDate()).padStart(2,'0');
+                dateSig.value = `${t.getFullYear()}-${mm}-${dd}`;
+              }
+            } catch(_){ }
+          }, 0);
+        });
+      }
+
+      // (Barre de progression supprimée)
+
+      // Utils format
+      function truncateText(str, max){
+        const s = (str || '').toString();
+        return s.length > max ? s.slice(0, max - 1) + '…' : s;
+      }
+      function formatMontant(val){
+        if(val === null || val === undefined || val === '') return '';
+        const n = Number(val);
+        if(Number.isNaN(n)) return val.toString();
+        return new Intl.NumberFormat('fr-FR').format(n);
+      }
+      function formatMontantGNF(val){
+        const f = formatMontant(val);
+        return f ? `${f} GNF` : '';
+      }
+      // Normaliser un montant saisi avec séparateurs -> chaîne numérique brute
+      function normalizeMontant(str){
+        const s = (str || '').toString();
+        const digits = s.replace(/\D+/g, '');
+        return digits.replace(/^0+(?=\d)/, '');
+      }
+
+      // Afficher une alerte de succès qui disparaît automatiquement
+      function showSuccess(message){
+        const alertEl = document.getElementById('adhesionAlert');
+        if(!alertEl) return;
+        // Ajuster type
+        alertEl.classList.remove('alert-danger');
+        alertEl.classList.add('alert-success');
+        // Message
+        const span = alertEl.querySelector('.alert-message');
+        if(span) span.textContent = message || 'Enregistrement réussi.';
+        // Afficher
+        alertEl.classList.remove('d-none');
+        alertEl.classList.add('show');
+        // Auto-hide après 3s
+        setTimeout(()=>{
+          alertEl.classList.remove('show');
+          setTimeout(()=>{ alertEl.classList.add('d-none'); }, 200);
+        }, 3000);
+      }
+
+      // Afficher une alerte d'erreur cohérente
+      function showError(message){
+        const alertEl = document.getElementById('adhesionAlert');
+        if(!alertEl) return;
+        alertEl.classList.remove('alert-success');
+        alertEl.classList.add('alert-danger');
+        const span = alertEl.querySelector('.alert-message');
+        if(span) span.textContent = message || 'Une erreur est survenue.';
+        alertEl.classList.remove('d-none');
+        alertEl.classList.add('show');
+      }
+
+      // Icônes document selon type
+      function docIcon(url){
+        const u = (url || '').toLowerCase();
+        if(u.endsWith('.pdf')) return 'bi-file-earmark-pdf';
+        if(/\.(png|jpe?g|gif|webp|bmp|tiff?|heic|heif)$/.test(u)) return 'bi-image';
+        return 'bi-file-earmark';
+      }
+
+      // Format taille fichier
+      function formatBytes(bytes){
+        const b = Number(bytes);
+        if(!b || isNaN(b)) return '';
+        const u = ['octets','Ko','Mo','Go','To'];
+        const i = Math.floor(Math.log(b)/Math.log(1024));
+        const v = (b/Math.pow(1024,i)).toFixed(i===0?0:1);
+        return `${v} ${u[i]}`;
+      }
+
+      // Popover d'aperçu pour images
+      function initDocPopovers(){
+        if (window.bootstrap && document.querySelector('[data-doc-preview="img"]')){
+          document.querySelectorAll('[data-doc-preview="img"]').forEach(el => {
+            if(el._docPopoverInitialized) return;
+            const url = el.getAttribute('data-doc-url');
+            const pop = new bootstrap.Popover(el, {
+              trigger: 'hover focus',
+              placement: 'top',
+              html: true,
+              sanitize: false,
+              content: `<img src="${url}" alt="preview" style="max-width:200px; max-height:160px; border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,.2);"/>`
+            });
+            el._docPopoverInitialized = true;
+          });
+        }
+      }
+
+      // DataTable init
+      let rowCounter = 0;
+      const uniqueChurches = new Set();
+      const uniqueDepartments = new Set();
+
+      function normalizeDepartments(dep){
+        if(!dep) return [];
+        // If already array
+        if(Array.isArray(dep)){
+          return dep
+            .map(x=>
+              typeof x === 'string' ? x : (x?.nom || x?.name || x?.label || '')
+            )
+            .map(s=>s?.toString().trim())
+            .filter(Boolean);
+        }
+        if(typeof dep === 'object'){
+          const one = (dep.nom || dep.name || dep.label || dep.titre || '').toString().trim();
+          return one ? [one] : [];
+        }
+        // String: split CSV/semicolon
+        const txt = dep.toString();
+        return txt
+          .split(/[,;|]/)
+          .map(s=>s.trim())
+          .filter(Boolean);
+      }
+
+      function renderDepartmentsBadges(dep){
+        const arr = normalizeDepartments(dep);
+        if(arr.length === 0) return '<span class="badge bg-light text-muted">—</span>';
+        return arr.map(d=>`<span class="badge bg-info text-dark me-1 mb-1">${d}</span>`).join('');
+      }
+      const dt = new DataTable('#membersTable', {
+        paging: true,
+        pagingType: 'numbers',
+        pageLength: 50,
+        searching: true,
+        responsive: true,
+        autoWidth: true,
+        scrollX: true,
+        deferRender: true,
+        ordering: false,
+        columnDefs: [
+          { targets: '_all', className: 'text-nowrap' },
+          { targets: [6,7], className: 'ellipsis' },
+          { targets: [2,5,10,12,13,14], className: 'text-center' },
+          { targets: [11], className: 'text-end' }
+        ],
+        language: {
+          url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
+          paginate: { previous: '', next: '' }
+        }
+      });
+      // Ajustements colonnes
+      dt.on('init', function(){
+        dt.columns.adjust();
+        if(dt.responsive && dt.responsive.recalc) dt.responsive.recalc();
+      });
+      dt.on('draw', function(){
+        dt.columns.adjust();
+        if(dt.responsive && dt.responsive.recalc) dt.responsive.recalc();
+      });
+      setTimeout(()=>{ dt.columns.adjust(); if(dt.responsive?.recalc) dt.responsive.recalc(); }, 100);
+      window.addEventListener('resize', ()=>{ dt.columns.adjust(); if(dt.responsive?.recalc) dt.responsive.recalc(); });
+      document.addEventListener('shown.bs.tab', ()=>{ setTimeout(()=>{ dt.columns.adjust(); if(dt.responsive?.recalc) dt.responsive.recalc(); }, 50); });
+      document.addEventListener('shown.bs.collapse', ()=>{ setTimeout(()=>{ dt.columns.adjust(); if(dt.responsive?.recalc) dt.responsive.recalc(); }, 50); });
+      document.addEventListener('shown.bs.modal', ()=>{ setTimeout(()=>{ dt.columns.adjust(); if(dt.responsive?.recalc) dt.responsive.recalc(); }, 50); });
+      // Ré-initialiser les popovers d'images et MAJ du compteur à chaque draw
+      dt.on('draw', function(){
+        initDocPopovers();
+        updateAdhCount();
+      });
+
+      // (Filtre Église supprimé sur demande)
+
+      function refreshDepartementFilter(){
+        const sel = document.getElementById('departementFilter');
+        if(!sel) return;
+        const current = sel.value;
+        sel.innerHTML = '<option value="">Tous les départements</option>';
+        Array.from(uniqueDepartments).sort((a,b)=>a.localeCompare(b,'fr')).forEach(n=>{
+          const opt = document.createElement('option');
+          opt.value = n; opt.textContent = n; sel.appendChild(opt);
+        });
+        if(current && Array.from(uniqueDepartments).includes(current)) sel.value = current;
+      }
+      document.getElementById('departementFilter')?.addEventListener('change', function(){
+        const val = this.value;
+        // Use contains search so rows with multiple départements still match
+        dt.column(9).search(val || '').draw();
+      });
+
+      // Met à jour le badge du nombre d'adhésions
+      function updateAdhCount(){
+        const el = document.getElementById('adhCount');
+        if(!el) return;
+        const count = dt.rows().count();
+        const n = new Intl.NumberFormat('fr-FR').format(count);
+        el.textContent = `(${n} ${count === 1 ? 'adhésion' : 'adhésions'})`;
+      }
+
+      // Mise à jour initiale après création (au cas où des données sont déjà présentes)
+      updateAdhCount();
+
+      // Util: CSRF depuis cookie
+      function getCookie(name){
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if(parts.length === 2) return parts.pop().split(';').shift();
+      }
+      let csrftoken = getCookie('csrftoken');
+      if(!csrftoken){
+        const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if(csrfInput) csrftoken = csrfInput.value;
+      }
+
+      // Charger les départements pour l'auto-complétion du datalist
+      function extractDepartementNames(items){
+        if(!items) return [];
+        const acc = [];
+        if(Array.isArray(items)){
+          for(const it of items){
+            if(typeof it === 'string'){ acc.push(it); continue; }
+            if(typeof it === 'object'){
+              const n = (it.nom || it.name || it.label || it.titre || it.title || '').toString().trim();
+              if(n) acc.push(n);
+            }
+          }
+        } else if (typeof items === 'object'){
+          const maybe = items.departements || items.departments || items.data || items.results || items.items;
+          return extractDepartementNames(maybe);
+        }
+        return acc
+          .map(s=>s.toString().trim())
+          .filter(Boolean);
+      }
+      function populateDepartementDatalist(values){
+        const dl = document.getElementById('departement_options');
+        if(!dl) return;
+        // Récupérer les options statiques existantes pour fusionner
+        const existing = Array.from(dl.querySelectorAll('option'))
+          .map(o=>o.getAttribute('value')||o.value||'')
+          .map(s=>s.toString().trim())
+          .filter(Boolean);
+        const merged = Array.from(new Set([...(existing||[]), ...(values||[])]))
+          .filter(Boolean)
+          .sort((a,b)=>a.localeCompare(b,'fr'));
+        // Reconstruire le datalist proprement
+        dl.innerHTML = '';
+        for(const v of merged){
+          const opt = document.createElement('option');
+          opt.value = v; dl.appendChild(opt);
+        }
+      }
+      (async function loadDepartements(){
+        try{
+          const resp = await fetch('/api/departements/');
+          if(!resp.ok) throw new Error('HTTP '+resp.status);
+          const json = await resp.json();
+          const vals = extractDepartementNames(json);
+          if(vals && vals.length){ populateDepartementDatalist(vals); }
+        }catch(err){
+          console.warn('Chargement des départements (API) échoué, options statiques conservées:', err);
+          // Pas de blocage: on conserve les options existantes
+        }
+      })();
+
+      // Charger membres existants depuis l'API
+      (async function loadMembres(){
+        try{
+          const resp = await fetch('/api/membres/');
+          const json = await resp.json();
+          if(json && json.success && Array.isArray(json.membres)){
+            const preview = json.membres.slice(0, 3);
+            for(const m of preview){
+              rowCounter += 1;
+              const sexeDisp = m.sexe === 'M' ? 'Masculin' : (m.sexe === 'F' ? 'Féminin' : (m.sexe || ''));
+              const naissance = `${m.date_naissance || ''}${m.lieu_naissance ? ' • ' + m.lieu_naissance : ''}`;
+              const contact = `${m.telephone || ''}${m.email ? ' / ' + m.email : ''}`;
+              const bap = m.date_bapteme ? `Oui (-, ${m.lieu_bapteme || '-'}, ${m.date_bapteme || '-'})` : 'Non';
+              // Église: supporte plusieurs champs possibles et objets
+              let egliseDisp = '—';
+              const cand = [m.eglise_nom, m.egliseName, m.eglise_name, m.egliseNom, m.eglise];
+              for (const c of cand){
+                if (c){
+                  if (typeof c === 'string') { egliseDisp = c; break; }
+                  if (typeof c === 'object') { egliseDisp = (c.nom || c.name || c.label || '').toString() || egliseDisp; break; }
+                }
+              }
+              const motivationFull = (m.motivation || '').toString();
+              const servicesFull = (m.services || '').toString();
+              const motivation = `<span title="${motivationFull.replaceAll('"','&quot;')}">${truncateText(motivationFull, 60)}</span>`;
+              const services = `<span title="${servicesFull.replaceAll('"','&quot;')}">${truncateText(servicesFull, 60)}</span>`;
+              const soutien = m.soutien_financier ? 'Oui' : 'Non';
+              const montant = formatMontantGNF(m.montant_souhaite || '');
+              // Construire la colonne Documents à partir des champs connus éventuellement renvoyés par l'API
+              const cb = m.certificat_bapteme_url || m.certificat_bapteme || '';
+              const cbSize = m.certificat_bapteme_size;
+              let docsHtml = '';
+              const link = (url, label, size) => {
+                const icon = docIcon(url);
+                const isImg = icon === 'bi-image';
+                const sizeTxt = size ? ` (${formatBytes(size)})` : '';
+                const attrs = isImg ? `data-doc-preview="img" data-doc-url="${url}"` : '';
+                return `<a href="${url}" target="_blank" ${attrs} class="badge bg-info text-decoration-none me-1"><i class="bi ${icon} me-1"></i>${label}${sizeTxt}</a>`;
+              };
+              if (cb) docsHtml += link(cb, 'Baptême', cbSize);
+              if (!docsHtml) docsHtml = '<span class="badge bg-secondary">Aucun</span>';
+              const date = m.date_adhesion || '';
+              const actions = `
+                <div class="btn-group" role="group" aria-label="Actions">
+                  <button class="btn btn-sm btn-outline-primary" data-action="edit" data-row="${rowCounter}" data-id="${m.id}" title="Modifier">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-info" data-action="details" data-row="${rowCounter}" data-id="${m.id}" title="Voir les détails">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" data-action="delete" data-row="${rowCounter}" data-id="${m.id}" title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>`;
+              if(egliseDisp && egliseDisp !== '—') uniqueChurches.add(egliseDisp);
+              const depsArr = normalizeDepartments(m.departement);
+              depsArr.forEach(d=>uniqueDepartments.add(d));
+              dt.row.add([
+                rowCounter,
+                `${m.prenom || ''} ${m.nom || ''}`.trim(),
+                sexeDisp,
+                naissance,
+                contact,
+                bap,
+                motivation,
+                services,
+                egliseDisp ? `<span class="badge bg-secondary">${egliseDisp}</span>` : '<span class="badge bg-secondary">—</span>',
+                renderDepartmentsBadges(m.departement),
+                soutien,
+                montant,
+                docsHtml,
+                date,
+                actions
+              ]);
+            }
+            dt.draw(false);
+            initDocPopovers();
+            refreshDepartementFilter();
+          }
+        }catch(err){
+          console.error('Erreur chargement membres:', err);
+        }
+      })();
+
+      // Exports boutons
+      document.getElementById('exportExcel').addEventListener('click', function(){
+        dt.button?.('0').trigger();
+      });
+      document.getElementById('exportPDF').addEventListener('click', function(){
+        dt.button?.('1').trigger();
+      });
+      document.getElementById('printTable').addEventListener('click', function(){
+        dt.button?.('2').trigger();
+      });
+
+      // Ajouter les boutons Buttons à DataTable
+      new $.fn.dataTable.Buttons(dt, {
+        buttons: [
+          { extend: 'excelHtml5', title: 'Adhesions', text: 'Excel' },
+          { extend: 'pdfHtml5', title: 'Adhesions', text: 'PDF', orientation: 'landscape', pageSize: 'A4' },
+          { extend: 'print', title: 'Adhesions', text: 'Imprimer' }
+        ]
+      });
+      dt.buttons(0, null).container().hide(); // on cache le conteneur par défaut
+
+      // Soumission formulaire (AJAX vers l'API d'ajout)
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        // Validation simple champs requis
+        const requiredIds = ['nom','prenom','sexe','date_naissance','telephone','bapteme','date_signature','eglise_id'];
+        for (const id of requiredIds){
+          const el = document.getElementById(id);
+          if(!el || !el.value){ el.focus(); return; }
+        }
+
+        // Construire FormData attendu par l'endpoint ajouter_membre
+        const fd = new FormData();
+        const nom = document.getElementById('nom').value.trim();
+        const prenom = document.getElementById('prenom').value.trim();
+        fd.append('nom_complet', `${prenom} ${nom}`.trim());
+        fd.append('sexe', document.getElementById('sexe').value);
+        fd.append('date_naissance', document.getElementById('date_naissance').value || '');
+        fd.append('lieu_naissance', document.getElementById('lieu_naissance').value || '');
+        fd.append('adresse', document.getElementById('adresse').value || '');
+        fd.append('telephone', document.getElementById('telephone').value || '');
+        fd.append('email', document.getElementById('email').value || '');
+        fd.append('profession', document.getElementById('profession').value || '');
+        fd.append('situation_familiale', document.getElementById('situation_familiale').value || '');
+        fd.append('nombre_enfants', document.getElementById('nb_enfants').value || '0');
+        fd.append('eglise_id', egliseSelect.value || '');
+        const estBaptise = document.getElementById('bapteme').value === 'oui';
+        fd.append('baptise', estBaptise ? 'oui' : 'non');
+        fd.append('date_bapteme', document.getElementById('bapteme_date').value || '');
+        fd.append('lieu_bapteme', document.getElementById('bapteme_lieu').value || '');
+        // Utiliser la date de signature comme date d'adhésion
+        fd.append('date_adhesion', document.getElementById('date_signature').value || '');
+
+        // Champs étendus
+        const motivation = (document.getElementById('motivation')?.value || '').trim();
+        if(motivation) fd.append('motivation', motivation);
+        const services = [];
+        const mapServices = [
+          ['srv_predication','Prédication'],
+          ['srv_chorale','Chorale / Louange'],
+          ['srv_accueil','Accueil et service d’ordre (Huissiers)'],
+          ['srv_enseignement','Enseignement'],
+          ['srv_aide','Aide sociale'],
+          ['srv_groupe_priere','Groupe de prière']
+        ];
+        mapServices.forEach(([id,label])=>{ const el=document.getElementById(id); if(el && el.checked) services.push(label); });
+        if(autreChk.checked && autreInput.value.trim()) services.push(autreInput.value.trim());
+        if(services.length) fd.append('services', services.join(','));
+        // Département (champ texte avec suggestions)
+        const depSel = (document.getElementById('departement_select')?.value || '').trim();
+        if(depSel) fd.append('departement', depSel);
+        const soutien = (document.getElementById('soutien_financier')?.value || '').trim();
+        if(soutien) fd.append('soutien_financier', soutien);
+        const montantSouhaiteBrut = normalizeMontant(document.getElementById('montant_souhaite')?.value || '');
+        if(montantSouhaiteBrut) fd.append('montant_souhaite', montantSouhaiteBrut);
+        // Fichiers (si fournis)
+        const fCB = document.getElementById('certificat_bapteme')?.files?.[0];
+        if(fCB) fd.append('certificat_bapteme', fCB);
+
+        try{
+          const resp = await fetch('/membres-eglise/ajout/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+            body: fd
+          });
+          const json = await resp.json();
+          if(json && json.success && json.membre){
+            // Ajouter au tableau avec formatage
+            rowCounter += 1;
+            const m = json.membre;
+            const sexeDisp = m.sexe === 'M' ? 'Masculin' : (m.sexe === 'F' ? 'Féminin' : (m.sexe || ''));
+            const naissance = `${m.date_naissance || ''}${m.lieu_naissance ? ' • ' + m.lieu_naissance : ''}`;
+            const contact = `${m.telephone || ''}${m.email ? ' / ' + m.email : ''}`;
+            const bap = m.date_bapteme ? `Oui (-, ${m.lieu_bapteme || '-'}, ${m.date_bapteme || '-'})` : 'Non';
+            // Église pour la ligne ajoutée: backend ou libellé du select
+            let egliseDisp = '—';
+            const cands = [m.eglise_nom, m.egliseName, m.eglise_name, m.egliseNom, m.eglise];
+            for (const c of cands){
+              if (c){
+                if (typeof c === 'string') { egliseDisp = c; break; }
+                if (typeof c === 'object') { egliseDisp = (c.nom || c.name || c.label || '').toString() || egliseDisp; break; }
+              }
+            }
+            if(egliseDisp === '—' && egliseSelect){
+              const opt = egliseSelect.options[egliseSelect.selectedIndex];
+              if(opt){ egliseDisp = opt.text || egliseDisp; }
+            }
+            // Construire la colonne Documents à partir de la réponse backend pour le membre ajouté
+            const pi2 = m.piece_identite_url || m.piece_identite || '';
+            const cb2 = m.certificat_bapteme_url || m.certificat_bapteme || '';
+            const pi2Size = m.piece_identite_size;
+            const cb2Size = m.certificat_bapteme_size;
+            let docsHtml = '';
+            const link2 = (url, label, size) => {
+              const icon = docIcon(url);
+              const isImg = icon === 'bi-image';
+              const sizeTxt = size ? ` (${formatBytes(size)})` : '';
+              const attrs = isImg ? `data-doc-preview=\"img\" data-doc-url=\"${url}\"` : '';
+              return `<a href="${url}" target="_blank" ${attrs} class="badge bg-info text-decoration-none me-1"><i class="bi ${icon} me-1"></i>${label}${sizeTxt}</a>`;
+            };
+            if (pi2) docsHtml += link2(pi2, 'Pièce', pi2Size);
+            if (cb2) docsHtml += link2(cb2, 'Baptême', cb2Size);
+            if (!docsHtml) docsHtml = '<span class="badge bg-secondary">Aucun</span>';
+            const date = m.date_adhesion || '';
+            const actions = `
+              <div class="btn-group" role="group" aria-label="Actions">
+                <button class="btn btn-sm btn-outline-primary" data-action="edit" data-row="${rowCounter}" data-id="${m.id}" title="Modifier">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-info" data-action="details" data-row="${rowCounter}" data-id="${m.id}" title="Voir les détails">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" data-action="delete" data-row="${rowCounter}" data-id="${m.id}" title="Supprimer">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>`;
+            if(egliseDisp && egliseDisp !== '—') uniqueChurches.add(egliseDisp);
+            const depsNew = normalizeDepartments(m.departement || (document.getElementById('departement_select')?.value || ''));
+            depsNew.forEach(d=>uniqueDepartments.add(d));
+            dt.row.add([
+              rowCounter,
+              `${m.prenom || ''} ${m.nom || ''}`.trim(),
+              sexeDisp,
+              naissance,
+              contact,
+              bap,
+              `<span title="${(m.motivation || '').toString().replaceAll('"','&quot;')}">${truncateText(m.motivation, 60)}</span>`,
+              `<span title="${(m.services || '').toString().replaceAll('"','&quot;')}">${truncateText(m.services, 60)}</span>`,
+              egliseDisp ? `<span class=\"badge bg-secondary\">${egliseDisp}</span>` : '<span class=\"badge bg-secondary\">—</span>',
+              renderDepartmentsBadges(depsNew),
+              (m.soutien_financier ? 'Oui' : 'Non'),
+              formatMontantGNF(m.montant_souhaite || ''),
+              docsHtml,
+              date,
+              actions
+            ]).draw(false);
+            initDocPopovers();
+            refreshEgliseFilter();
+            refreshDepartementFilter();
+
+            form.reset();
+            toggleBapteme();
+            autreInput.disabled = true;
+            // Alerte de succès
+            showSuccess('Membre enregistré avec succès.');
+          } else {
+            const err = (json && (json.error || json.message)) || 'Enregistrement impossible.';
+            showError(err);
+          }
+        }catch(err){
+          console.error('Erreur enregistrement membre:', err);
+          showError("Une erreur est survenue lors de l'enregistrement.");
+        }
+      });
+
+      // Actions (délégation): Modifier / Détails / Supprimer
+      document.querySelector('#membersTable tbody').addEventListener('click', async function(e){
+        const btn = e.target.closest('button');
+        if(!btn) return;
+        const action = btn.getAttribute('data-action') || '';
+        const tr = $(btn).closest('tr');
+        const id = btn.getAttribute('data-id');
+
+        if(action === 'edit'){
+          if(!id){ alert('Identifiant manquant pour la modification.'); return; }
+          window.location.href = `/membres-eglise/modifier/${id}/`;
+          return;
+        }
+        if(action === 'details'){
+          if(!id){ alert('Identifiant manquant pour les détails.'); return; }
+          window.location.href = `/membres-eglise/details/${id}/`;
+          return;
+        }
+        if(action === 'delete'){
+          if(id){
+            if(!confirm('Confirmez-vous la suppression de ce membre ?')) return;
+            try{
+              const resp = await fetch(`/membres-eglise/supprimer/${id}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' }
+              });
+              const json = await resp.json();
+              if(json && json.success){
+                dt.row(tr).remove().draw(false);
+              } else {
+                showError((json && json.error) || 'Suppression impossible.');
+              }
+            }catch(err){
+              console.error('Erreur suppression:', err);
+              showError('Erreur lors de la suppression.');
+            }
+          } else {
+            // Ligne non persistée: suppression locale
+            dt.row(tr).remove().draw(false);
+          }
+        }
+      });
+    })();
+  </script>
+  {% endblock %}

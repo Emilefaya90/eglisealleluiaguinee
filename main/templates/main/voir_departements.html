@@ -1,0 +1,563 @@
+{% extends 'main/base.html' %}
+{% load static humanize %}
+
+{% block title %}Voir les Départements - Gestion Église{% endblock %}
+
+{% block content %}
+<!-- Styles CSS pour l'apparence du formulaire -->
+<style>
+    .page-content {
+        padding-top: 30px;
+        padding-bottom: 50px;
+        background-color: #f8f9fc;
+        min-height: 100vh;
+    }
+
+    .form-header {
+        background: linear-gradient(135deg, #4a6baf, #6a8fd8);
+        background-size: 200% 200%;
+        animation: gradientBG 15s ease infinite;
+        color: white;
+        padding: 30px;
+        border-radius: 12px 12px 0 0;
+        margin-bottom: 0;
+        text-align: center;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('{% static "img/fond3.jpg" %}') center/cover;
+        opacity: 0.15;
+        z-index: 0;
+    }
+
+    .form-header * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .content-section {
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Styles pour le tableau des départements */
+    #departementsTable {
+        white-space: nowrap;
+        min-width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    /* Styles des en-têtes */
+    #departementsTable thead th {
+        position: sticky;
+        top: 0;
+        background: linear-gradient(135deg, #4e73df, #224abe);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+        padding: 15px 10px;
+        z-index: 10;
+        border: none;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Styles des cellules */
+    #departementsTable td {
+        padding: 12px 10px;
+        vertical-align: middle;
+        border-bottom: 1px solid #e3e6f0;
+        transition: all 0.2s ease;
+    }
+    
+    /* Styles des lignes */
+    #departementsTable tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    #departementsTable tbody tr:hover {
+        background-color: rgba(78, 115, 223, 0.08);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Styles des colonnes fixes */
+    #departementsTable th:first-child,
+    #departementsTable td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 5;
+        background-color: #f8f9fc;
+        font-weight: 500;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    #departementsTable th:nth-child(2),
+    #departementsTable td:nth-child(2) {
+        position: sticky;
+        left: 50px;
+        z-index: 5;
+        background-color: #f8f9fc;
+        font-weight: 500;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    #departementsTable th:last-child,
+    #departementsTable td:last-child {
+        position: sticky;
+        right: 0;
+        z-index: 5;
+        background-color: #f8f9fc;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Styles des boutons d'action */
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .action-buttons .btn {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-buttons .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Style pour les badges dans le tableau */
+    .badge-custom {
+        padding: 5px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.75rem;
+        display: inline-block;
+    }
+    
+    .badge-budget {
+        background-color: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+    
+    .badge-status {
+        background-color: rgba(13, 110, 253, 0.15);
+        color: #0d6efd;
+        border: 1px solid rgba(13, 110, 253, 0.3);
+    }
+    
+    /* Styles de l'indicateur de défilement */
+    .scroll-indicator {
+        display: none;
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.75);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        z-index: 100;
+        animation: fadeInOut 2.5s ease-in-out;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    @keyframes fadeInOut {
+        0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+    
+    /* Animation de rotation pour le bouton d'actualisation */
+    .rotate-animation {
+        animation: rotate 1s ease-in-out;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Style pour le bouton Retour */
+    .btn-retour {
+        background: linear-gradient(135deg, #4e73df, #224abe);
+        border: none;
+        box-shadow: 0 4px 6px rgba(78, 115, 223, 0.25);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-retour:hover {
+        background: linear-gradient(135deg, #3a5fc8, #1a3a9c);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(78, 115, 223, 0.35);
+    }
+</style>
+
+<div class="page-content">
+    <div class="container">
+        <div class="form-header">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="text-white mb-0 flex-grow-1"><i class="fas fa-sitemap me-2"></i>Départements de l'Église</h4>
+                <a href="{% url 'main:departements' %}" class="btn btn-light btn-sm ms-2 btn-retour">
+                    <i class="fas fa-arrow-left me-1"></i> Retour au formulaire
+                </a>
+            </div>
+        </div>
+        
+        <div class="content-section bg-white shadow-sm p-4 border border-light">
+            <!-- Message de succès -->
+            <div class="alert alert-success alert-dismissible fade show d-none" id="successMessage" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Opération réussie!</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <!-- Barre d'outils du tableau -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <div class="d-flex align-items-center">
+                <h5 class="text-primary mb-0"><i class="fas fa-list-alt me-2"></i>Liste des départements</h5>
+                <span class="badge bg-primary ms-2 rounded-pill" id="totalDepartements">{{ departements|length }}</span>
+              </div>
+              <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                <!-- Zone de recherche -->
+                <div class="input-group me-2" style="width: 300px;">
+                  <span class="input-group-text bg-primary text-white"><i class="fas fa-search"></i></span>
+                  <input type="text" class="form-control" id="searchDepartementInput" placeholder="Rechercher un département...">
+                </div>
+                <!-- Boutons d'exportation -->
+                <button id="btnExportExcel" class="btn btn-success btn-sm"><i class="bi bi-file-earmark-excel me-1"></i>Excel</button>
+                <button id="btnExportPDF" class="btn btn-danger btn-sm"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</button>
+                <button id="btnPrint" class="btn btn-primary btn-sm"><i class="bi bi-printer me-1"></i>Imprimer</button>
+                <!-- Bouton d'actualisation -->
+                <button type="button" class="btn btn-outline-primary" id="refreshTableBtn">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="table-responsive" style="overflow-x: auto; max-width: 100%;">
+                <!-- Indicateur de défilement horizontal -->
+                <div class="scroll-indicator">
+                    <i class="fas fa-arrows-alt-h me-1"></i> Faites défiler horizontalement pour voir toutes les colonnes
+                </div>
+                
+                <table class="table table-striped table-hover table-bordered" id="departementsTable">
+                    <thead class="table-primary">
+                        <tr>
+                          <th>#</th>
+                          <th>Église</th>
+                          <th>Nom</th>
+                          <th>Responsable</th>
+                          <th>Contacts</th>
+                          <th>Date nomination</th>
+                          <th>Actif</th>
+                          <th>Vision</th>
+                          <th>Mission</th>
+                          <th>Objectifs</th>
+                          <th>Membres clés</th>
+                          <th>Nb</th>
+                          <th>Ressources</th>
+                          <th>Besoins</th>
+                          <th class="text-nowrap"><i class="bi bi-cash-stack me-1"></i>Budget annuel estimé (en Francs Guinéens — GNF)</th>
+                          
+                          <th>Obs. Conseil</th>
+                          <th class="text-nowrap"><i class="bi bi-file-earmark-text me-1"></i>Documents Plan d'action</th>
+                          <th>Validé</th>
+                          <th>Date de validation</th>
+                          <th class="text-center no-export">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      {% for d in departements %}
+                        <tr>
+                          <td>{{ forloop.counter }}</td>
+                          <td>{{ d.eglise.nom }}</td>
+                          <td>{{ d.nom }}</td>
+                          <td>{{ d.responsable|default:"—" }}</td>
+                          <td>
+                            {% if d.telephone %}<span class="badge bg-light text-dark border">{{ d.telephone }}</span>{% endif %}
+                            {% if d.email %}<span class="badge bg-light text-dark border ms-1">{{ d.email }}</span>{% endif %}
+                            {% if not d.telephone and not d.email %}—{% endif %}
+                          </td>
+                          <td>{{ d.date_creation|date:"d/m/Y" }}</td>
+                          <td>{% if d.statut_actif %}<span class="badge bg-success">Actif</span>{% else %}<span class="badge bg-secondary">Inactif</span>{% endif %}</td>
+                          <td>{{ d.vision|default:"—" }}</td>
+                          <td>{{ d.mission|default:"—" }}</td>
+                          <td>{{ d.objectifs_specifiques|default:"—" }}</td>
+                          <td>{{ d.membres_clefs|default:"—" }}</td>
+                          <td>{{ d.nombre_membres|default:0 }}</td>
+                          <td>{{ d.ressources_disponibles|default:"—" }}</td>
+                          <td>{{ d.besoins_prioritaires|default:"—" }}</td>
+                          <td class="text-end">{% if d.budget_annuel_estime %}{{ d.budget_annuel_estime|intcomma }}&nbsp;GNF{% else %}—{% endif %}</td>
+                          
+                          <td>{{ d.observations_conseil|default:"—" }}</td>
+                          <td class="documents-plan-action-cell">
+                            {% with count=d.attachments.count %}
+                              {% if count > 0 %}
+                                  <div class="d-flex align-items-center gap-1">
+                                    <span class="badge bg-success" title="{{ count }} document(s)">
+                                      <i class="bi bi-file-earmark-check me-1"></i>{{ count }}
+                                    </span>
+                                    <div class="dropdown">
+                                      <button class="btn btn-sm btn-outline-primary dropdown-toggle py-0 px-2" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-download me-1"></i>Télécharger
+                                      </button>
+                                      <ul class="dropdown-menu">
+                                        {% for att in d.attachments.all %}
+                                          <li>
+                                            <a class="dropdown-item d-flex align-items-center" href="{{ att.fichier.url }}" target="_blank" rel="noopener" download>
+                                              {% with fname=att.nom_original|default:att.fichier.name %}
+                                                {% with lower=fname|lower %}
+                                                  {% if lower|slice:"-4:" == ".pdf" %}
+                                                    <i class="bi bi-file-pdf text-danger me-2"></i>
+                                                  {% elif lower|slice:"-5:" == ".docx" or lower|slice:"-4:" == ".doc" %}
+                                                    <i class="bi bi-file-word text-primary me-2"></i>
+                                                  {% else %}
+                                                    <i class="bi bi-file-earmark me-2"></i>
+                                                  {% endif %}
+                                                  <span class="text-truncate">{{ fname|truncatechars:25 }}</span>
+                                                {% endwith %}
+                                              {% endwith %}
+                                            </a>
+                                          </li>
+                                        {% endfor %}
+                                      </ul>
+                                    </div>
+                                  </div>
+                              {% else %}
+                                <span class="text-muted small">Aucun document (0)</span>
+                              {% endif %}
+                            {% endwith %}
+                          </td>
+                          <td>{% if d.valide_par_conseil %}<span class="badge bg-success">Oui</span>{% else %}<span class="badge bg-secondary">Non</span>{% endif %}</td>
+                          <td>{{ d.date_validation|date:"d/m/Y" }}</td>
+                          <td class="text-center no-export">
+                            <div class="btn-group btn-group-sm" role="group">
+                              <button type="button" class="btn btn-info text-white btn-view" title="Voir" data-id="{{ d.id }}"><i class="bi bi-eye"></i></button>
+                              <button type="button" class="btn btn-primary btn-edit" title="Modifier"
+                                      data-id="{{ d.id }}"
+                                      data-eglise-id="{{ d.eglise.id }}"
+                                      data-nom="{{ d.nom|escape }}"
+                                      data-responsable="{{ d.responsable|default:''|escape }}"
+                                      data-telephone="{{ d.telephone|default:''|escape }}"
+                                      data-email="{{ d.email|default:''|escape }}"
+                                      data-date-creation="{{ d.date_creation|date:'Y-m-d' }}"
+                                      data-description="{{ d.description|default:''|escape }}"
+                                      data-statut-actif="{% if d.statut_actif %}1{% else %}0{% endif %}"
+                                      data-vision="{{ d.vision|default:''|escape }}"
+                                      data-mission="{{ d.mission|default:''|escape }}"
+                                      data-objectifs-specifiques="{{ d.objectifs_specifiques|default:''|escape }}"
+                                      data-membres-clefs="{{ d.membres_clefs|default:''|escape }}"
+                                      data-nombre-membres="{{ d.nombre_membres|default:0 }}"
+                                      data-ressources-disponibles="{{ d.ressources_disponibles|default:''|escape }}"
+                                      data-besoins-prioritaires="{{ d.besoins_prioritaires|default:''|escape }}"
+                                      data-budget-annuel-estime="{{ d.budget_annuel_estime|default:'' }}"
+                                      data-activites-majeures="{{ d.activites_majeures|default:''|escape }}"
+                                      data-prochaine-activite-date="{{ d.prochaine_activite_date|date:'Y-m-d' }}"
+                                      data-prochaine-activite-lieu="{{ d.prochaine_activite_lieu|default:''|escape }}"
+                                      data-valide-par-conseil="{% if d.valide_par_conseil %}1{% else %}0{% endif %}"
+                                      data-observations-conseil="{{ d.observations_conseil|default:''|escape }}"
+                                      data-date-validation="{{ d.date_validation|date:'Y-m-d' }}">
+                                <i class="bi bi-pencil"></i>
+                              </button>
+                              <button type="button" class="btn btn-danger btn-delete" title="Supprimer" data-id="{{ d.id }}" data-url="{% url 'main:supprimer_departement' d.id %}"><i class="bi bi-trash"></i></button>
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination et informations sur l'affichage -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <p class="text-muted mb-0">Total: <strong>{{ departements|length }}</strong> départements</p>
+                <div class="d-flex align-items-center">
+                    <label class="me-2 text-muted">Afficher</label>
+                    <select class="form-select form-select-sm" style="width: auto;" id="rowsPerPage">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <label class="ms-2 text-muted">lignes</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour voir les détails d'un département -->
+<div class="modal fade" id="voirDepartementModal" tabindex="-1" aria-labelledby="voirDepartementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="voirDepartementModalLabel"><i class="fas fa-info-circle me-2"></i>Détails du département</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Contenu identique à celui de la page départements.html -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inclusion du script pour la gestion du tableau des départements -->
+<script src="{% static 'js/departements_table.js' %}"></script>
+
+<script>
+// Tri par défaut: Église (col 1) puis Nom (col 2)
+document.addEventListener('DOMContentLoaded', function(){
+  try {
+    if (window.jQuery && typeof $('#departementsTable').DataTable === 'function') {
+      const dt = $('#departementsTable').DataTable();
+      // Certaines pages initialisent déjà DT ailleurs; on force juste l'ordre si possible
+      if (dt && typeof dt.order === 'function') {
+        dt.order([[1,'asc'], [2,'asc']]).draw();
+      }
+    } else {
+      const tbody = document.querySelector('#departementsTable tbody');
+      if (!tbody) return;
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((a,b)=>{
+        const a1=(a.children[1]?.textContent||'').trim().toLowerCase();
+        const b1=(b.children[1]?.textContent||'').trim().toLowerCase();
+        if (a1 !== b1) return a1.localeCompare(b1,'fr');
+        const a2=(a.children[2]?.textContent||'').trim().toLowerCase();
+        const b2=(b.children[2]?.textContent||'').trim().toLowerCase();
+        return a2.localeCompare(b2,'fr');
+      });
+      rows.forEach(r=>tbody.appendChild(r));
+    }
+  } catch(_){ }
+
+  // Gestion des boutons d'exportation
+  function exportTableToExcel() {
+    const table = document.getElementById('departementsTable');
+    const workbook = XLSX.utils.table_to_book(table, {sheet: "Départements"});
+    const filename = `departements_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+  }
+
+  function exportTableToCSV() {
+    const table = document.getElementById('departementsTable');
+    const rows = Array.from(table.querySelectorAll('tr'));
+    const csvContent = rows.map(row => {
+      const cells = Array.from(row.querySelectorAll('th, td'));
+      return cells.map(cell => {
+        // Exclure la colonne Actions
+        if (cell.classList.contains('no-export')) return '';
+        let text = cell.textContent.trim();
+        // Échapper les guillemets et virgules
+        if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+          text = '"' + text.replace(/"/g, '""') + '"';
+        }
+        return text;
+      }).filter(text => text !== '').join(',');
+    }).join('\n');
+    
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const filename = `departements_${new Date().toISOString().split('T')[0]}.csv`;
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
+
+  function printTable() {
+    const table = document.getElementById('departementsTable').cloneNode(true);
+    // Supprimer la colonne Actions
+    const actionCells = table.querySelectorAll('.no-export');
+    actionCells.forEach(cell => cell.remove());
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Liste des Départements</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            .text-center { text-align: center; }
+            @media print { body { margin: 0; } }
+          </style>
+        </head>
+        <body>
+          <h2>Départements de l'Église - Liste des départements</h2>
+          <p>Date d'impression: ${new Date().toLocaleDateString('fr-FR')}</p>
+          ${table.outerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  }
+
+  function exportTableToPDF() {
+    // Utiliser jsPDF si disponible, sinon fallback vers impression
+    if (typeof window.jsPDF !== 'undefined') {
+      const { jsPDF } = window.jsPDF;
+      const doc = new jsPDF('landscape');
+      doc.autoTable({ html: '#departementsTable' });
+      const filename = `departements_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(filename);
+    } else {
+      // Fallback vers impression
+      printTable();
+    }
+  }
+
+  // Événements des boutons
+  document.getElementById('btnExportExcel')?.addEventListener('click', function() {
+    if (typeof XLSX !== 'undefined') {
+      exportTableToExcel();
+    } else {
+      alert('La bibliothèque XLSX n\'est pas chargée. Export CSV utilisé à la place.');
+      exportTableToCSV();
+    }
+  });
+
+  document.getElementById('btnPrint')?.addEventListener('click', printTable);
+  document.getElementById('btnExportPDF')?.addEventListener('click', exportTableToPDF);
+});
+
+</script>
+
+<!-- Bibliothèques d'export (optionnelles) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+{% endblock %}

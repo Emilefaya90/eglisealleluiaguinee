@@ -1,0 +1,792 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Enregistrements Finance - Tous{% endblock %}
+
+{% block content %}
+<style>
+  /* Styles spécifiques à la page Liste complète Finance */
+  .bank-all-container #allTable th,
+  .bank-all-container #allTable td { white-space: nowrap; }
+  .bank-all-container .table-responsive { overflow-x: auto; }
+</style>
+<div class="container-fluid py-3 bank-all-container">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h3 class="mb-0"><i class="bi bi-bank2"></i> Enregistrements Finance — Liste complète</h3>
+    <div class="d-flex gap-2">
+      <a href="{% url 'main:banque' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Retour</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-light fw-semibold d-flex flex-wrap align-items-center gap-2">
+      <span>Tous les enregistrements</span>
+      <div class="ms-auto d-flex flex-wrap align-items-center gap-2">
+        <input class="form-control form-control-sm" style="width: 220px;" id="searchAll" placeholder="Rechercher...">
+        <select id="filterPeriodeAll" class="form-select form-select-sm" style="width: 160px;"><option value="">Toutes les périodes</option></select>
+        <select id="rowsPerPageAll" class="form-select form-select-sm" style="width: 110px;">
+          <option>10</option><option selected>20</option><option>50</option><option>100</option>
+        </select>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Tri">
+          <button class="btn btn-outline-secondary" id="sortRevBtn" title="Trier par Revenus"><i class="bi bi-sort-down-alt"></i> Revenus</button>
+          <button class="btn btn-outline-secondary" id="sortDepBtn" title="Trier par Dépenses"><i class="bi bi-sort-down-alt"></i> Dépenses</button>
+          <button class="btn btn-outline-secondary" id="sortSolBtn" title="Trier par Solde"><i class="bi bi-sort-down-alt"></i> Solde</button>
+        </div>
+        <button class="btn btn-sm btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#datesFiltersAll" aria-expanded="false"><i class="bi bi-calendar-range"></i> Dates</button>
+        <button class="btn btn-sm btn-outline-secondary" id="resetAll"><i class="bi bi-x-circle"></i> Réinitialiser</button>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-success" id="exportCsvFiltered"><i class="bi bi-file-earmark-spreadsheet"></i> CSV (filtré)</button>
+          <button class="btn btn-sm btn-outline-success" id="exportCsvAll"><i class="bi bi-filetype-csv"></i> Tous</button>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-danger" id="exportPdfFiltered"><i class="bi bi-file-earmark-pdf"></i> PDF (filtré)</button>
+          <button class="btn btn-sm btn-outline-danger" id="exportPdfAll"><i class="bi bi-filetype-pdf"></i> Tous</button>
+        </div>
+        <button class="btn btn-sm btn-secondary" id="printAll"><i class="bi bi-printer"></i> Impression</button>
+      </div>
+    </div>
+
+    <div id="datesFiltersAll" class="collapse border-top">
+      <div class="px-2 py-2 d-flex flex-wrap align-items-end gap-2 small">
+        <div>
+          <label class="form-label mb-1">Date rapport: de</label>
+          <input type="date" id="dateFromAll" class="form-control form-control-sm" style="width: 150px;">
+        </div>
+        <div>
+          <label class="form-label mb-1">à</label>
+          <input type="date" id="dateToAll" class="form-control form-control-sm" style="width: 150px;">
+        </div>
+        <div class="d-flex flex-wrap gap-1 ms-2">
+          <button class="btn btn-sm btn-outline-primary" id="presetMonth">Ce mois</button>
+          <button class="btn btn-sm btn-outline-primary" id="presetQuarter">Ce trimestre</button>
+          <button class="btn btn-sm btn-outline-primary" id="presetYear">Cette année</button>
+          <button class="btn btn-sm btn-outline-primary" id="preset30">Derniers 30 jours</button>
+        </div>
+        <button class="btn btn-sm btn-primary ms-auto" id="refreshAll"><i class="bi bi-arrow-clockwise"></i> Actualiser</button>
+      </div>
+    </div>
+
+    <div class="px-2 py-2" id="toolbarAll" style="background: linear-gradient(135deg, #5661d5 0%, #5e3d88 100%);">
+      <div class="d-flex flex-nowrap justify-content-center gap-1" id="topTotalsAll" style="overflow-x: auto;">
+        <div class="text-center py-1 px-2 rounded-3 shadow-sm" id="totDimesAll" style="min-width: 150px; flex:1; background: linear-gradient(135deg, #2f7a46 0%, #8e8436 100%); color:white;">
+          <div class="small">Dîmes</div><div class="val fw-bold">0</div>
+        </div>
+        <div class="text-center py-1 px-2 rounded-3 shadow-sm" id="totOffrandesAll" style="min-width: 150px; flex:1; background: linear-gradient(135deg, #cc3f25 0%, #c77c15 100%); color:white;">
+          <div class="small">Offrandes</div><div class="val fw-bold">0</div>
+        </div>
+        <div class="text-center py-1 px-2 rounded-3 shadow-sm" id="totDonsAll" style="min-width: 150px; flex:1; background: linear-gradient(135deg, #167357 0%, #4fbf95 100%); color:white;">
+          <div class="small">Dons</div><div class="val fw-bold">0</div>
+        </div>
+        <div class="text-center py-1 px-2 rounded-3 shadow-sm" id="totSubventionsAll" style="min-width: 150px; flex:1; background: linear-gradient(135deg, #5e00bd 0%, #b100cc 100%); color:white;">
+          <div class="small">Subventions</div><div class="val fw-bold">0</div>
+        </div>
+        <div class="text-center py-1 px-2 rounded-3 shadow-sm" id="totRevenusAll" style="min-width: 150px; flex:1; background: linear-gradient(135deg, #0091c7 0%, #0057c7 100%); color:white;">
+          <div class="small">Total Revenus</div><div class="val fw-bold">0</div>
+        </div>
+        <div class="text-center py-1 px-2 rounded-3 shadow-sm" id="totDepensesAll" style="min-width: 150px; flex:1; background: linear-gradient(135deg, #d33f26 0%, #cb2f20 100%); color:white;">
+          <div class="small">Total Dépenses</div><div class="val fw-bold">0</div>
+        </div>
+        <div class="text-center py-1 px-2 rounded-3 shadow-sm" id="totSoldeAll" style="min-width: 150px; flex:1; background: linear-gradient(135deg, #3f8a26 0%, #7ec24f 100%); color:white;">
+          <div class="small">Solde net</div><div class="val fw-bold">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle" id="allTable">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Église</th>
+            <th>Période</th>
+            <th>Responsable</th>
+            <th>Contact</th>
+            <th>Email</th>
+            <th>Vérifié par</th>
+            <th>Approuvé par</th>
+            <th>Date rapport</th>
+            <th class="text-end">Solde initial</th>
+            <th>Sources revenus</th>
+            <th class="text-end">Montants revenus</th>
+            <th>Dates revenus</th>
+            <th>Modes paiement</th>
+            <th class="text-end">Total revenus</th>
+            <th>Natures dépenses</th>
+            <th class="text-end">Montants dépenses</th>
+            <th>Bénéficiaires</th>
+            <th>Justificatifs</th>
+            <th>Catégories</th>
+            <th class="text-end">Total dépenses</th>
+            <th class="text-end">Solde final</th>
+            <th style="width:140px;" class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="allTbody"></tbody>
+        <tfoot>
+          <tr class="table-light">
+            <th colspan="14" class="text-end">Totaux:</th>
+            <th class="text-end" id="ftRevenusAll">0</th>
+            <th colspan="4"></th>
+            <th class="text-end" id="ftDepensesAll">0</th>
+            <th class="text-end" id="ftSoldeAll">0</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between p-2">
+      <div id="infoAll" class="text-muted small">Affichage 0–0 sur 0</div>
+      <nav><ul class="pagination pagination-sm mb-0" id="paginationAll"></ul></nav>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function fmt(n){ n = Number(n||0); return n.toLocaleString('fr-FR'); }
+  function getCsrfToken(){
+    // 1) input hidden classique
+    const inp = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (inp && inp.value) return inp.value;
+    // 2) cookie csrftoken
+    const m = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+  function parseNum(v){
+    // Convertit une chaîne de montant en nombre de façon robuste:
+    // - supprime espaces (y compris insécables) et séparateurs milliers
+    // - enlève tout caractère non numérique/ponctuation (- . ,)
+    // - convertit la virgule en point pour le parse Float
+    // Exemples: "1 234", "100", "1.234", "1,234.50", "1 234,50 GNF" => 1234.5
+    let s = String(v==null ? '0' : v);
+    // Normaliser les espaces (incl. \u00A0, \u202F)
+    s = s.replace(/[\u00A0\u202F\s]/g, '');
+    // Retirer tout sauf chiffres, signe, virgule et point
+    s = s.replace(/[^0-9,.-]/g, '');
+    // Si présence des deux séparateurs, considérer la dernière occurrence comme décimale
+    // Simplification: supprimer les points utilisés comme séparateur de milliers
+    // puis convertir la virgule en point
+    s = s.replace(/\.(?=\d{3}(\D|$))/g, '');
+    s = s.replace(/,/g, '.');
+    const n = Number(s);
+    return isNaN(n) ? 0 : n;
+  }
+
+  // Normalisation des libellés de revenus pour l'agrégation par catégories
+  function normalizeLabel(s){
+    if(!s) return '';
+    let t = String(s).toLowerCase();
+    try{ t = t.normalize('NFD').replace(/[\u0300-\u036f]/g,''); }catch(e){}
+    t = t.replace(/[^a-z0-9\s/()-]/g,' ').replace(/\s+/g,' ').trim();
+    if(/dime|dîme|dixieme|10eme|10%/.test(t)) return 'dimes';
+    if(/offrand|offrande|collecte|quete/.test(t)) return 'offrandes';
+    if(/\bdon(s|ation)?\b|contribution|cadeau/.test(t)) return 'dons';
+    if(/subvention|partenari|aide|soutien/.test(t)) return 'subventions';
+    return 'autres';
+  }
+
+  const tbody = document.getElementById('allTbody');
+  const searchInp = document.getElementById('searchAll');
+  const filterPeriodeSel = document.getElementById('filterPeriodeAll');
+  const rowsPerPageSel = document.getElementById('rowsPerPageAll');
+  const pagination = document.getElementById('paginationAll');
+  const info = document.getElementById('infoAll');
+  const ftRev = document.getElementById('ftRevenusAll');
+  const ftDep = document.getElementById('ftDepensesAll');
+  const ftSol = document.getElementById('ftSoldeAll');
+  const totRev = document.querySelector('#totRevenusAll .val');
+  const totDep = document.querySelector('#totDepensesAll .val');
+  const totSol = document.querySelector('#totSoldeAll .val');
+  const totDimesEl = document.querySelector('#totDimesAll .val');
+  const totOffrEl = document.querySelector('#totOffrandesAll .val');
+  const totDonsEl = document.querySelector('#totDonsAll .val');
+  const totSubvEl = document.querySelector('#totSubventionsAll .val');
+  // Initialiser l'affichage des cartes et du pied de tableau à 0
+  if (totDimesEl) totDimesEl.textContent = '0';
+  if (totOffrEl) totOffrEl.textContent = '0';
+  if (totDonsEl) totDonsEl.textContent = '0';
+  if (totSubvEl) totSubvEl.textContent = '0';
+  if (totRev) totRev.textContent = '0';
+  if (totDep) totDep.textContent = '0';
+  if (totSol) totSol.textContent = '0';
+  if (ftRev) ftRev.textContent = '0';
+  if (ftDep) ftDep.textContent = '0';
+  if (ftSol) ftSol.textContent = '0';
+  const dateFromInp = document.getElementById('dateFromAll');
+  const dateToInp = document.getElementById('dateToAll');
+  const sortRevBtn = document.getElementById('sortRevBtn');
+  const sortDepBtn = document.getElementById('sortDepBtn');
+  const sortSolBtn = document.getElementById('sortSolBtn');
+  const resetAllBtn = document.getElementById('resetAll');
+  const presetMonthBtn = document.getElementById('presetMonth');
+  const presetQuarterBtn = document.getElementById('presetQuarter');
+  const presetYearBtn = document.getElementById('presetYear');
+  const preset30Btn = document.getElementById('preset30');
+
+  let records = [];
+  let currentPage = 1;
+  let sortKey = '';
+  let sortDir = 'desc'; // 'asc' | 'desc'
+
+  function updatePeriodeFilter() {
+    const set = new Set();
+    records.forEach(r=>{ const p=(r.periode||'').trim(); if(p) set.add(p); });
+    const list = Array.from(set).sort();
+    filterPeriodeSel.innerHTML = '<option value="">Toutes les périodes</option>' + list.map(p=>`<option>${p}</option>`).join('');
+  }
+
+  // localStorage persistence
+  const LS_PREFIX = 'banque_all_';
+  function saveState(){
+    try{
+      localStorage.setItem(LS_PREFIX+'search', searchInp.value||'');
+      localStorage.setItem(LS_PREFIX+'periode', filterPeriodeSel.value||'');
+      localStorage.setItem(LS_PREFIX+'rows', rowsPerPageSel.value||'20');
+      if(dateFromInp) localStorage.setItem(LS_PREFIX+'dateFrom', dateFromInp.value||'');
+      if(dateToInp) localStorage.setItem(LS_PREFIX+'dateTo', dateToInp.value||'');
+      localStorage.setItem(LS_PREFIX+'sortKey', sortKey||'');
+      localStorage.setItem(LS_PREFIX+'sortDir', sortDir||'desc');
+    }catch(e){}
+  }
+  function restoreState(){
+    try{
+      const s = localStorage.getItem(LS_PREFIX+'search'); if(s!=null) searchInp.value = s;
+      const p = localStorage.getItem(LS_PREFIX+'periode'); if(p!=null) filterPeriodeSel.value = p;
+      const r = localStorage.getItem(LS_PREFIX+'rows'); if(r!=null) rowsPerPageSel.value = r;
+      const df = localStorage.getItem(LS_PREFIX+'dateFrom'); if(dateFromInp && df!=null) dateFromInp.value = df;
+      const dt = localStorage.getItem(LS_PREFIX+'dateTo'); if(dateToInp && dt!=null) dateToInp.value = dt;
+      const sk = localStorage.getItem(LS_PREFIX+'sortKey'); if(sk!=null) sortKey = sk;
+      const sd = localStorage.getItem(LS_PREFIX+'sortDir'); if(sd!=null) sortDir = sd;
+    }catch(e){}
+  }
+
+
+  function updateTotals(items){
+    const sum = (arr, key)=> arr.reduce((acc, r)=> acc + parseNum(r[key]||0), 0);
+    const rev = sum(items, 'total_revenus');
+    const dep = sum(items, 'total_depenses');
+    const sol = sum(items, 'solde_final');
+    // Agrégation par catégories de revenus à partir des CSV
+    let dimes=0, offrandes=0, dons=0, subv=0;
+    items.forEach(r=>{
+      const srcs = String(r.sources_revenus||'').split(/[;|,]+/).map(s=>s.trim()).filter(Boolean);
+      const mnts = String(r.montants_revenus||'').split(/[;|,]+/).map(s=>s.trim()).filter(Boolean);
+      const n = Math.min(srcs.length, mnts.length);
+      for(let i=0;i<n;i++){
+        const lab = normalizeLabel(srcs[i]);
+        const val = parseNum(mnts[i]);
+        if(val>0){
+          if(lab==='dimes') dimes += val;
+          else if(lab==='offrandes') offrandes += val;
+          else if(lab==='dons') dons += val;
+          else if(lab==='subventions') subv += val;
+        }
+      }
+    });
+    // Mise à jour bandeau
+    totRev.textContent = fmt(rev); ftRev.textContent = fmt(rev);
+    totDep.textContent = fmt(dep); ftDep.textContent = fmt(dep);
+    totSol.textContent = fmt(sol); ftSol.textContent = fmt(sol);
+    if(totDimesEl) totDimesEl.textContent = fmt(dimes);
+    if(totOffrEl) totOffrEl.textContent = fmt(offrandes);
+    if(totDonsEl) totDonsEl.textContent = fmt(dons);
+    if(totSubvEl) totSubvEl.textContent = fmt(subv);
+  }
+
+  function getFilteredRecords(){
+    const q = (searchInp.value||'').toLowerCase();
+    const selectedPeriode = filterPeriodeSel.value;
+    const d1 = (dateFromInp && dateFromInp.value) ? dateFromInp.value : '';
+    const d2 = (dateToInp && dateToInp.value) ? dateToInp.value : '';
+
+    let filtered = records.filter(r => Object.values(r).some(v => String(v||'').toLowerCase().includes(q)));
+    if(selectedPeriode){ filtered = filtered.filter(r=> r.periode===selectedPeriode); }
+    if(d1){ filtered = filtered.filter(r=> r.date_rapport && r.date_rapport >= d1); }
+    if(d2){ filtered = filtered.filter(r=> r.date_rapport && r.date_rapport <= d2); }
+
+    if(sortKey){
+      const mul = sortDir==='asc' ? 1 : -1;
+      filtered.sort((a,b)=>{
+        const va = Number(a[sortKey]||0); const vb = Number(b[sortKey]||0);
+        return (va - vb) * mul;
+      });
+    }
+    return filtered;
+  }
+
+  function render(){
+    const filtered = getFilteredRecords();
+
+    const perPage = parseInt(rowsPerPageSel.value, 10) || 20;
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / perPage));
+    if(currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage-1)*perPage;
+    const items = filtered.slice(start, start+perPage);
+
+    // Les totaux doivent refléter TOUS les enregistrements filtrés (pas seulement la page courante)
+    updateTotals(filtered);
+
+    tbody.innerHTML = '';
+    if(items.length === 0){
+      const tr = document.createElement('tr');
+      tr.className = 'text-center text-muted';
+      tr.innerHTML = `<td colspan="24">Aucun enregistrement trouvé</td>`;
+      tbody.appendChild(tr);
+    } else {
+      items.forEach((r, idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${start + idx + 1}</td>
+          <td title="${r.eglise_nom||''}">${r.eglise_nom||''}</td>
+          <td title="${r.periode||''}">${r.periode||''}</td>
+          <td title="${r.responsable||''}">${r.responsable||''}</td>
+          <td title="${r.contact||''}">${r.contact||''}</td>
+          <td title="${r.email||''}">${r.email||''}</td>
+          <td title="${r.verifie_par||''}">${r.verifie_par||''}</td>
+          <td title="${r.approuve_par||''}">${r.approuve_par||''}</td>
+          <td title="${r.date_rapport||''}">${r.date_rapport||''}</td>
+          <td class="text-end" title="${fmt(r.solde_initial)}">${fmt(r.solde_initial)}</td>
+          <td title="${(r.sources_revenus||r.source_revenu||'-')}">${r.sources_revenus||r.source_revenu||'-'}</td>
+          <td class="text-end" title="${r.montants_revenus? r.montants_revenus : fmt(r.total_revenus)}">${r.montants_revenus? r.montants_revenus : fmt(r.total_revenus)}</td>
+          <td title="${(r.dates_revenus && String(r.dates_revenus).trim()) ? r.dates_revenus : (r.date_rapport||'-')}">${(r.dates_revenus && String(r.dates_revenus).trim()) ? r.dates_revenus : (r.date_rapport||'-')}</td>
+          <td title="${r.modes_paiement_revenus||r.mode_paiement||'-'}">${r.modes_paiement_revenus||r.mode_paiement||'-'}</td>
+          <td class="text-end" title="${fmt(r.total_revenus)}">${fmt(r.total_revenus)}</td>
+          <td title="${r.natures_depenses||r.nature_depense||'-'}">${r.natures_depenses||r.nature_depense||'-'}</td>
+          <td class="text-end" title="${r.montants_depenses? r.montants_depenses : fmt(r.total_depenses)}">${r.montants_depenses? r.montants_depenses : fmt(r.total_depenses)}</td>
+          <td title="${r.beneficiaires||r.beneficiaire||'-'}">${r.beneficiaires||r.beneficiaire||'-'}</td>
+          <td title="${r.justificatifs||r.justificatif||'-'}">${r.justificatifs||r.justificatif||'-'}</td>
+          <td title="${r.categories||'-'}">${r.categories||'-'}</td>
+          <td class="text-end" title="${fmt(r.total_depenses)}">${fmt(r.total_depenses)}</td>
+          <td class="text-end" title="${fmt(r.solde_final)}">${fmt(r.solde_final)}</td>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-info btn-view-hist" data-id="${r.id}" title="Voir le rapport"><i class="bi bi-eye"></i></button>
+              <button type="button" class="btn btn-outline-warning btn-update-hist" data-id="${r.id}" title="Charger dans le formulaire"><i class="bi bi-tools"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-del-hist" data-id="${r.id}" title="Supprimer"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    const a = total === 0 ? 0 : (start+1);
+    const b = start + items.length;
+    info.textContent = `Affichage ${a}–${b} sur ${total}`;
+
+    pagination.innerHTML = '';
+    const makeItem = (label, page, disabled=false, active=false)=>{
+      const li = document.createElement('li');
+      li.className = `page-item ${disabled?'disabled':''} ${active?'active':''}`;
+      const a = document.createElement('a'); a.className = 'page-link'; a.href = '#'; a.textContent = label;
+      a.addEventListener('click', (e)=>{ e.preventDefault(); if(!disabled){ currentPage = page; render(); }});
+      li.appendChild(a); return li;
+    };
+    const totalPages2 = Math.max(1, Math.ceil(total / perPage));
+    pagination.appendChild(makeItem('«', Math.max(1,currentPage-1), currentPage===1));
+    for(let p=1; p<=totalPages2; p++) pagination.appendChild(makeItem(String(p), p, false, p===currentPage));
+    pagination.appendChild(makeItem('»', Math.min(totalPages2,currentPage+1), currentPage===totalPages2));
+  }
+
+  // Délégation des événements pour actions sur les lignes
+  tbody.addEventListener('click', async (e)=>{
+    const btnView = e.target.closest('.btn-view-hist');
+    const btnUpdate = e.target.closest('.btn-update-hist');
+    const btnDel = e.target.closest('.btn-del-hist');
+    if (btnView){
+      const id = btnView.getAttribute('data-id');
+      if (id) window.open(`/finances/rapport/${id}/`, '_blank');
+      return;
+    }
+    if (btnUpdate){
+      const id = btnUpdate.getAttribute('data-id');
+      if (!id) return;
+      // Rediriger vers la page Banque avec un paramètre pour chargement du formulaire
+      window.location.href = `/banque/?load_id=${encodeURIComponent(id)}`;
+      return;
+    }
+    if (btnDel){
+      const id = btnDel.getAttribute('data-id');
+      if (!id) return;
+      if (!confirm(`Supprimer l'enregistrement #${id} ?`)) return;
+      try{
+        const resp = await fetch(`/finances/rapport/supprimer/${id}/`, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          credentials: 'same-origin',
+        });
+        const data = await resp.json().catch(()=>({success:false, error:'Réponse invalide'}));
+        if (!resp.ok || !data.success) throw new Error(data.error||'Suppression échouée');
+        // retirer du cache et re-rendre
+        records = records.filter(r=> String(r.id) !== String(id));
+        // revenir à la page précédente si elle devient vide sera géré par render()
+        render();
+      }catch(err){
+        alert(err.message || 'Erreur lors de la suppression');
+      }
+    }
+  });
+
+  function loadFromContext(){
+    try{
+      const data = JSON.parse('{{ rapports_json|escapejs }}');
+      records = (data||[]).map(r => ({
+        id: r.id,
+        eglise_nom: r.eglise__nom || '',
+        periode: `${r.periode_du||''} → ${r.periode_au||''}`,
+        responsable: r.responsable||'',
+        contact: r.contact||'',
+        email: r.email||'',
+        verifie_par: r.verifie_par||'',
+        approuve_par: r.approuve_par||'',
+        date_rapport: r.date_rapport||'',
+        solde_initial: r.solde_initial||0,
+        total_revenus: r.total_recettes||0,
+        total_depenses: r.total_depenses||0,
+        solde_final: r.solde_final||0,
+        nb_pj: r.nombre_pieces_jointes||0,
+        source_revenu: r.source_revenu||'',
+        mode_paiement: r.mode_paiement||'',
+        evenement: r.evenement||'',
+        nature_depense: r.nature_depense||'',
+        beneficiaire: r.beneficiaire||'',
+        justificatif: r.justificatif||'',
+        sources_revenus: r.sources_revenus||r.source_revenu||'',
+        montants_revenus: r.montants_revenus||'',
+        dates_revenus: r.dates_revenus||'',
+        modes_paiement_revenus: r.modes_paiement_revenus||'',
+        natures_depenses: r.natures_depenses||'',
+        montants_depenses: r.montants_depenses||'',
+        beneficiaires: r.beneficiaires||'',
+        justificatifs: r.justificatifs||'',
+        categories: r.categories||r.evenement||r.nature_depense||'',
+      }));
+    }catch(e){ console.warn('rapports_json invalide', e); }
+  }
+
+  document.getElementById('refreshAll').addEventListener('click', ()=>{ currentPage=1; render(); });
+  searchInp.addEventListener('input', ()=>{ currentPage=1; saveState(); render(); });
+  filterPeriodeSel.addEventListener('change', ()=>{ currentPage=1; saveState(); render(); });
+  rowsPerPageSel.addEventListener('change', ()=>{ currentPage=1; saveState(); render(); });
+  if(dateFromInp) dateFromInp.addEventListener('change', ()=>{ currentPage=1; saveState(); render(); });
+  if(dateToInp) dateToInp.addEventListener('change', ()=>{ currentPage=1; saveState(); render(); });
+
+  // Sort buttons: toggle asc/desc when same key
+  function setSort(key){
+    if(sortKey===key){ sortDir = (sortDir==='asc' ? 'desc' : 'asc'); } else { sortKey = key; sortDir = 'desc'; }
+    saveState(); updateSortButtons(); currentPage=1; render();
+  }
+  function updateSortButtons(){
+    // Helper to compute icon
+    const icon = (key)=>{
+      if(sortKey!==key) return 'bi-arrow-down-up';
+      return sortDir==='asc' ? 'bi-arrow-up-short' : 'bi-arrow-down-short';
+    };
+    // Update labels with icons
+    sortRevBtn.innerHTML = `<i class="bi ${icon('total_revenus')}"></i> Revenus`;
+    sortDepBtn.innerHTML = `<i class="bi ${icon('total_depenses')}"></i> Dépenses`;
+    sortSolBtn.innerHTML = `<i class="bi ${icon('solde_final')}"></i> Solde`;
+    // Highlight active button
+    const setActive = (btn, active)=>{
+      btn.classList.toggle('btn-primary', active);
+      btn.classList.toggle('btn-outline-secondary', !active);
+    };
+    setActive(sortRevBtn, sortKey==='total_revenus');
+    setActive(sortDepBtn, sortKey==='total_depenses');
+    setActive(sortSolBtn, sortKey==='solde_final');
+  }
+  sortRevBtn.addEventListener('click', ()=> setSort('total_revenus'));
+  sortDepBtn.addEventListener('click', ()=> setSort('total_depenses'));
+  sortSolBtn.addEventListener('click', ()=> setSort('solde_final'));
+
+  // Presets for dates
+  function ymd(d){ return d.toISOString().slice(0,10); }
+  function firstDayOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function lastDayOfMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+  function firstDayOfQuarter(d){ const q = Math.floor(d.getMonth()/3)*3; return new Date(d.getFullYear(), q, 1); }
+  function lastDayOfQuarter(d){ const q = Math.floor(d.getMonth()/3)*3; return new Date(d.getFullYear(), q+3, 0); }
+  function firstDayOfYear(d){ return new Date(d.getFullYear(), 0, 1); }
+  function lastDayOfYear(d){ return new Date(d.getFullYear(), 11, 31); }
+  presetMonthBtn.addEventListener('click', (e)=>{ e.preventDefault(); const now=new Date(); if(dateFromInp) dateFromInp.value=ymd(firstDayOfMonth(now)); if(dateToInp) dateToInp.value=ymd(lastDayOfMonth(now)); saveState(); currentPage=1; render(); });
+  presetQuarterBtn.addEventListener('click', (e)=>{ e.preventDefault(); const now=new Date(); if(dateFromInp) dateFromInp.value=ymd(firstDayOfQuarter(now)); if(dateToInp) dateToInp.value=ymd(lastDayOfQuarter(now)); saveState(); currentPage=1; render(); });
+  presetYearBtn.addEventListener('click', (e)=>{ e.preventDefault(); const now=new Date(); if(dateFromInp) dateFromInp.value=ymd(firstDayOfYear(now)); if(dateToInp) dateToInp.value=ymd(lastDayOfYear(now)); saveState(); currentPage=1; render(); });
+  preset30Btn.addEventListener('click', (e)=>{ e.preventDefault(); const now=new Date(); const past=new Date(now); past.setDate(now.getDate()-30); if(dateFromInp) dateFromInp.value=ymd(past); if(dateToInp) dateToInp.value=ymd(now); saveState(); currentPage=1; render(); });
+
+  // Reset all
+  resetAllBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    searchInp.value=''; filterPeriodeSel.value=''; rowsPerPageSel.value='20';
+    if(dateFromInp) dateFromInp.value=''; if(dateToInp) dateToInp.value='';
+    sortKey=''; sortDir='desc'; currentPage=1; saveState(); render();
+  });
+
+
+  document.getElementById('exportCsvAll').addEventListener('click', ()=>{
+    if(records.length===0){ alert('Aucune donnée à exporter'); return; }
+    const SEP = ';';
+    const escapeCell = (v)=>{
+      let str = String(v==null? '': v).trim();
+      str = str.replace(/[\r\n]+/g, ' ');
+      str = str.replace(/"/g, '""');
+      return `"${str}"`;
+    };
+    const num = (v)=>{
+      if (v==null) return '0';
+      const s = String(v).replace(/\s/g,'').replace(/\./g,'').replace(/,/g,'.');
+      const n = Number(s); return isNaN(n)? '0' : String(n);
+    };
+    const headers = ['Église','Période','Responsable','Contact','Email','Sources revenus','Montants revenus (GNF)','Dates revenus','Modes paiement revenus','Natures dépenses','Montants dépenses (GNF)','Bénéficiaires','Justificatifs','Catégories','Pièces jointes','Solde initial (GNF)','Total revenus (GNF)','Total dépenses (GNF)','Solde final (GNF)','Vérifié par','Approuvé par','Date rapport'];
+    const lines = [headers.map(escapeCell).join(SEP)];
+    records.forEach(r => {
+      const row = [
+        r.eglise_nom||'',
+        r.periode||'',
+        r.responsable||'',
+        r.contact||'',
+        r.email||'',
+        r.sources_revenus||r.source_revenu||'',
+        r.montants_revenus||'',
+        (r.dates_revenus && String(r.dates_revenus).trim()) ? r.dates_revenus : (r.date_rapport||''),
+        r.modes_paiement_revenus||r.mode_paiement||'',
+        r.natures_depenses||r.nature_depense||'',
+        r.montants_depenses||'',
+        r.beneficiaires||r.beneficiaire||'',
+        r.justificatifs||r.justificatif||'',
+        r.categories||'',
+        num(r.nb_pj||0),
+        num(r.solde_initial||0),
+        num(r.total_revenus||0),
+        num(r.total_depenses||0),
+        num(r.solde_final||0),
+        r.verifie_par||'',
+        r.approuve_par||'',
+        r.date_rapport||''
+      ];
+      const cleaned = row.map((v, i)=> i>=15 && i<=18 ? num(v) : escapeCell(v));
+      lines.push(cleaned.join(SEP));
+    });
+    const csvContent = "\uFEFF" + lines.join('\r\n');
+    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = `finance_all_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('exportPdfAll').addEventListener('click', ()=>{
+    if(records.length===0){ alert('Aucune donnée à exporter'); return; }
+
+    // Totaux courants (affichés en haut de page)
+    const currentRevenus = (totRev && totRev.textContent) ? totRev.textContent : '0';
+    const currentDepenses = (totDep && totDep.textContent) ? totDep.textContent : '0';
+    const currentSolde = (totSol && totSol.textContent) ? totSol.textContent : '0';
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Finance — Liste complète</title>
+        <style>
+          @page { size: A4 landscape; margin: 10mm; }
+          html, body { font-family: Arial, sans-serif; }
+          body { margin: 0; padding: 10mm; color: #222; }
+          h1 { color: #333; text-align: center; margin: 0 0 12px; font-size: 18px; }
+          .meta { text-align: center; color: #555; font-size: 12px; margin-bottom: 8px; }
+          .totals { margin: 8px 0 12px; padding: 10px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; }
+          .total-item { display: inline-block; margin: 3px 10px; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+          thead { display: table-header-group; }
+          tr { page-break-inside: avoid; }
+          th, td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 11px; vertical-align: top; word-wrap: break-word; overflow-wrap: anywhere; }
+          th { background: #f2f2f2; font-weight: 700; }
+          .col-sm { width: 14%; }
+          .col-md { width: 12%; }
+          .col-lg { width: 10%; }
+        </style>
+      </head>
+      <body>
+        <h1>Enregistrements Finance — Liste complète</h1>
+        <div class="meta">Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</div>
+        <div class="totals">
+          <div class="total-item"><strong>Total Revenus:</strong> ${currentRevenus} GNF</div>
+          <div class="total-item"><strong>Total Dépenses:</strong> ${currentDepenses} GNF</div>
+          <div class="total-item"><strong>Solde net:</strong> ${currentSolde} GNF</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th class="col-sm">Église</th>
+              <th class="col-sm">Période</th>
+              <th class="col-md">Responsable</th>
+              <th class="col-md">Contact</th>
+              <th class="col-lg">Total Revenus</th>
+              <th class="col-lg">Total Dépenses</th>
+              <th class="col-lg">Solde Final</th>
+              <th class="col-md">Vérifié</th>
+              <th class="col-md">Approuvé</th>
+            </tr>
+          </thead>
+          <tbody>
+    `);
+    records.forEach(r=>{
+      printWindow.document.write(`
+        <tr>
+          <td>${r.eglise_nom||''}</td>
+          <td>${r.periode||''}</td>
+          <td>${r.responsable||''}</td>
+          <td>${r.contact||''}</td>
+          <td>${fmt(r.total_revenus)}</td>
+          <td>${fmt(r.total_depenses)}</td>
+          <td>${fmt(r.solde_final)}</td>
+          <td>${r.verifie_par||''}</td>
+          <td>${r.approuve_par||''}</td>
+        </tr>
+      `);
+    });
+    printWindow.document.write(`
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.onafterprint = () => { try { printWindow.close(); } catch(e){} };
+    setTimeout(()=>{ try { printWindow.print(); } catch(e){} }, 400);
+  });
+
+  // Export CSV (filtered view) — attach once
+  document.getElementById('exportCsvFiltered').addEventListener('click', ()=>{
+    const filtered = getFilteredRecords();
+    if(filtered.length===0){ alert('Aucune donnée (filtrée) à exporter'); return; }
+    const SEP = ';';
+    const escapeCell = (v)=>{
+      let str = String(v==null? '': v).trim();
+      str = str.replace(/[\r\n]+/g, ' ');
+      str = str.replace(/"/g, '""');
+      return `"${str}"`;
+    };
+    const num = (v)=>{ if (v==null) return '0'; const s = String(v).replace(/\s/g,'').replace(/\./g,'').replace(/,/g,'.'); const n = Number(s); return isNaN(n)? '0' : String(n); };
+    const headers = ['Église','Période','Responsable','Contact','Email','Sources revenus','Montants revenus (GNF)','Dates revenus','Modes paiement revenus','Natures dépenses','Montants dépenses (GNF)','Bénéficiaires','Justificatifs','Catégories','Pièces jointes','Solde initial (GNF)','Total revenus (GNF)','Total dépenses (GNF)','Solde final (GNF)','Vérifié par','Approuvé par','Date rapport'];
+    const lines = [headers.map(escapeCell).join(SEP)];
+    filtered.forEach(r => {
+      const row = [
+        r.eglise_nom||'', r.periode||'', r.responsable||'', r.contact||'', r.email||'',
+        r.sources_revenus||r.source_revenu||'', r.montants_revenus||'',
+        (r.dates_revenus && String(r.dates_revenus).trim()) ? r.dates_revenus : (r.date_rapport||''), r.modes_paiement_revenus||r.mode_paiement||'',
+        r.natures_depenses||r.nature_depense||'', r.montants_depenses||'', r.beneficiaires||r.beneficiaire||'', r.justificatifs||r.justificatif||'', r.categories||'',
+        num(r.nb_pj||0), num(r.solde_initial||0), num(r.total_revenus||0), num(r.total_depenses||0), num(r.solde_final||0),
+        r.verifie_par||'', r.approuve_par||'', r.date_rapport||''
+      ];
+      const cleaned = row.map((v, i)=> i>=15 && i<=18 ? num(v) : escapeCell(v));
+      lines.push(cleaned.join(SEP));
+    });
+    const csvContent = "\uFEFF" + lines.join('\r\n');
+    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = `banque_all_filtre_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  // Export PDF (filtered view) — attach once
+  document.getElementById('exportPdfFiltered').addEventListener('click', ()=>{
+    const filtered = getFilteredRecords();
+    if(filtered.length===0){ alert('Aucune donnée (filtrée) à exporter'); return; }
+    const currentRevenus = (totRev && totRev.textContent) ? totRev.textContent : '0';
+    const currentDepenses = (totDep && totDep.textContent) ? totDep.textContent : '0';
+    const currentSolde = (totSol && totSol.textContent) ? totSol.textContent : '0';
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Banque — Liste filtrée</title>
+        <style>
+          @page { size: A4 landscape; margin: 10mm; }
+          html, body { font-family: Arial, sans-serif; }
+          body { margin: 0; padding: 10mm; color: #222; }
+          h1 { color: #333; text-align: center; margin: 0 0 12px; font-size: 18px; }
+          .meta { text-align: center; color: #555; font-size: 12px; margin-bottom: 8px; }
+          .totals { margin: 8px 0 12px; padding: 10px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; }
+          .total-item { display: inline-block; margin: 3px 10px; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+          thead { display: table-header-group; }
+          tr { page-break-inside: avoid; }
+          th, td { border: 1px solid #ddd; padding: 6px; text-align: left; font-size: 11px; vertical-align: top; word-wrap: break-word; overflow-wrap: anywhere; }
+          th { background: #f2f2f2; font-weight: 700; }
+          .col-sm { width: 14%; }
+          .col-md { width: 12%; }
+          .col-lg { width: 10%; }
+        </style>
+      </head>
+      <body>
+        <h1>Enregistrements Banque — Vue filtrée</h1>
+        <div class="meta">Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</div>
+        <div class="totals">
+          <div class="total-item"><strong>Total Revenus:</strong> ${currentRevenus} GNF</div>
+          <div class="total-item"><strong>Total Dépenses:</strong> ${currentDepenses} GNF</div>
+          <div class="total-item"><strong>Solde net:</strong> ${currentSolde} GNF</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th class="col-sm">Église</th>
+              <th class="col-sm">Période</th>
+              <th class="col-md">Responsable</th>
+              <th class="col-md">Contact</th>
+              <th class="col-lg">Total Revenus</th>
+              <th class="col-lg">Total Dépenses</th>
+              <th class="col-lg">Solde Final</th>
+              <th class="col-md">Vérifié</th>
+              <th class="col-md">Approuvé</th>
+            </tr>
+          </thead>
+          <tbody>
+    `);
+    filtered.forEach(r=>{
+      printWindow.document.write(`
+        <tr>
+          <td>${r.eglise_nom||''}</td>
+          <td>${r.periode||''}</td>
+          <td>${r.responsable||''}</td>
+          <td>${r.contact||''}</td>
+          <td>${fmt(r.total_revenus)}</td>
+          <td>${fmt(r.total_depenses)}</td>
+          <td>${fmt(r.solde_final)}</td>
+          <td>${r.verifie_par||''}</td>
+          <td>${r.approuve_par||''}</td>
+        </tr>
+      `);
+    });
+    printWindow.document.write(`
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.onafterprint = () => { try { printWindow.close(); } catch(e){} };
+    setTimeout(()=>{ try { printWindow.print(); } catch(e){} }, 400);
+  });
+
+  document.getElementById('printAll').addEventListener('click', ()=>{
+    if(records.length===0){ alert('Aucune donnée à imprimer'); return; }
+    const original = document.body.innerHTML;
+    const html = `<div style="font-family:Arial,sans-serif;margin:20px;">${document.getElementById('allTable').outerHTML}</div>`;
+    document.body.innerHTML = html; window.print(); document.body.innerHTML = original; location.reload();
+  });
+
+  // Init
+  loadFromContext();
+  updatePeriodeFilter();
+  restoreState();
+  // reflect saved sort state on buttons
+  updateSortButtons();
+  render();
+})();
+</script>
+{% endblock %}

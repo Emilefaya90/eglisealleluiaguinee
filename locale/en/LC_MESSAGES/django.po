@@ -1,0 +1,153 @@
+# English translations for gestion_eglise.
+# Copyright (C) 2025 Eglise Alleluia
+# This file is distributed under the same license as the gestion_eglise project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gestion_eglise 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-30 12:03+0000\n"
+"PO-Revision-Date: 2025-06-30 12:03+0000\n"
+"Last-Translator: \n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: main/templates/main/base.html:15
+msgid "Eglise Alléluia"
+msgstr "Hallelujah Church"
+
+#: main/templates/main/base.html:25
+msgid "Accueil"
+msgstr "Home"
+
+#: main/templates/main/base.html:27
+msgid "À propos"
+msgstr "About"
+
+#: main/templates/main/base.html:30
+msgid "Historique"
+msgstr "History"
+
+#: main/templates/main/base.html:31
+msgid "Objectif général"
+msgstr "General Objective"
+
+#: main/templates/main/base.html:32
+msgid "Objectif spécifique"
+msgstr "Specific Objective"
+
+#: main/templates/main/base.html:36
+msgid "Gestion"
+msgstr "Management"
+
+#: main/templates/main/base.html:38
+msgid "Eglises"
+msgstr "Churches"
+
+#: main/templates/main/base.html:39
+msgid "Personnel Pastoral"
+msgstr "Pastoral Staff"
+
+#: main/templates/main/base.html:40
+msgid "Membres d'Eglise"
+msgstr "Church Members"
+
+#: main/templates/main/base.html:41
+msgid "Départements"
+msgstr "Departments"
+
+#: main/templates/main/base.html:42
+msgid "Finances"
+msgstr "Finances"
+
+#: main/templates/main/base.html:46
+msgid "Actualité"
+msgstr "News"
+
+#: main/templates/main/base.html:48
+msgid "Événements"
+msgstr "Events"
+
+#: main/templates/main/base.html:49
+msgid "Planification"
+msgstr "Planning"
+
+#: main/templates/main/base.html:50
+msgid "Suivi des présences"
+msgstr "Attendance Tracking"
+
+#: main/templates/main/base.html:51
+msgid "Archivage des rapports"
+msgstr "Reports Archiving"
+
+#: main/templates/main/base.html:55
+msgid "Communication"
+msgstr "Communication"
+
+#: main/templates/main/base.html:57
+msgid "Contactez-nous"
+msgstr "Contact Us"
+
+#: main/templates/main/base.html:63
+msgid "Français"
+msgstr "French"
+
+#: main/templates/main/base.html:69
+msgid "English"
+msgstr "English"
+
+#: main/templates/main/accueil.html
+msgid "Gestion Église"
+msgstr "Church Management"
+
+#: main/templates/main/accueil.html
+msgid "Notre Galerie"
+msgstr "Our Gallery"
+
+#: main/templates/main/accueil.html
+msgid "Consécration"
+msgstr "Consecration"
+
+#: main/templates/main/accueil.html
+msgid "Culte en live"
+msgstr "Live Worship"
+
+#: main/templates/main/accueil.html
+msgid "Prière pour les Pasteurs"
+msgstr "Prayer for Pastors"
+
+#: main/templates/main/accueil.html
+msgid "Suivez-nous sur nos réseaux"
+msgstr "Follow us on social media"
+
+#: main/templates/main/accueil.html
+msgid "À propos de nous"
+msgstr "About Us"
+
+#: main/templates/main/accueil.html
+msgid "En savoir plus"
+msgstr "Learn more"
+
+#: main/templates/main/accueil.html
+msgid "Faire un don"
+msgstr "Make a donation"
+
+#: main/templates/main/base.html
+msgid "Verset du jour"
+msgstr "Verse of the day"
+
+#: main/templates/main/base.html
+msgid "Restez informés"
+msgstr "Stay informed"
+
+#: main/templates/main/base.html
+msgid "NOTRE PROGRAMME"
+msgstr "OUR SCHEDULE"
+
+#: main/templates/main/accueil.html
+msgid "L'Église Pentecôte Alléluia de Guinée est une communauté chrétienne dynamique et accueillante. Fondée sur les principes bibliques, notre église s'engage à répandre l'amour du Christ."
+msgstr "The Pentecost Hallelujah Church of Guinea is a dynamic and welcoming Christian community. Founded on biblical principles, our church is committed to spreading the love of Christ."

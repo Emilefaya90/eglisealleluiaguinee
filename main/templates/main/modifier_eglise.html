@@ -1,0 +1,687 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Modification d'Église - Gestion Église{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Styles généraux du formulaire */
+    .form-section {
+        background-color: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: none;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .form-section:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        transform: translateY(-3px);
+    }
+    
+    .form-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+    }
+    
+    .section-title {
+        color: #2c3e50;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+        font-weight: 700;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--bs-primary) 0%, transparent 100%);
+        border-radius: 2px;
+    }
+    
+    .required-field::after {
+        content: " *";
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    
+    /* Styles pour les champs de saisie interactifs dans la déclaration */
+    .inline-input {
+        border: none;
+        border-bottom: 2px solid #3498db;
+        background-color: rgba(52, 152, 219, 0.05);
+        padding: 5px 10px;
+        margin: 0 5px;
+        min-width: 120px;
+        transition: all 0.3s ease;
+        border-radius: 4px 4px 0 0;
+    }
+    
+    .inline-input:focus {
+        outline: none;
+        border-bottom: 2px solid #2980b9;
+        background-color: rgba(52, 152, 219, 0.1);
+        box-shadow: 0 3px 8px rgba(52, 152, 219, 0.1);
+    }
+    
+    /* Styles améliorés pour les inputs */
+    .form-control {
+        border-radius: 8px;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+    }
+    
+    /* Style pour les labels */
+    .form-label {
+        font-weight: 600;
+        color: #34495e;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+    
+    /* Style pour les badges */
+    .badge {
+        padding: 8px 12px;
+        font-weight: 500;
+        border-radius: 30px;
+    }
+    
+    /* Styles pour la déclaration */
+    .declaration-text {
+        line-height: 2;
+    }
+    
+    /* Styles pour les badges */
+    .badge {
+        font-weight: 500;
+        padding: 6px 10px;
+        border-radius: 4px;
+    }
+    
+    /* Couleur spéciale pour la section déclaration */
+    .border-purple {
+        border-color: #6f42c1 !important;
+    }
+    .text-purple {
+        color: #6f42c1;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <!-- En-tête du formulaire avec dégradé bleu -->
+            <div class="card mb-4 shadow">
+                <div class="card-header text-white py-3" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <i class="fas fa-church fa-2x"></i>
+                        </div>
+                        <div class="col">
+                            <h2 class="mb-0 fw-bold">MODIFICATION DE L'ÉGLISE</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body bg-white p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'main:eglises' %}">Églises</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Modifier {{ eglise.nom }}</li>
+                        </ol>
+                    </nav>
+                    
+                    <form id="modifierEgliseForm" method="post" action="{% url 'main:modifier_eglise' eglise.id %}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Section 1: Informations sur l'Église -->
+                        <div class="form-section mb-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="section-icon bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="fas fa-info-circle text-primary fa-2x"></i>
+                                </div>
+                                <h4 class="section-title text-primary mb-0">1. Informations sur l'Église</h4>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nom" class="form-label required-field">Nom de l'église</label>
+                                    <input type="text" class="form-control" id="nom" name="nom" value="{{ eglise.nom }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer le nom de l'église.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="responsable" class="form-label required-field">Responsable principal</label>
+                                    <input type="text" class="form-control" id="responsable" name="responsable" value="{{ eglise.responsable }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer le nom du responsable.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="adresse" class="form-label required-field">Adresse</label>
+                                    <input type="text" class="form-control" id="adresse" name="adresse" value="{{ eglise.adresse }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer l'adresse de l'église.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="ville" class="form-label required-field">Ville</label>
+                                    <input type="text" class="form-control" id="ville" name="ville" value="{{ eglise.ville }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer la ville.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="quartier" class="form-label">Quartier</label>
+                                    <input type="text" class="form-control" id="quartier" name="quartier" value="{{ eglise.quartier }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="pays" class="form-label required-field">Pays</label>
+                                    <input type="text" class="form-control" id="pays" name="pays" value="{{ eglise.pays }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer le pays.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="date_fondation" class="form-label required-field">Date de fondation</label>
+                                    <input type="date" class="form-control" id="date_fondation" name="date_fondation" value="{% if eglise.date_fondation %}{{ eglise.date_fondation|date:'Y-m-d' }}{% endif %}" required>
+                                    <div class="invalid-feedback">Veuillez entrer la date de fondation.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="telephone" class="form-label required-field">Téléphone</label>
+                                    <input type="tel" class="form-control" id="telephone" name="telephone" value="{{ eglise.telephone }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer un numéro de téléphone valide.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="{{ eglise.email }}">
+                                    <div class="invalid-feedback">Veuillez entrer une adresse email valide.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="nombre_membres" class="form-label">Nombre de membres</label>
+                                    <input type="number" class="form-control" id="nombre_membres" name="nombre_membres" value="{{ eglise.nombre_membres }}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 2: Statut Juridique -->
+                        <div class="form-section mb-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="section-icon bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="fas fa-gavel text-success fa-2x"></i>
+                                </div>
+                                <h4 class="section-title text-success mb-0">2. Statut Juridique</h4>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label required-field">L'église est-elle une association enregistrée ?</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="statut_juridique" id="statut_oui" value="Association" {% if eglise.statut_juridique == 'Association' %}checked{% endif %} required>
+                                        <label class="form-check-label text-dark fw-bold" for="statut_oui">Oui</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="statut_juridique" id="statut_non" value="Non enregistrée" {% if eglise.statut_juridique == 'Non enregistrée' %}checked{% endif %} required>
+                                        <label class="form-check-label text-dark fw-bold" for="statut_non">Non</label>
+                                    </div>
+                                    <div class="invalid-feedback">Veuillez sélectionner une option.</div>
+                                </div>
+                            </div>
+                            
+                            <div id="associationDiv" class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="numero_autorisation" class="form-label">Numéro d'autorisation</label>
+                                    <input type="text" class="form-control" id="numero_autorisation" name="numero_autorisation" value="{{ eglise.numero_autorisation }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="date_declaration" class="form-label">Date de déclaration</label>
+                                    <input type="date" class="form-control" id="date_declaration" name="date_declaration" value="{% if eglise.date_declaration %}{{ eglise.date_declaration|date:'Y-m-d' }}{% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 3: Pièces Jointes -->
+                        <div class="form-section mb-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="section-icon bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="fas fa-paperclip text-warning fa-2x"></i>
+                                </div>
+                                <h4 class="section-title text-warning mb-0">3. Pièces Jointes</h4>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover bg-white rounded overflow-hidden">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th style="width: 30%" class="py-3">Type de document</th>
+                                            <th style="width: 50%" class="py-3">Fichier</th>
+                                            <th style="width: 20%" class="py-3 text-center">Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <label for="liste_membres" class="form-label mb-0">Liste des membres fondateurs</label>
+                                            </td>
+                                            <td>
+                                                <input type="file" class="form-control" id="liste_membres" name="liste_membres">
+                                                {% if eglise.liste_membres %}
+                                                <small class="text-muted">Fichier actuel: {{ eglise.liste_membres.name|slice:"14:" }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if eglise.liste_membres %}
+                                                <span class="badge bg-success">Document fourni</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Non fourni</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label for="statuts" class="form-label mb-0">Statuts de l'église</label>
+                                            </td>
+                                            <td>
+                                                <input type="file" class="form-control" id="statuts" name="statuts">
+                                                {% if eglise.statuts %}
+                                                <small class="text-muted">Fichier actuel: {{ eglise.statuts.name|slice:"14:" }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if eglise.statuts %}
+                                                <span class="badge bg-success">Document fourni</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Non fourni</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label for="piece_identite" class="form-label mb-0">Pièce d'identité du responsable</label>
+                                            </td>
+                                            <td>
+                                                <input type="file" class="form-control" id="piece_identite" name="piece_identite">
+                                                {% if eglise.piece_identite %}
+                                                <small class="text-muted">Fichier actuel: {{ eglise.piece_identite.name|slice:"14:" }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if eglise.piece_identite %}
+                                                <span class="badge bg-success">Document fourni</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Non fourni</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label for="preuve_adresse" class="form-label mb-0">Preuve d'adresse</label>
+                                            </td>
+                                            <td>
+                                                <input type="file" class="form-control" id="preuve_adresse" name="preuve_adresse">
+                                                {% if eglise.preuve_adresse %}
+                                                <small class="text-muted">Fichier actuel: {{ eglise.preuve_adresse.name|slice:"14:" }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                {% if eglise.preuve_adresse %}
+                                                <span class="badge bg-success">Document fourni</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Non fourni</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert alert-info mt-2">
+                                <i class="fas fa-info-circle me-2"></i> Télécharger un nouveau fichier remplacera l'ancien document s'il existe.
+                            </div>
+                        </div>
+                        
+                        <!-- Section 4: Activités Principales -->
+                        <div class="form-section mb-4 bg-white p-4 rounded shadow-sm border-start border-info border-4">
+                            <h4 class="section-title text-uppercase fw-bold text-info">
+                                <i class="fas fa-tasks me-2"></i>Sélectionnez les activités principales de l'église
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <div class="form-check-container d-flex flex-wrap align-items-center gap-3">
+                                        <label class="form-label fw-bold mb-0 me-3">Sélectionnez les activités principales de l'église :</label>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="activite_culte" name="activites" value="Culte" {% if 'Culte' in eglise.activites %}checked{% endif %}>
+                                            <label class="form-check-label text-dark fw-bold" for="activite_culte">Culte</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="activite_enseignement" name="activites" value="Enseignement" {% if 'Enseignement' in eglise.activites %}checked{% endif %}>
+                                            <label class="form-check-label text-dark fw-bold" for="activite_enseignement">Enseignement</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="activite_evangelisation" name="activites" value="Évangélisation" {% if 'Évangélisation' in eglise.activites %}checked{% endif %}>
+                                            <label class="form-check-label text-dark fw-bold" for="activite_evangelisation">Évangélisation</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="activite_formation" name="activites" value="Formation" {% if 'Formation' in eglise.activites %}checked{% endif %}>
+                                            <label class="form-check-label text-dark fw-bold" for="activite_formation">Formation</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="activite_aide_sociale" name="activites" value="Aide sociale" {% if 'Aide sociale' in eglise.activites %}checked{% endif %}>
+                                            <label class="form-check-label text-dark fw-bold" for="activite_aide_sociale">Aide sociale</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="activite_autre" name="activites" value="Autre" {% if 'Autre' in eglise.activites %}checked{% endif %} onclick="toggleAutreActivite()">
+                                            <label class="form-check-label text-dark fw-bold" for="activite_autre">Autre</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row" id="autre_activite_row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="autre_activite" class="form-label">Précisez si autre</label>
+                                    <input type="text" class="form-control" id="autre_activite" name="autre_activite" value="{{ eglise.autre_activite }}">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label for="description" class="form-label fw-bold text-dark">Description des activités</label>
+                                    <textarea class="form-control text-dark" id="description" name="description" rows="4" style="color: black !important;">{{ eglise.description }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 5: Déclaration -->
+                        <div class="form-section mb-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="section-icon bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="fas fa-file-signature text-info fa-2x"></i>
+                                </div>
+                                <h4 class="section-title text-info mb-0">5. Déclaration</h4>
+                            </div>
+                            
+                            <div class="declaration-text p-4 bg-light rounded-lg mb-4 border border-info border-opacity-25 shadow-sm">
+                                <div class="mb-3">
+                                    <p class="mb-3 text-dark">Je soussigné(e) <input type="text" class="inline-input" id="inline_nom_declarant" value="{{ eglise.nom_declarant }}" placeholder="Votre nom"> agissant en qualité de <input type="text" class="inline-input" id="inline_qualite" value="{{ eglise.qualite }}" placeholder="Votre fonction"> déclare que les informations fournies dans ce formulaire sont exactes et complètes.</p>
+                                </div>
+                                <div class="mb-3">
+                                    <p class="mb-3 text-dark">Je m'engage à informer <input type="text" class="inline-input" id="inline_autorite" value="{{ eglise.autorite }}" placeholder="nom de l'autorité"> de tout changement qui pourrait affecter l'exactitude des informations fournies.</p>
+                                </div>
+                                <div class="mb-0">
+                                    <p class="mb-0 text-dark">Fait à <input type="text" class="inline-input" id="inline_lieu_declaration" value="{{ eglise.lieu_declaration }}" placeholder="Lieu"> le <input type="date" class="inline-input" id="inline_date_declaration_signature" value="{% if eglise.date_declaration_signature %}{{ eglise.date_declaration_signature|date:'Y-m-d' }}{% endif %}">.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nom_declarant" class="form-label required-field">Nom du déclarant</label>
+                                    <input type="text" class="form-control" id="nom_declarant" name="nom_declarant" value="{{ eglise.nom_declarant }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer le nom du déclarant.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="qualite" class="form-label required-field">Qualité</label>
+                                    <select class="form-select" id="qualite" name="qualite" required>
+                                        <option value="" {% if not eglise.qualite %}selected{% endif %}>Sélectionnez...</option>
+                                        <option value="Pasteur" {% if eglise.qualite == 'Pasteur' %}selected{% endif %}>Pasteur</option>
+                                        <option value="Président" {% if eglise.qualite == 'Président' %}selected{% endif %}>Président</option>
+                                        <option value="Secrétaire Général" {% if eglise.qualite == 'Secrétaire Général' %}selected{% endif %}>Secrétaire Général</option>
+                                        <option value="Trésorier" {% if eglise.qualite == 'Trésorier' %}selected{% endif %}>Trésorier</option>
+                                        <option value="Autre" {% if eglise.qualite and eglise.qualite not in 'Pasteur,Président,Secrétaire Général,Trésorier' %}selected{% endif %}>Autre</option>
+                                    </select>
+                                    <div class="invalid-feedback">Veuillez sélectionner la qualité du déclarant.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="autorite" class="form-label">Autorité à informer</label>
+                                    <input type="text" class="form-control" id="autorite" name="autorite" value="{{ eglise.autorite }}">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="lieu_declaration" class="form-label required-field">Lieu de déclaration</label>
+                                    <input type="text" class="form-control" id="lieu_declaration" name="lieu_declaration" value="{{ eglise.lieu_declaration }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer le lieu de déclaration.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="date_declaration_signature" class="form-label required-field">Date de déclaration</label>
+                                    <input type="date" class="form-control" id="date_declaration_signature" name="date_declaration_signature" value="{% if eglise.date_declaration_signature %}{{ eglise.date_declaration_signature|date:'Y-m-d' }}{% endif %}" required>
+                                    <div class="invalid-feedback">Veuillez entrer la date de déclaration.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="signature" class="form-label">Signature (image)</label>
+                                    <input type="file" class="form-control" id="signature" name="signature">
+                                    {% if eglise.signature %}
+                                    <small class="text-muted">Fichier actuel: {{ eglise.signature.name|slice:"14:" }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+                            <a href="{% url 'main:eglises' %}" class="btn btn-outline-secondary btn-lg px-4 shadow-sm">
+                                <i class="fas fa-arrow-left me-2"></i> Retour à la liste
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                                <i class="fas fa-save me-2"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Les champs marqués d'un <span class="text-danger fw-bold">*</span> sont obligatoires</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialisation de la validation du formulaire
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('modifierEgliseForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+            
+            // Synchronisation bidirectionnelle des champs de la déclaration
+            setupDeclarationSynchronization();
+            
+            // Gestion de l'affichage conditionnel pour le statut juridique
+            setupStatutJuridiqueToggle();
+            
+            // Gestion de l'affichage conditionnel pour les activités
+            setupActivitesToggle();
+        }
+    });
+    
+    // Fonction pour synchroniser les champs de la déclaration
+    function setupDeclarationSynchronization() {
+        // Synchronisation du nom du déclarant
+        const nomDeclarant = document.getElementById('nom_declarant');
+        const inlineNomDeclarant = document.getElementById('inline_nom_declarant');
+        if (nomDeclarant && inlineNomDeclarant) {
+            nomDeclarant.addEventListener('input', function() {
+                inlineNomDeclarant.value = this.value;
+            });
+            inlineNomDeclarant.addEventListener('input', function() {
+                nomDeclarant.value = this.value;
+            });
+        }
+        
+        // Synchronisation de la qualité
+        const qualite = document.getElementById('qualite');
+        const inlineQualite = document.getElementById('inline_qualite');
+        if (qualite && inlineQualite) {
+            qualite.addEventListener('change', function() {
+                inlineQualite.value = this.value;
+            });
+            inlineQualite.addEventListener('input', function() {
+                // Recherche d'une correspondance dans la liste déroulante
+                const options = Array.from(qualite.options);
+                const matchingOption = options.find(option => 
+                    option.value.toLowerCase() === this.value.toLowerCase());
+                
+                if (matchingOption) {
+                    qualite.value = matchingOption.value;
+                } else if (this.value.trim() !== '') {
+                    // Si pas de correspondance et valeur non vide, sélectionner "Autre"
+                    qualite.value = 'Autre';
+                }
+            });
+        }
+        
+        // Synchronisation de l'autorité
+        const autorite = document.getElementById('autorite');
+        const inlineAutorite = document.getElementById('inline_autorite');
+        if (autorite && inlineAutorite) {
+            autorite.addEventListener('input', function() {
+                inlineAutorite.value = this.value;
+            });
+            inlineAutorite.addEventListener('input', function() {
+                autorite.value = this.value;
+            });
+        }
+        
+        // Synchronisation du lieu de déclaration
+        const lieuDeclaration = document.getElementById('lieu_declaration');
+        const inlineLieuDeclaration = document.getElementById('inline_lieu_declaration');
+        if (lieuDeclaration && inlineLieuDeclaration) {
+            lieuDeclaration.addEventListener('input', function() {
+                inlineLieuDeclaration.value = this.value;
+            });
+            inlineLieuDeclaration.addEventListener('input', function() {
+                lieuDeclaration.value = this.value;
+            });
+        }
+        
+        // Synchronisation de la date de déclaration
+        const dateDeclarationSignature = document.getElementById('date_declaration_signature');
+        const inlineDateDeclarationSignature = document.getElementById('inline_date_declaration_signature');
+        if (dateDeclarationSignature && inlineDateDeclarationSignature) {
+            dateDeclarationSignature.addEventListener('input', function() {
+                inlineDateDeclarationSignature.value = this.value;
+            });
+            inlineDateDeclarationSignature.addEventListener('input', function() {
+                dateDeclarationSignature.value = this.value;
+            });
+        }
+    }
+    
+    // Fonction pour gérer l'affichage conditionnel du statut juridique
+    function setupStatutJuridiqueToggle() {
+        const statutOui = document.getElementById('statut_oui');
+        const statutNon = document.getElementById('statut_non');
+        const associationDiv = document.getElementById('associationDiv');
+        
+        if (statutOui && statutNon && associationDiv) {
+            // Initialisation au chargement de la page
+            if (statutOui.checked) {
+                associationDiv.style.display = 'flex';
+            } else {
+                associationDiv.style.display = 'none';
+            }
+            
+            // Écouteurs d'événements pour les changements
+            statutOui.addEventListener('change', function() {
+                if (this.checked) {
+                    associationDiv.style.display = 'flex';
+                }
+            });
+            
+            statutNon.addEventListener('change', function() {
+                if (this.checked) {
+                    associationDiv.style.display = 'none';
+                }
+            });
+        }
+    }
+    
+    // Fonction pour gérer l'affichage conditionnel des activités
+    function toggleAutreActivite() {
+        const activiteAutre = document.getElementById('activite_autre');
+        const autreActiviteRow = document.getElementById('autre_activite_row');
+        
+        if (activiteAutre && autreActiviteRow) {
+            if (activiteAutre.checked) {
+                autreActiviteRow.style.display = 'flex';
+            } else {
+                autreActiviteRow.style.display = 'none';
+                document.getElementById('autre_activite').value = '';
+            }
+        }
+    }
+    
+    // Fonction pour gérer l'affichage conditionnel des activités
+    function setupActivitesToggle() {
+        const activiteAutre = document.getElementById('activite_autre');
+        const autreActiviteRow = document.getElementById('autre_activite_row');
+        
+        if (activiteAutre && autreActiviteRow) {
+            // Initialisation au chargement de la page
+            if (activiteAutre.checked) {
+                autreActiviteRow.style.display = 'flex';
+            } else {
+                autreActiviteRow.style.display = 'none';
+            }
+            
+            // Écouteur d'événement pour les changements
+            activiteAutre.addEventListener('change', toggleAutreActivite);
+        }
+    }
+</script>
+{% endblock content %}

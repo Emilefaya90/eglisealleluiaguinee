@@ -1,0 +1,261 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Personnel Pastoral - Gestion Église{% endblock %}
+
+{% block content %}
+<div class="page-content" style="position: relative; min-height: 100vh;">
+    <div style="position: fixed; left: 0; bottom: 0; width: 100vw; height: auto; min-height: 40vh; z-index: 0; pointer-events: none;">
+        <img src="{% static 'main/images/hero/fond8.jpg' %}" alt="Fond bas" style="width: 100vw; height: auto; display: block; object-fit: cover; object-position: bottom;">
+    </div>
+    <div class="container mt-4" style="position: relative; z-index: 2;">
+        <div class="row">
+            <div class="col-12">
+                <!-- Messages de succès et d'erreur -->
+                {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                            {% if message.tags == 'success' %}
+                                <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-left: 5px solid #28a745; background-color: #d4edda; border-color: #c3e6cb;">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1"><strong>Enregistrement réussi !</strong></h5>
+                                            <p class="mb-0">{{ message }}</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% elif message.tags == 'error' %}
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 5px solid #dc3545; background-color: #f8d7da; border-color: #f5c6cb;">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-exclamation-triangle fa-2x text-danger me-3"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1"><strong>Erreur d'enregistrement</strong></h5>
+                                            <p class="mb-0">{{ message }}</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% elif message.tags == 'warning' %}
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert" style="border-left: 5px solid #ffc107; background-color: #fff3cd; border-color: #ffecb5;">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-exclamation-circle fa-2x text-warning me-3"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1"><strong>Attention</strong></h5>
+                                            <p class="mb-0">{{ message }}</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info alert-dismissible fade show" role="alert" style="border-left: 5px solid #17a2b8; background-color: #d1ecf1; border-color: #bee5eb;">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-info-circle fa-2x text-info me-3"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1"><strong>Information</strong></h5>
+                                            <p class="mb-0">{{ message }}</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-center">
+                        <h4 class="text-white m-0">PERSONNEL PASTORAL</h4>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <!-- Guide rapide du formulaire (version compacte) -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card border-primary mb-2" style="font-size: 0.9rem;">
+                                    <div class="card-header bg-primary text-white py-1">
+                                        <h6 class="m-0"><i class="fas fa-list-ul me-1"></i> Champs du formulaire</h6>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <div class="row">
+                                            <div class="col-sm-6"><i class="fas fa-camera text-primary me-1"></i> <strong>Photo</strong> (caméra/import)</div>
+                                            <div class="col-sm-6"><i class="fas fa-id-card text-primary me-1"></i> <strong>Nom et prénoms</strong></div>
+                                            <div class="col-sm-6"><i class="fas fa-user-tie text-primary me-1"></i> <strong>Fonction et sexe</strong></div>
+                                            <div class="col-sm-6"><i class="fas fa-calendar text-primary me-1"></i> <strong>Date de naissance</strong></div>
+                                            <div class="col-sm-6"><i class="fas fa-envelope text-primary me-1"></i> <strong>Email</strong></div>
+                                            <div class="col-sm-6"><i class="fas fa-pray text-primary me-1"></i> <strong>Date de consécration</strong></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-success mb-2" style="font-size: 0.9rem;">
+                                    <div class="card-header bg-success text-white py-1">
+                                        <h6 class="m-0"><i class="fas fa-lightbulb me-1"></i> Conseils d'utilisation</h6>
+                                    </div>
+                                    <div class="card-body p-2">
+                                        <div class="row">
+                                            <div class="col-sm-6"><i class="fas fa-info-circle text-success me-1"></i> <strong>Tous les champs</strong> optionnels</div>
+                                            <div class="col-sm-6"><i class="fas fa-camera text-success me-1"></i> <strong>Photo</strong> via caméra</div>
+                                            <div class="col-sm-6"><i class="fas fa-search text-success me-1"></i> <strong>Recherche</strong> par filtres</div>
+                                            <div class="col-sm-6"><i class="fas fa-edit text-success me-1"></i> <strong>Modification</strong> (crayon)</div>
+                                            <div class="col-sm-6"><i class="fas fa-trash text-success me-1"></i> <strong>Suppression</strong> (confirmer)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form method="post" class="needs-validation" id="personnelForm" enctype="multipart/form-data" novalidate>
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="enregistrer_personnel">
+                            <input type="hidden" name="pasteur_id" id="pasteur_id" value="">
+                        
+                            <!-- Messages de validation -->
+                            <div id="errorMessage" class="alert alert-danger" style="display: none;">
+                                <i class="fas fa-exclamation-triangle me-2"></i> Veuillez remplir tous les champs obligatoires.
+                            </div>
+                            
+                            <div id="successMessage" class="alert alert-success" style="display: none;">
+                                <i class="fas fa-check-circle me-2"></i> Tous les champs obligatoires sont remplis.
+                            </div>
+                            
+                            <!-- Section 1: Informations personnelles -->
+                            <div class="form-section mb-4">
+                                <div class="d-flex align-items-center bg-light p-2 rounded-top border-bottom border-primary">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <h4 class="section-title m-0">1 - Informations personnelles</h4>
+                                </div>
+                                <div class="p-3 bg-white rounded-bottom shadow-sm">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label required-field">Prénoms</label>
+                                            <input type="text" class="form-control" name="prenoms" id="prenoms" value="{{ form_data.prenoms|default:'' }}" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label required-field">Nom</label>
+                                            <input type="text" class="form-control" name="nom" id="nom" value="{{ form_data.nom|default:'' }}" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label required-field">Fonction</label>
+                                            <input type="text" class="form-control" name="fonction" id="fonction" value="{{ form_data.fonction|default:'' }}" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label required-field">Sexe</label>
+                                            <select class="form-select" name="sexe" id="sexe" required>
+                                                <option value="">Sélectionner...</option>
+                                                <option value="M" {% if form_data.sexe == 'M' %}selected{% endif %}>Masculin</option>
+                                                <option value="F" {% if form_data.sexe == 'F' %}selected{% endif %}>Féminin</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label required-field">Date de naissance</label>
+                                            <input type="date" class="form-control" name="date_naissance" id="date_naissance" value="{{ form_data.date_naissance|default:'' }}" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Lieu de naissance</label>
+                                            <input type="text" class="form-control" name="lieu_naissance" id="lieu_naissance" value="{{ form_data.lieu_naissance|default:'' }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Nationalité</label>
+                                            <input type="text" class="form-control" name="nationalite" id="nationalite" value="{{ form_data.nationalite|default:'' }}">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Domicile</label>
+                                            <input type="text" class="form-control" name="domicile" id="domicile" value="{{ form_data.domicile|default:'' }}">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label required-field">Téléphone</label>
+                                            <input type="tel" class="form-control" name="telephone" id="telephone" value="{{ form_data.telephone|default:'' }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 mb-3 text-start">
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-save me-2"></i> Enregistrer
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary ms-3 px-4">
+                                    <i class="fas fa-undo me-2"></i> Réinitialiser
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Tableau des enregistrements existants -->
+                <div class="col-12 mt-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <h5 class="mb-0 text-white"><i class="fas fa-list me-2"></i> LISTE DU PERSONNEL PASTORAL</h5>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col" class="text-center">Photo</th>
+                                            <th scope="col">Nom & Prénoms</th>
+                                            <th scope="col">Fonction</th>
+                                            <th scope="col">Sexe</th>
+                                            <th scope="col">Téléphone</th>
+                                            <th scope="col" class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pasteur in pasteurs %}
+                                        <tr data-id="{{ pasteur.id }}">
+                                            <td class="text-center">
+                                                {% if pasteur.photo %}
+                                                <img src="{{ pasteur.photo.url }}" alt="Photo" class="rounded-circle" width="50" height="50">
+                                                {% else %}
+                                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; margin: 0 auto;">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ pasteur.prenoms }} {{ pasteur.nom }}</td>
+                                            <td>{{ pasteur.fonction }}</td>
+                                            <td>{{ pasteur.get_sexe_display }}</td>
+                                            <td>{{ pasteur.telephone }}</td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">
+                                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted">Aucun personnel pastoral enregistré</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ pdf_title }} - Église Alléluia{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="pdf-viewer-container">
+        <div class="pdf-header d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">
+                <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                {{ pdf_title }}
+            </h4>
+            <a href="{% url 'main:accueil' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Retour
+            </a>
+        </div>
+        <div class="pdf-frame-container">
+            <iframe 
+                src="{% static pdf_path %}#toolbar=0&navpanes=0&scrollbar=1&view=FitH" 
+                class="pdf-frame"
+                frameborder="0">
+            </iframe>
+            <!-- Overlay pour bloquer le clic droit -->
+            <div class="pdf-overlay"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.pdf-viewer-container {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+}
+
+.pdf-header h4 {
+    color: #333;
+    font-weight: 600;
+}
+
+.pdf-frame-container {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+}
+
+.pdf-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.pdf-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: transparent;
+    z-index: 10;
+}
+
+/* Désactiver la sélection de texte */
+.pdf-frame-container {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+</style>
+
+<script>
+// Désactiver le clic droit sur la page
+document.addEventListener('contextmenu', function(e) {
+    if (e.target.closest('.pdf-frame-container')) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Désactiver certains raccourcis clavier
+document.addEventListener('keydown', function(e) {
+    // Ctrl+S, Ctrl+P, Ctrl+Shift+S
+    if ((e.ctrlKey && (e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 's' || e.key === 'S'))) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
+{% endblock %}

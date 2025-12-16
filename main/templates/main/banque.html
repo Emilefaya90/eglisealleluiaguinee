@@ -1,0 +1,1472 @@
+{% extends 'main/base.html' %}
+{% load i18n static %}
+
+{% block title %}Finance | Gestion Église{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Titres de sections avec bande colorée */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: .9rem 1.2rem;
+    margin: 1.2rem 0 1.2rem 0;
+    border-radius: .4rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.8rem;
+  }
+
+  .sec-info { background: linear-gradient(90deg, #0d6efd, #4ea3ff); }
+  .sec-revenus { background: linear-gradient(90deg, #198754, #40c27a); }
+  .sec-depenses { background: linear-gradient(90deg, #dc3545, #ff6b77); }
+  .sec-solde { background: linear-gradient(90deg, #6f42c1, #a07ae6); }
+  .sec-validation { background: linear-gradient(90deg, #fd7e14, #ffb36b); }
+
+  /* Encadrement latéral coloré pour le contenu de section */
+  .section-box { border-left: 5px solid transparent; padding-left: .75rem; margin-bottom: 1rem; }
+  .section-box.info { border-color: #0d6efd22; background: #0d6efd0a; }
+  .section-box.revenus { border-color: #19875422; background: #1987540a; }
+  .section-box.depenses { border-color: #dc354522; background: #dc35450a; }
+  .section-box.solde { border-color: #6f42c122; background: #6f42c10a; }
+  .section-box.validation { border-color: #fd7e1422; background: #fd7e140a; }
+
+  /* Têtes de table teintes par section */
+  #revenusTable thead, #revenusTable thead th { background: #198754 !important; color: #fff !important; }
+  #depensesTable thead, #depensesTable thead th { background: #dc3545 !important; color: #fff !important; }
+  #banqueTable thead, #banqueTable thead th { background: #0d6efd !important; color: #fff !important; }
+  
+
+  /* Petites finitions */
+  .card-header.bg-light { background: #f8fafc !important; }
+  .table > :not(caption) > * > * { vertical-align: middle; }
+
+  /* Animation de rotation pour le bouton actualiser */
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Sticky sections + table headers */
+  .section-title { position: sticky; top: 70px; z-index: 5; }
+  .table-responsive thead th { position: sticky; top: 0; z-index: 3; }
+
+  /* Subtil hover sur les lignes */
+  .table tbody tr:hover { background-color: rgba(13,110,253,0.04); }
+
+  /* Ombres cartes un peu plus présentes */
+  .card.shadow-sm { box-shadow: 0 0.35rem 1rem rgba(0,0,0,.08) !important; }
+  .card.shadow-lg, .card.shadow { box-shadow: 0 0.65rem 1.25rem rgba(0,0,0,.10) !important; }
+
+  /* Miniatures pièces jointes */
+  .pj-thumbs { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; }
+  .pj-thumb { width: 34px; height: 24px; object-fit: cover; border: 1px solid #dee2e6; border-radius: 3px; }
+  .pj-link { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border: 1px solid #adb5bd; border-radius: 3px; font-size: 11px; color: #0d6efd; text-decoration: none; background: #f8f9fa; }
+  .pj-more { font-size: 11px; color: #495057; }
+
+  /* Mise en évidence du formulaire quand on charge un enregistrement */
+  @keyframes flash-bg {
+    0% { box-shadow: 0 0 0 0 rgba(13,110,253,.0); background-color: transparent; }
+    20% { box-shadow: 0 0 0 4px rgba(13,110,253,.15); background-color: rgba(13,110,253,.03); }
+    60% { box-shadow: 0 0 0 4px rgba(13,110,253,.10); background-color: rgba(13,110,253,.02); }
+    100% { box-shadow: 0 0 0 0 rgba(13,110,253,.0); background-color: transparent; }
+  }
+  .flash-highlight {
+    animation: flash-bg 1.2s ease-out 1;
+    transition: background-color .6s ease;
+    border-radius: 10px;
+  }
+
+  /* Bandeau Historique — métriques (look moderne) */
+  .hist-summary .metric{
+    --accent: #0d6efd; /* par défaut */
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, rgba(13,110,253,0.03) 0%, rgba(13,110,253,0.01) 100%), #ffffff !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    transition: box-shadow .2s ease, transform .15s ease;
+    overflow: hidden;
+    text-align: center;
+  }
+  .hist-summary .metric .fw-bold { font-size: 0.98rem; line-height: 1.2; white-space: nowrap; }
+  /* Réduire la hauteur du cadre Solde Net */
+  .hist-summary .metric.metric-solde { padding: 8px 10px !important; }
+  .hist-summary .metric.metric-solde .fw-bold { margin-top: 2px !important; }
+  /* Garder libellé + montant sur une même ligne (centré) pour Total Revenus et Total Dépenses */
+  .hist-summary .metric.metric-rev > .small,
+  .hist-summary .metric.metric-rev > .fw-bold,
+  .hist-summary .metric.metric-dep > .small,
+  .hist-summary .metric.metric-dep > .fw-bold { display: inline-block; vertical-align: baseline; }
+  .hist-summary .metric.metric-rev > .small,
+  .hist-summary .metric.metric-dep > .small { white-space: nowrap; }
+  .hist-summary .metric.metric-rev > .fw-bold,
+  .hist-summary .metric.metric-dep > .fw-bold { margin-left: 5px; }
+  /* Taille un peu réduite pour tenir sur une ligne */
+  .hist-summary .metric.metric-rev > .fw-bold,
+  .hist-summary .metric.metric-dep > .fw-bold { font-size: 0.90rem; }
+  .hist-summary .metric.metric-rev > .small,
+  .hist-summary .metric.metric-dep > .small { font-size: 0.82rem; }
+  .hist-summary .metric::before{
+    content: "";
+    position: absolute; inset: 0; pointer-events: none;
+    border-radius: inherit;
+    padding: 1px; /* pseudo-bordure dégradée */
+    background: linear-gradient(135deg, rgba(var(--acc-r,13),var(--acc-g,110),var(--acc-b,253),.45), rgba(0,0,0,.06));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .hist-summary .metric:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+  }
+  .hist-summary .metric .small{
+    font-weight: 700; letter-spacing: .25px; text-transform: uppercase;
+    color: rgba(0,0,0,.55);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .hist-summary .metric .fw-bold{
+    font-size: 1.15rem; line-height: 1.2; color: #212529;
+    font-variant-numeric: tabular-nums;
+    display: inline-block;
+    margin-top: 2px;
+  }
+  /* Accentuer subtilement le fond selon la métrique */
+  .hist-summary .metric.metric-dimes{ --accent:#e09a22; --acc-r:224; --acc-g:154; --acc-b:34; background: linear-gradient(180deg, rgba(224,154,34,.18), rgba(224,154,34,.08)), #fff !important; }
+  .hist-summary .metric.metric-offrandes{ --accent:#1e7e34; --acc-r:30; --acc-g:126; --acc-b:52; background: linear-gradient(180deg, rgba(30,126,52,.18), rgba(30,126,52,.08)), #fff !important; }
+  .hist-summary .metric.metric-dons{ --accent:#0b5ed7; --acc-r:11; --acc-g:94; --acc-b:215; background: linear-gradient(180deg, rgba(11,94,215,.18), rgba(11,94,215,.08)), #fff !important; }
+  .hist-summary .metric.metric-subv{ --accent:#117a8b; --acc-r:17; --acc-g:122; --acc-b:139; background: linear-gradient(180deg, rgba(17,122,139,.18), rgba(17,122,139,.08)), #fff !important; }
+  .hist-summary .metric.metric-rev{ --accent:#146c43; --acc-r:20; --acc-g:108; --acc-b:67; background: linear-gradient(180deg, rgba(20,108,67,.18), rgba(20,108,67,.08)), #fff !important; }
+  .hist-summary .metric.metric-dep{ --accent:#bb2d3b; --acc-r:187; --acc-g:45; --acc-b:59; background: linear-gradient(180deg, rgba(187,45,59,.20), rgba(187,45,59,.10)), #fff !important; }
+  .hist-summary .metric.metric-solde{ --accent:#0aa2c0; --acc-r:10; --acc-g:162; --acc-b:192; background: linear-gradient(180deg, rgba(10,162,192,.18), rgba(10,162,192,.08)), #fff !important; }
+
+  /* Animations héros */
+  @keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInDown {
+    0% { opacity: 0; transform: translateY(-15px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes expandWidth {
+    0% { width: 0; opacity: .0; }
+    60% { opacity: 1; }
+    100% { width: 120px; opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+
+  
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-content finances-bg" style="position: relative; min-height: 100vh; width: 100%; padding-top: 0;">
+  <div style="position: fixed; left: 0; bottom: 0; width: 100vw; height: auto; min-height: 40vh; z-index: 0; pointer-events: none;">
+    <img src="{% static 'main/images/hero/Finance.jpg' %}" alt="Fond bas" style="width: 100vw; height: auto; display: block; object-fit: cover; object-position: bottom;">
+  </div>
+  <div class="container" style="position: relative; z-index: 2; padding-top: 10px;">
+    <div class="header-section mb-4" style="position: relative; padding: 1.6rem 0; overflow: hidden;">
+      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(40, 167, 69, 0.12) 0%, rgba(32, 201, 151, 0.12) 50%, rgba(255, 193, 7, 0.08) 100%); border-radius: 18px; z-index: 1; box-shadow: 0 8px 22px rgba(40, 167, 69, 0.08);"></div>
+      <div style="position: absolute; top: 20px; left: 20px; width: 56px; height: 56px; z-index: 4; opacity: 1;">
+        <img src="{% static 'main/images/hero/Finance1.png' %}" alt="Finance1" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.8);">
+      </div>
+      <div style="position: absolute; top: 20px; right: 20px; width: 56px; height: 56px; z-index: 4; opacity: 1;">
+        <img src="{% static 'main/images/hero/Finance2.png' %}" alt="Finance2" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.18); border: 1px solid rgba(255,255,255,0.8);">
+      </div>
+      <div style="position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; border: 2px solid rgba(40, 167, 69, 0.2); border-radius: 23px; z-index: 1;"></div>
+      <div class="text-center" style="position: relative; z-index: 3;">
+        <div class="mb-3" style="animation: fadeInDown 1s ease-out;">
+          <span class="badge" style="background: linear-gradient(135deg, #28a745, #20c997, #ffc107); color: white; padding: 12px 30px; border-radius: 30px; font-size: 1rem; letter-spacing: 1.5px; box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3); text-transform: uppercase; font-weight: 600;">
+            <i class="fas fa-university me-2" style="animation: pulse 2s infinite;"></i>FINANCE DE L'ÉGLISE Alléluia
+          </span>
+        </div>
+        <div class="title-container mb-3" style="position: relative; animation: fadeInUp 1s ease-out 0.3s both;">
+          <h1 class="fw-bold mb-0" style="position: absolute; top: 3px; left: 50%; transform: translateX(-50%); color: rgba(0,0,0,0.1); font-size: 1.9rem; line-height: 1.2; white-space: nowrap; letter-spacing: 0.8px; z-index: 1;">
+            <i class="fas fa-wallet me-2"></i>
+            FORMULAIRE DE TRÉSORERIE DE L'ÉGLISE
+          </h1>
+          <h1 class="fw-bold mb-0" style="position: relative; background: linear-gradient(135deg, #28a745, #20c997, #ffc107); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.9rem; line-height: 1.2; white-space: nowrap; letter-spacing: 0.8px; z-index: 2; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+            <i class="fas fa-wallet me-2" style="color: #ffc107; text-shadow: 2px 2px 6px rgba(255, 193, 7, 0.4);"></i>
+            FORMULAIRE DE TRÉSORERIE DE L'ÉGLISE
+          </h1>
+          <div style="width: 120px; height: 4px; background: linear-gradient(135deg, #28a745, #20c997, #ffc107); margin: 10px auto; border-radius: 2px; box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25); animation: expandWidth 1.5s ease-out 0.8s both;"></div>
+          <div style="animation: fadeInUp 1s ease-out 0.45s both;">
+            <p class="lead mb-0" style="color: #495057; font-size: 1.2rem; font-style: italic; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.05);">
+              <i class="fas fa-user-tie me-2" style="color: #28a745; animation: pulse 2s infinite;"></i>
+              À remplir par le trésorier ou responsable financier
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form id="banqueForm" novalidate>
+        {% csrf_token %}
+        <!-- 1. Informations Générales -->
+        <div class="section-title sec-info"><i class="bi bi-info-circle"></i> 1. Informations Générales</div>
+        <div class="row g-3 mb-3 section-box info">
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-church me-2 text-primary"></i>Nom de l'église</label>
+            <select id="eglise_id" class="form-select" required>
+              <option value="">-- Sélectionnez --</option>
+              {% for e in eglises %}
+              <option value="{{ e.id }}">{{ e.nom }}</option>
+              {% endfor %}
+            </select>
+            <div class="invalid-feedback">Veuillez choisir une église</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-calendar-alt me-2 text-success"></i>Période couverte : Du</label>
+            <input type="date" id="periode_debut" class="form-control" required>
+            <div class="invalid-feedback">Date début requise</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-calendar-check me-2 text-success"></i>Au</label>
+            <input type="date" id="periode_fin" class="form-control" required>
+            <div class="invalid-feedback">Date fin requise</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-user-tie me-2 text-warning"></i>Responsable financier</label>
+            <input type="text" id="responsable" class="form-control" required>
+            <div class="invalid-feedback">Responsable requis</div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-phone me-2 text-info"></i>Contact</label>
+            <input type="text" id="contact" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-envelope me-2 text-danger"></i>Email</label>
+            <input type="email" id="email" class="form-control">
+          </div>
+        </div>
+
+        <!-- 2. Revenus -->
+        <div class="section-title sec-revenus"><i class="bi bi-cash-stack"></i> 2. Revenus (Entrées d'argent)</div>
+        <div class="table-responsive mb-2 section-box revenus">
+          <table class="table table-sm table-bordered align-middle" id="revenusTable">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 26%">Source de revenu</th>
+                <th style="width: 14%">Montant (GNF)</th>
+                <th style="width: 14%">Date</th>
+                <th style="width: 22%">Mode de paiement</th>
+                <th style="width: 12%" class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="revenusBody"></tbody>
+            <tfoot>
+              <tr>
+                <th colspan="1" class="text-end">Total des revenus</th>
+                <th><input type="text" id="total_revenus" class="form-control form-control-sm" value="0" readonly></th>
+                <th colspan="2"></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addRevenuBtn"><i class="bi bi-plus-circle"></i> Ajouter un revenu</button>
+
+        <!-- 3. Dépenses -->
+        <div class="section-title sec-depenses"><i class="bi bi-wallet2"></i> 3. Dépenses (Sorties d'argent)</div>
+        <div class="table-responsive mb-2 section-box depenses">
+          <table class="table table-sm table-bordered align-middle" id="depensesTable">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 26%">Nature de la dépense</th>
+                <th style="width: 12%">Montant (GNF)</th>
+                <th style="width: 18%">Bénéficiaire</th>
+                <th style="width: 18%">Pièce jointe</th>
+                <th style="width: 14%">Catégorie</th>
+                <th style="width: 12%" class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="depensesBody"></tbody>
+            <tfoot>
+              <tr>
+                <th colspan="1" class="text-end">Total des dépenses</th>
+                <th><input type="text" id="total_depenses" class="form-control form-control-sm" value="0" readonly></th>
+                <th colspan="3"></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addDepenseBtn"><i class="bi bi-plus-circle"></i> Ajouter une dépense</button>
+
+        
+
+        <!-- 4. Solde Financier -->
+        <div class="section-title sec-solde"><i class="bi bi-calculator"></i> 4. Solde Financier</div>
+        <div class="row g-3 mb-3 section-box solde">
+          <div class="col-md-3">
+            <label class="form-label"><i class="fas fa-piggy-bank me-2 text-secondary"></i>Solde initial (GNF)</label>
+            <input type="text" id="solde_initial" class="form-control" value="0" onfocus="if(this.value=='0') this.value=''" onblur="if(this.value=='') this.value='0'" oninput="formatNumberInput(this)">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label"><i class="fas fa-coins me-2 text-success"></i>Total des revenus (GNF)</label>
+            <input type="text" id="total_revenus_view" class="form-control" value="0" readonly>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label"><i class="fas fa-money-bill-wave me-2 text-danger"></i>Total des dépenses (GNF)</label>
+            <input type="text" id="total_depenses_view" class="form-control" value="0" readonly>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label"><i class="fas fa-calculator me-2 text-primary"></i>Solde final (GNF)</label>
+            <input type="text" id="solde_final" class="form-control" value="0" readonly>
+          </div>
+        </div>
+
+        <!-- 5. Validation et Approbation -->
+        <div class="section-title sec-validation"><i class="bi bi-check2-circle"></i> 5. Validation et Approbation</div>
+        <div class="row g-3 mb-3 section-box validation">
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-user-check me-2 text-success"></i>Vérifié par (Comité financier)</label>
+            <input type="text" id="verifie_par" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-user-shield me-2 text-primary"></i>Approuvé par (Pasteur/Responsable)</label>
+            <input type="text" id="approuve_par" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label"><i class="fas fa-calendar-day me-2 text-warning"></i>Date du rapport</label>
+            <input type="date" id="date_rapport" class="form-control" value="{{ today|default:'' }}">
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" id="saveBanqueBtn" class="btn btn-primary"><i class="bi bi-save"></i> Enregistrer</button>
+          <button type="reset" id="resetBanqueBtn" class="btn btn-outline-secondary">Réinitialiser</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HISTORIQUE DES ENREGISTREMENTS FINANCIERS (Finance) -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-light d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2">
+      <div class="fw-bold text-primary"><i class="bi bi-clock-history me-1"></i> HISTORIQUE DES ENREGISTREMENTS FINANCIERS (Finance)</div>
+      <div class="d-flex flex-nowrap align-items-center gap-2">
+        <div class="input-group input-group-sm" style="max-width: 280px;">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" id="searchBanque" class="form-control" placeholder="Rechercher...">
+        </div>
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-success" id="exportCsvHist" title="Exporter CSV (filtré)"><i class="bi bi-file-earmark-spreadsheet"></i></button>
+          <button class="btn btn-danger" id="exportPdfHist" title="Exporter PDF (filtré)"><i class="bi bi-filetype-pdf"></i></button>
+          <button class="btn btn-secondary" id="printHist" title="Imprimer (filtré)"><i class="bi bi-printer"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <!-- Bandeau de synthèse (au-dessus du tableau) -->
+      <div class="p-3 hist-summary">
+        <div class="row g-3 align-items-stretch">
+          <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-2 h-100 metric metric-dimes">
+              <div class="small text-muted"><i class="fas fa-coins me-1 text-warning" style="opacity:.95;"></i>Dîmes</div>
+              <div class="fw-bold" id="totDimesHist">0</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-2 h-100 metric metric-offrandes">
+              <div class="small text-muted"><i class="fas fa-hand-holding-usd me-1 text-success" style="opacity:.95;"></i>Offrandes</div>
+              <div class="fw-bold" id="totOffrandesHist">0</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-2 h-100 metric metric-dons">
+              <div class="small text-muted"><i class="fas fa-gift me-1 text-primary" style="opacity:.95;"></i>Dons</div>
+              <div class="fw-bold" id="totDonsHist">0</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-2 h-100 metric metric-subv">
+              <div class="small text-muted"><i class="fas fa-donate me-1 text-info" style="opacity:.95;"></i>Subventions</div>
+              <div class="fw-bold" id="totSubvHist">0</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-2 h-100 metric metric-rev">
+              <div class="small text-muted"><i class="fas fa-arrow-up me-1 text-success" style="opacity:.95;"></i>Total Revenus</div>
+              <div class="fw-bold" id="totRevHist">0</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-4 col-lg-2">
+            <div class="border rounded p-2 h-100 metric metric-dep">
+              <div class="small text-muted"><i class="fas fa-arrow-down me-1 text-danger" style="opacity:.95;"></i>Total Dépenses</div>
+              <div class="fw-bold text-danger" id="totDepHist">0</div>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3 mt-2">
+          <div class="col-12">
+            <div class="border rounded p-3 text-center metric metric-solde">
+              <div class="small text-muted"><i class="fas fa-balance-scale me-1 text-info" style="opacity:.95;"></i>Solde Net</div>
+              <div class="fw-bold mt-1" id="totSoldeHist">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle mb-0 text-nowrap" id="banqueTable" style="white-space: nowrap;">
+          <thead>
+            <tr>
+              <th style="width: 60px;">#</th>
+              <th>Église</th>
+              <th>Période</th>
+              <th>Responsable</th>
+              <th>Contact</th>
+              <th>Email</th>
+              <th>Vérifié par</th>
+              <th>Approuvé par</th>
+              <th>Date rapport</th>
+              <th class="text-end">Solde initial (GNF)</th>
+              <th>Sources revenus</th>
+              <th>Montants revenus</th>
+              <th>Dates revenus</th>
+              <th>Modes paiement</th>
+              <th class="text-end">Total revenus (GNF)</th>
+              <th>Natures dépenses</th>
+              <th>Montants dépenses</th>
+              <th>Bénéficiaires</th>
+              <th>Justificatifs</th>
+              <th>Catégories</th>
+              <th class="text-end">Total dépenses (GNF)</th>
+              <th class="text-end">Solde final (GNF)</th>
+              <th style="width:120px;" class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="banqueTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+      <div class="text-muted small" id="tableInfo">Affichage 0–0 sur 0</div>
+      <div class="flex-grow-1 text-center">
+        <a href="{% url 'main:banque_records_all' %}" class="btn btn-outline-primary btn-sm">Voir tous les enregistrements</a>
+      </div>
+      <nav class="ms-auto">
+        <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
+      </nav>
+    </div>
+  </div>
+
+  
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  const revenusBody = document.getElementById('revenusBody');
+  const depensesBody = document.getElementById('depensesBody');
+  const totalRevInp = document.getElementById('total_revenus');
+  const totalDepInp = document.getElementById('total_depenses');
+  const totalRevView = document.getElementById('total_revenus_view');
+  const totalDepView = document.getElementById('total_depenses_view');
+  const soldeInitial = document.getElementById('solde_initial');
+  const soldeFinal = document.getElementById('solde_final');
+
+  // Fait défiler vers le formulaire et applique un effet visuel temporaire
+  function flashForm(){
+    const form = document.getElementById('banqueForm');
+    if (!form) return;
+    form.scrollIntoView({behavior:'smooth', block:'start'});
+    form.classList.add('flash-highlight');
+    setTimeout(()=>{ form.classList.remove('flash-highlight'); }, 1400);
+  }
+
+  // Conversion sécurisée des montants saisis "1 000" -> 1000 (Number)
+  function parseNum(val){
+    try{
+      if(val===undefined||val===null) return 0;
+      const s = String(val).replace(/\s/g,'').replace(/[^0-9,.-]/g,'').replace(',', '.');
+      const n = parseFloat(s);
+      return isNaN(n) ? 0 : n;
+    }catch(e){ return 0; }
+  }
+
+  function fmt(n){
+    try{
+      if(n===undefined||n===null||n===''){return '-'}
+      const num = Number(n);
+      if(Number.isNaN(num)){return String(n)}
+      return num.toLocaleString('fr-FR');
+    }catch(e){return String(n)}
+  }
+
+  function formatNumberInput(input) {
+    let value = input.value.replace(/\s/g, '');
+    if (value && !isNaN(value)) {
+      const num = parseInt(value);
+      input.value = num.toLocaleString('fr-FR');
+    }
+  }
+
+  function addRevenuRow(){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <input type="text" class="form-control form-control-sm" placeholder="Source" list="sources-revenus">
+        <datalist id="sources-revenus">
+          <option value="Offrandes du culte">
+          <option value="Dîmes">
+          <option value="Dons des membres">
+          <option value="Subventions/Partenariats">
+          <option value="Activités génératrices">
+          <option value="Ventes">
+          <option value="Autres">
+        </datalist>
+      </td>
+      <td><input type="text" class="form-control form-control-sm montant-revenu" value="0" onfocus="if(this.value=='0') this.value=''" onblur="if(this.value=='') this.value='0'" oninput="formatNumberInput(this)"></td>
+      <td><input type="date" class="form-control form-control-sm date-revenu"></td>
+      <td>
+        <select class="form-select form-select-sm mode-paiement">
+          <option>Espèce</option>
+          <option>Chèque</option>
+          <option>Virement</option>
+          <option>Orange Money</option>
+          <option>Mobile Money</option>
+        </select>
+      </td>
+      <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-remove"><i class="bi bi-trash"></i></button></td>
+    `;
+    revenusBody.appendChild(tr);
+  }
+
+  function addDepenseRow(){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="form-control form-control-sm nature-depense" placeholder="Nature de la dépense"></td>
+      <td><input type="text" class="form-control form-control-sm montant-depense" value="0" onfocus="if(this.value=='0') this.value=''" onblur="if(this.value=='') this.value='0'" oninput="formatNumberInput(this)"></td>
+      <td><input type="text" class="form-control form-control-sm beneficiaire" placeholder="Bénéficiaire"></td>
+      <td>
+        <input type="file" class="form-control form-control-sm depense-file" accept="image/*,.pdf,.doc,.docx">
+        <div class="pj-thumbs mt-1"></div>
+      </td>
+      <td>
+        <input type="text" class="form-control form-control-sm categorie" placeholder="Catégorie" list="categories-depenses">
+        <datalist id="categories-depenses">
+          <option value="Fonctionnement">
+          <option value="Personnel">
+          <option value="Équipement">
+          <option value="Maintenance">
+          <option value="Évangélisation">
+          <option value="Social">
+          <option value="Autres">
+        </datalist>
+      </td>
+      <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger btn-remove"><i class="bi bi-trash"></i></button></td>
+    `;
+    depensesBody.appendChild(tr);
+  }
+
+  function recalcTotals(){
+    let trev = 0; let tdep = 0;
+    revenusBody.querySelectorAll('.montant-revenu').forEach(inp => trev += parseNum(inp.value));
+    depensesBody.querySelectorAll('.montant-depense').forEach(inp => tdep += parseNum(inp.value));
+    totalRevInp.value = Math.round(trev);
+    totalDepInp.value = Math.round(tdep);
+    totalRevView.value = fmt(trev);
+    totalDepView.value = fmt(tdep);
+    const sf = parseNum(soldeInitial.value) + trev - tdep;
+    soldeFinal.value = fmt(sf);
+  }
+
+  document.getElementById('addRevenuBtn').addEventListener('click', addRevenuRow);
+  document.getElementById('addDepenseBtn').addEventListener('click', addDepenseRow);
+  revenusBody.addEventListener('input', e => { 
+    if(e.target.classList.contains('montant-revenu')) {
+      formatNumberInput(e.target);
+      recalcTotals(); 
+    }
+  });
+
+  depensesBody.addEventListener('input', e => { 
+    if(e.target.classList.contains('montant-depense')) {
+      formatNumberInput(e.target);
+      recalcTotals(); 
+    }
+  });
+  // Aperçu des pièces jointes pour chaque dépense
+  depensesBody.addEventListener('change', e => {
+    const input = e.target;
+    if (input && input.classList.contains('depense-file')) {
+      renderDepensePjPreview(input);
+    }
+  });
+
+  function renderDepensePjPreview(fileInput){
+    const container = fileInput.closest('td').querySelector('.pj-thumbs');
+    if(!container) return;
+    container.innerHTML = '';
+    const files = fileInput.files || [];
+    if (!files.length) return;
+    Array.from(files).slice(0,3).forEach(f => {
+      const ext = (f.name.split('.').pop()||'').toLowerCase();
+      if (f.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.className = 'pj-thumb';
+        img.alt = f.name;
+        img.title = f.name;
+        img.src = URL.createObjectURL(f);
+        container.appendChild(img);
+      } else {
+        const a = document.createElement('span');
+        a.className = 'pj-link';
+        a.title = f.name;
+        a.textContent = ext.toUpperCase() || 'FICHIER';
+        container.appendChild(a);
+      }
+    });
+    if ((fileInput.files || []).length > 3) {
+      const more = document.createElement('span');
+      more.className = 'pj-more';
+      more.textContent = `+${fileInput.files.length - 3}`;
+      container.appendChild(more);
+    }
+  }
+  soldeInitial.addEventListener('input', e => {
+    formatNumberInput(e.target);
+    recalcTotals();
+  });
+  document.addEventListener('click', e => {
+    if(e.target.closest('.btn-remove')){
+      e.target.closest('tr').remove();
+      recalcTotals();
+    }
+  });
+  // Lignes par défaut
+  addRevenuRow();
+  addDepenseRow();
+  recalcTotals();
+
+  // Enregistrer le formulaire (sans historique)
+  document.getElementById('saveBanqueBtn').addEventListener('click', ()=>{
+    // validation basique
+    const form = document.getElementById('banqueForm');
+    form.classList.add('was-validated');
+    if(!document.getElementById('eglise_id').value || !document.getElementById('periode_debut').value || !document.getElementById('periode_fin').value || !document.getElementById('responsable').value){
+      const invalid = form.querySelector(':invalid');
+      if(invalid) invalid.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+
+    // collect contexte
+    const sel = document.getElementById('eglise_id');
+    const eglise_nom = sel.options[sel.selectedIndex]?.text || '';
+    const periode = `${document.getElementById('periode_debut').value} → ${document.getElementById('periode_fin').value}`;
+    const responsable = document.getElementById('responsable').value||'';
+    const contact = document.getElementById('contact').value||'';
+    const email = document.getElementById('email').value||'';
+    const verifie_par = document.getElementById('verifie_par').value||'';
+    const approuve_par = document.getElementById('approuve_par').value||'';
+    const date_rapport = document.getElementById('date_rapport').value||'';
+    // Compter toutes les PJ: uniquement par ligne de dépense (le champ global a été supprimé)
+    const globalFilesCount = 0;
+    let perRowFilesCount = 0;
+    depensesBody.querySelectorAll('.depense-file').forEach(inp => { perRowFilesCount += (inp.files||[]).length; });
+    const nb_pj = globalFilesCount + perRowFilesCount;
+
+    const total_revenus = parseNum(totalRevInp.value);
+    const total_depenses = parseNum(totalDepInp.value);
+    const si = parseNum(soldeInitial.value);
+    const sf = si + total_revenus - total_depenses;
+
+    // Collecter les données détaillées depuis les lignes de revenus et dépenses
+    const revenuRows = revenusBody.querySelectorAll('tr');
+    const depenseRows = depensesBody.querySelectorAll('tr');
+    
+    let sources_revenus = [];
+    let montants_revenus = [];
+    let dates_revenus = [];
+    let modes_paiement_revenus = [];
+    let natures_depenses = [];
+    let montants_depenses = [];
+    let beneficiaires = [];
+    let justificatifs = [];
+    let categories = [];
+    
+    // Collecter depuis les revenus
+    revenuRows.forEach(row => {
+      const source = row.querySelector('input[placeholder="Source"]')?.value?.trim();
+      const montant = row.querySelector('.montant-revenu')?.value?.trim();
+      const date = row.querySelector('.date-revenu')?.value?.trim();
+      const mode = row.querySelector('.mode-paiement')?.value?.trim();
+      if (source) sources_revenus.push(source);
+      if (montant && montant !== '0') montants_revenus.push(montant);
+      if (date) dates_revenus.push(date);
+      if (mode) modes_paiement_revenus.push(mode);
+    });
+    
+    // Collecter depuis les dépenses
+    depenseRows.forEach(row => {
+      const nature = row.querySelector('.nature-depense')?.value?.trim();
+      const montant = row.querySelector('.montant-depense')?.value?.trim();
+      const beneficiaire = row.querySelector('.beneficiaire')?.value?.trim();
+      // Utiliser le(s) nom(s) de fichier sélectionné(s) comme "justificatif"
+      const fileInput = row.querySelector('.depense-file');
+      const names = fileInput && fileInput.files ? Array.from(fileInput.files).map(f=>f.name) : [];
+      const justif = names.join(', ');
+      const categorie = row.querySelector('.categorie')?.value?.trim();
+      if (nature) natures_depenses.push(nature);
+      if (montant && montant !== '0') montants_depenses.push(montant);
+      if (beneficiaire) beneficiaires.push(beneficiaire);
+      if (justif) justificatifs.push(justif);
+      if (categorie) categories.push(categorie);
+    });
+
+    const newRecord = {
+      eglise_nom, periode, responsable, contact, email,
+      verifie_par, approuve_par, date_rapport,
+      solde_initial: si,
+      total_revenus,
+      total_depenses,
+      solde_final: sf,
+      nb_pj,
+      // Données détaillées des revenus
+      sources_revenus: sources_revenus.join(', '),
+      montants_revenus: montants_revenus.join(', '),
+      dates_revenus: dates_revenus.join(', '),
+      modes_paiement_revenus: modes_paiement_revenus.join(', '),
+      
+      // Données détaillées des dépenses
+      natures_depenses: natures_depenses.join(', '),
+      montants_depenses: montants_depenses.join(', '),
+      beneficiaires: beneficiaires.join(', '),
+      justificatifs: justificatifs.join(', '),
+      categories: categories.join(', ')
+    };
+
+    // Préparer et envoyer au backend Django (AJAX POST)
+    const getCookie = (name)=>{
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    };
+    const csrfFromInput = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const csrfToken = csrfFromInput || getCookie('csrftoken') || '';
+
+    const formData = new FormData();
+    formData.append('eglise_id', document.getElementById('eglise_id').value);
+    formData.append('periode_debut', document.getElementById('periode_debut').value);
+    formData.append('periode_fin', document.getElementById('periode_fin').value);
+    formData.append('responsable', responsable);
+    formData.append('contact', contact);
+    formData.append('email', email);
+    formData.append('verifie_par', verifie_par);
+    formData.append('approuve_par', approuve_par);
+    formData.append('date_rapport', date_rapport);
+    formData.append('solde_initial', String(si));
+    formData.append('total_revenus', String(total_revenus));
+    formData.append('total_depenses', String(total_depenses));
+    formData.append('nb_pj', String(nb_pj));
+    // Champs texte agrégés disponibles dans FinanceReport
+    formData.append('source_revenu', newRecord.sources_revenus || '');
+    formData.append('mode_paiement', newRecord.modes_paiement_revenus || '');
+    formData.append('nature_depense', newRecord.natures_depenses || '');
+    formData.append('beneficiaire', newRecord.beneficiaires || '');
+    formData.append('justificatif', newRecord.justificatifs || '');
+
+    // (Champ fichiers globaux supprimé)
+    // Joindre les fichiers par ligne de dépense
+    depenseRows.forEach((row, rIdx) => {
+      const fileInput = row.querySelector('.depense-file');
+      if (fileInput && fileInput.files && fileInput.files.length) {
+        Array.from(fileInput.files).forEach((f, fIdx) => {
+          formData.append(`depense_pj_${rIdx}[]`, f, f.name);
+        });
+      }
+    });
+
+    const btn = document.getElementById('saveBanqueBtn');
+    const originalBtn = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Enregistrement...';
+
+    fetch('/banque/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData,
+      credentials: 'same-origin',
+    })
+    .then(async response => {
+      let data;
+      try { data = await response.json(); } catch(e){ throw new Error('Réponse invalide'); }
+      if(!response.ok || !data.success){ throw new Error(data?.error || 'Erreur lors de l\'enregistrement'); }
+
+      // 1) Construire l'enregistrement à insérer dans l'historique
+      const created = data.record || data.rapport || data.data || null;
+      const idNew = (created && (created.id || created.pk)) || data.id || null;
+      const histRec = created ? {
+        id: idNew,
+        eglise_nom: created.eglise_nom || created.eglise__nom || eglise_nom || '',
+        periode: created.periode || `${created.periode_du||periode_debut} → ${created.periode_au||periode_fin}`,
+        responsable: created.responsable || responsable || '',
+        contact: created.contact || contact || '',
+        email: created.email || email || '',
+        verifie_par: created.verifie_par || verifie_par || '',
+        approuve_par: created.approuve_par || approuve_par || '',
+        date_rapport: created.date_rapport || date_rapport || '',
+        solde_initial: Number(created.solde_initial ?? si) || 0,
+        sources_revenus: created.sources_revenus || created.source_revenu || newRecord.sources_revenus || '',
+        montants_revenus: created.montants_revenus || newRecord.montants_revenus || '',
+        dates_revenus: created.dates_revenus || newRecord.dates_revenus || '',
+        modes_paiement_revenus: created.modes_paiement_revenus || created.mode_paiement || newRecord.modes_paiement_revenus || '',
+        total_revenus: Number(created.total_recettes || created.total_revenus || total_revenus) || 0,
+        natures_depenses: created.natures_depenses || created.nature_depense || newRecord.natures_depenses || '',
+        montants_depenses: created.montants_depenses || newRecord.montants_depenses || '',
+        beneficiaires: created.beneficiaires || created.beneficiaire || newRecord.beneficiaires || '',
+        justificatifs: created.justificatifs || created.justificatif || newRecord.justificatifs || '',
+        categories: created.categories || created.evenement || created.nature_depense || newRecord.categories || '',
+        total_depenses: Number(created.total_depenses ?? total_depenses) || 0,
+        solde_final: Number(created.solde_final ?? sf) || 0,
+        attachments: created.attachments || created.pieces_jointes || created.pj || created.pieces_jointes_urls || '',
+        nb_pj: Number(created.nombre_pieces_jointes || created.nb_pj || nb_pj || 0) || 0,
+      } : {
+        id: idNew,
+        eglise_nom,
+        periode,
+        responsable,
+        contact,
+        email,
+        verifie_par,
+        approuve_par,
+        date_rapport,
+        solde_initial: Number(si)||0,
+        sources_revenus: newRecord.sources_revenus,
+        montants_revenus: newRecord.montants_revenus,
+        dates_revenus: newRecord.dates_revenus,
+        modes_paiement_revenus: newRecord.modes_paiement_revenus,
+        total_revenus: Number(total_revenus)||0,
+        natures_depenses: newRecord.natures_depenses,
+        montants_depenses: newRecord.montants_depenses,
+        beneficiaires: newRecord.beneficiaires,
+        justificatifs: newRecord.justificatifs,
+        categories: newRecord.categories,
+        total_depenses: Number(total_depenses)||0,
+        solde_final: Number(sf)||0,
+        attachments: '',
+        nb_pj: Number(nb_pj)||0,
+      };
+
+      // 2) Injecter en tête de liste et re-rendre
+      if (Array.isArray(histRecords)){
+        histRecords.unshift(histRec);
+        histPage = 1;
+        renderHistorique();
+      }
+      updateTopSummary();
+
+      // 3) Reset formulaire et recalcul
+      document.getElementById('resetBanqueBtn').click();
+      revenusBody.innerHTML = '';
+      depensesBody.innerHTML = '';
+      addRevenuRow();
+      addDepenseRow();
+      recalcTotals();
+      // Feedback OK
+      btn.innerHTML = '<i class="bi bi-check-circle"></i> Enregistré';
+      setTimeout(()=>{ btn.innerHTML = originalBtn; btn.disabled = false; }, 700);
+    })
+    .catch(err => {
+      console.error(err);
+      alert(err.message || 'Erreur lors de l\'enregistrement');
+      btn.innerHTML = originalBtn;
+      btn.disabled = false;
+    });
+  });
+
+  // Réinitialiser l'état du bouton lors du reset
+  document.getElementById('resetBanqueBtn').addEventListener('click', ()=>{
+    const btn = document.getElementById('saveBanqueBtn');
+    if (btn) { btn.innerHTML = '<i class="bi bi-save"></i> Enregistrer'; btn.classList.remove('btn-warning'); btn.classList.add('btn-primary'); }
+  });
+
+  // ============================
+  // HISTORIQUE (Banque) — Rendu
+  // ============================
+  const histTableBody = document.getElementById('banqueTableBody');
+  const histSearch = document.getElementById('searchBanque');
+  const histPeriode = document.getElementById('filterPeriode');
+  const histRowsSel = document.getElementById('rowsPerPage');
+  const histInfo = document.getElementById('tableInfo');
+  const histPagination = document.getElementById('pagination');
+  const btnCsvHist = document.getElementById('exportCsvHist');
+  const btnPdfHist = document.getElementById('exportPdfHist');
+  const btnPrintHist = document.getElementById('printHist');
+  const totDimesHist = document.getElementById('totDimesHist');
+  const totOffrandesHist = document.getElementById('totOffrandesHist');
+  const totDonsHist = document.getElementById('totDonsHist');
+  const totSubvHist = document.getElementById('totSubvHist');
+  const totRevHist = document.getElementById('totRevHist');
+  const totDepHist = document.getElementById('totDepHist');
+  const totSoldeHist = document.getElementById('totSoldeHist');
+
+  let histRecords = [];
+  let histPage = 1;
+
+  function loadHistFromContext(){
+    try {
+      const data = JSON.parse('{{ rapports_json|escapejs }}');
+      if (Array.isArray(data)) {
+        histRecords = data.map(r=>({
+          id: r.id || null,
+          eglise_nom: r.eglise__nom || '',
+          periode: `${r.periode_du||''} → ${r.periode_au||''}`,
+          responsable: r.responsable || '',
+          contact: r.contact || '',
+          email: r.email || '',
+          verifie_par: r.verifie_par || '',
+          approuve_par: r.approuve_par || '',
+          date_rapport: r.date_rapport || '',
+          solde_initial: Number(r.solde_initial || 0) || 0,
+          // Revenus
+          sources_revenus: r.sources_revenus || r.source_revenu || '',
+          montants_revenus: r.montants_revenus || '',
+          dates_revenus: r.dates_revenus || '',
+          modes_paiement_revenus: r.modes_paiement_revenus || r.mode_paiement || '',
+          total_revenus: Number(r.total_recettes || r.total_revenus || 0) || 0,
+          // Dépenses
+          natures_depenses: r.natures_depenses || r.nature_depense || '',
+          montants_depenses: r.montants_depenses || '',
+          beneficiaires: r.beneficiaires || r.beneficiaire || '',
+          justificatifs: r.justificatifs || r.justificatif || '',
+          categories: r.categories || r.evenement || r.nature_depense || '',
+          total_depenses: Number(r.total_depenses || 0) || 0,
+          // Résumé
+          solde_final: Number(r.solde_final || 0) || 0,
+          // Pièces jointes: accepte plusieurs formats: liste, CSV, ou objets {url,name}
+          attachments: r.attachments || r.pieces_jointes || r.pj || r.pieces_jointes_urls || '',
+          nb_pj: Number(r.nombre_pieces_jointes || r.nb_pj || 0) || 0,
+        }));
+      }
+    } catch(e){ console.warn('rapports_json invalide', e); }
+  }
+
+  function fmtFR(n){
+    const num = Number(n||0);
+    return isNaN(num) ? '-' : num.toLocaleString('fr-FR');
+  }
+
+  // Helpers pièces jointes
+  function getExt(u){
+    const s = String(u||'');
+    const q = s.split('?')[0];
+    const hash = q.split('#')[0];
+    const p = hash.split('.');
+    return p.length>1 ? p.pop().toLowerCase() : '';
+  }
+  function iconForExt(ext){
+    if(['png','jpg','jpeg','gif','webp','bmp','tiff','svg','heic','heif'].includes(ext)) return 'bi-file-earmark-image';
+    if(ext==='pdf') return 'bi-file-earmark-pdf';
+    if(['doc','docx'].includes(ext)) return 'bi-file-earmark-word';
+    if(['xls','xlsx','csv'].includes(ext)) return 'bi-file-earmark-excel';
+    if(['ppt','pptx'].includes(ext)) return 'bi-file-earmark-slides';
+    if(['zip','rar','7z'].includes(ext)) return 'bi-file-earmark-zip';
+    return 'bi-file-earmark';
+  }
+  function parseAttachments(raw){
+    if(!raw) return [];
+    if(Array.isArray(raw)){
+      return raw.map(x=>{
+        if(typeof x === 'string') return {url:x, name: x.split('/').pop()||x};
+        if(x && typeof x === 'object'){
+          const u = x.url || x.file || x.path || '';
+          const n = x.name || (String(u).split('/').pop()||'PJ');
+          return {url: u, name: n};
+        }
+        return null;
+      }).filter(Boolean);
+    }
+    const s = String(raw);
+    // Séparateurs tolérés: ; , | \n
+    const parts = s.split(/[;|,\n]+/).map(t=>t.trim()).filter(Boolean);
+    return parts.map(u=>({url:u, name: u.split('/').pop()||u}));
+  }
+
+  // Rendu de la colonne PJ (icônes cliquables + compteur)
+  function renderAttachmentsField(rec){
+    const list = parseAttachments(rec?.attachments);
+    const n = Number(rec?.nb_pj||0) || list.length;
+    if (!list.length){
+      return n>0 ? `<span class="badge bg-secondary" title="${n} fichier(s)"><i class="bi bi-paperclip"></i> ${n}</span>` : '';
+    }
+    const maxShow = 4;
+    const items = list.slice(0, maxShow).map(a=>{
+      const url = a.url || '';
+      const ext = getExt(url);
+      const icon = iconForExt(ext);
+      const title = a.name || 'Pièce jointe';
+      const fname = (a.name && a.name.trim()) ? a.name.trim() : (String(url).split('/').pop() || 'piece_jointe');
+      if (url){
+        return `<a href="${url}" target="_blank" rel="noopener" download="${fname}" class="me-1" title="Télécharger: ${title}"><i class="bi ${icon}"></i></a>`;
+      }
+      return `<span class="me-1" title="${title}"><i class="bi ${icon}"></i></span>`;
+    }).join('');
+    const more = list.length>maxShow ? `<span class="text-muted">+${list.length-maxShow}</span>` : '';
+    return items + more;
+  }
+  function splitCsv(s){
+    if(!s) return [];
+    return String(s).split(',').map(x=>x.trim()).filter(Boolean);
+  }
+
+  // Pré-remplir le formulaire principal à partir d'un enregistrement historique
+  function prefillFormFromRecord(rec){
+    if(!rec) return;
+    // 1) Contexte / entête
+    const selEglise = document.getElementById('eglise_id');
+    if (selEglise){
+      const target = String(rec.eglise_nom||'').trim().toLowerCase();
+      let matched = false;
+      for(const opt of selEglise.options){
+        if(String(opt.text||'').trim().toLowerCase() === target){ selEglise.value = opt.value; matched=true; break; }
+      }
+      if(!matched){ selEglise.selectedIndex = 0; }
+    }
+
+    // 2) Période (format attendu: "YYYY-MM-DD → YYYY-MM-DD")
+    const p = String(rec.periode||'');
+    const parts = p.split('→').map(s=>s.trim());
+    const debut = document.getElementById('periode_debut');
+    const fin = document.getElementById('periode_fin');
+    if (debut) debut.value = parts[0] || '';
+    if (fin) fin.value = parts[1] || '';
+    if (debut) debut.dispatchEvent(new Event('input'));
+    if (fin) fin.dispatchEvent(new Event('input'));
+
+    // 3) Champs entête
+    const setVal = (id, v)=>{ const el = document.getElementById(id); if(el) el.value = v||''; };
+    setVal('responsable', rec.responsable);
+    setVal('contact', rec.contact);
+    setVal('email', rec.email);
+    setVal('verifie_par', rec.verifie_par);
+    setVal('approuve_par', rec.approuve_par);
+    setVal('date_rapport', rec.date_rapport);
+
+    // 4) Solde initial
+    const si = document.getElementById('soldeInitial');
+    if (si) { si.value = String(rec.solde_initial||0); si.dispatchEvent(new Event('input')); }
+
+    // 5) Reconstruire les lignes Revenus
+    revenusBody.innerHTML = '';
+    const srcs = splitCsv(rec.sources_revenus);
+    const mnts = splitCsv(rec.montants_revenus);
+    const dts  = splitCsv(rec.dates_revenus);
+    const modes = splitCsv(rec.modes_paiement_revenus);
+    const nR = Math.max(srcs.length, mnts.length, dts.length, modes.length);
+    for(let i=0;i<nR;i++){
+      addRevenuRow();
+      const row = revenusBody.lastElementChild;
+      row.querySelector('input[placeholder="Source"]').value = srcs[i] || '';
+      row.querySelector('.montant-revenu').value = mnts[i] || '0';
+      const d = row.querySelector('.date-revenu'); if (d) d.value = dts[i] || '';
+      const mp = row.querySelector('.mode-paiement'); if (mp) mp.value = modes[i] || (mp.options[0]?.value||'');
+    }
+    if(nR===0){ addRevenuRow(); }
+
+    // 6) Reconstruire les lignes Dépenses
+    depensesBody.innerHTML = '';
+    const nats = splitCsv(rec.natures_depenses);
+    const mdep = splitCsv(rec.montants_depenses);
+    const bens = splitCsv(rec.beneficiaires);
+    const cats = splitCsv(rec.categories);
+    const nD = Math.max(nats.length, mdep.length, bens.length, cats.length);
+    for(let i=0;i<nD;i++){
+      addDepenseRow();
+      const row = depensesBody.lastElementChild;
+      row.querySelector('.nature-depense').value = nats[i] || '';
+      row.querySelector('.montant-depense').value = mdep[i] || '0';
+      row.querySelector('.beneficiaire').value = bens[i] || '';
+      const c = row.querySelector('.categorie'); if (c) c.value = cats[i] || '';
+      // Note: inputs file ne peuvent pas être pré-remplis pour des raisons de sécurité
+    }
+    if(nD===0){ addDepenseRow(); }
+
+    // 7) Recalculer totaux/solde
+    recalcTotals();
+  }
+
+  // Rendu de la colonne "Justificatifs" sous forme d'icônes cliquables.
+  // Si des attachments avec URL sont disponibles, on les affiche comme pour la colonne PJ.
+  // Sinon, on retombe sur le texte brut des justificatifs.
+  function renderJustificatifsCell(rec){
+    const list = parseAttachments(rec?.attachments);
+    if (list.length){
+      return renderAttachmentsField(rec);
+    }
+    const txt = (rec && rec.justificatifs) ? String(rec.justificatifs).trim() : '';
+    return txt || '';
+  }
+
+  // Affichage avec devise GNF pour le bandeau
+  function fmtGNF(n){
+    const v = fmtFR(n);
+    return v === '-' ? '-' : `${v} GNF`;
+  }
+
+  // Normalise un libellé de source de revenu pour l'agrégation
+  function normalizeLabel(s){
+    if(!s) return '';
+    let t = String(s).toLowerCase();
+    try{ t = t.normalize('NFD').replace(/[\u0300-\u036f]/g,''); }catch(e){}
+    t = t.replace(/[^a-z0-9\s/()-]/g,' ').replace(/\s+/g,' ').trim();
+    // Mappings souples
+    if(/dime/.test(t)) return 'dimes';
+    if(/offrand/.test(t)) return 'offrandes';
+    if(/\bdon(s)?\b/.test(t)) return 'dons';
+    if(/subvention|partenari/.test(t)) return 'subventions';
+    return 'autres';
+  }
+
+  // Met à jour le bandeau de synthèse au-dessus de l'historique
+  function updateTopSummary(){
+    if(!totRevHist) return;
+    const tableRows = Array.from(document.querySelectorAll('#banqueTableBody tr'));
+    const useDom = tableRows.length > 0 && !tableRows[0].querySelector('td[colspan]');
+
+    let totalRev = 0, totalDep = 0, totalSol = 0;
+    let dimes=0, offrandes=0, dons=0, subv=0;
+
+    const addCat = (lab, val)=>{
+      if(lab==='dimes') dimes += val;
+      else if(lab==='offrandes') offrandes += val;
+      else if(lab==='dons') dons += val;
+      else if(lab==='subventions') subv += val;
+    };
+
+    if (useDom){
+      // Calcul à partir des lignes visibles du tableau
+      tableRows.forEach(tr=>{
+        const revCell = tr.querySelector('[data-col="total_revenus"]');
+        const depCell = tr.querySelector('[data-col="total_depenses"]');
+        const solCell = tr.querySelector('[data-col="solde_final"]');
+        const srcCell = tr.querySelector('[data-col="sources_revenus"]');
+        const mntCell = tr.querySelector('[data-col="montants_revenus"]');
+        if(revCell) totalRev += parseNum(revCell.textContent);
+        if(depCell) totalDep += parseNum(depCell.textContent);
+        if(solCell) totalSol += parseNum(solCell.textContent);
+
+        // Catégories revenus si CSV présents
+        const srcs = srcCell ? String(srcCell.textContent||'').split(/[;|,]+/).map(s=>s.trim()).filter(Boolean) : [];
+        const mnts = mntCell ? String(mntCell.textContent||'').split(/[;|,]+/).map(s=>s.trim()).filter(Boolean) : [];
+        const n = Math.min(srcs.length, mnts.length);
+        for(let i=0;i<n;i++){
+          const lab = normalizeLabel(srcs[i]);
+          const val = parseNum(mnts[i]);
+          if(val>0) addCat(lab, val);
+        }
+      });
+    } else {
+      // Fallback: calcul sur les données filtrées (toutes les lignes filtrées, pas seulement la page)
+      const data = (typeof getHistFiltered==='function') ? getHistFiltered() : (histRecords||[]);
+      const sumKey = (arr, key)=> arr.reduce((a,r)=> a + (Number(r?.[key]||0)||0), 0);
+      totalRev = sumKey(data, 'total_revenus');
+      totalDep = sumKey(data, 'total_depenses');
+      totalSol = sumKey(data, 'solde_final');
+      data.forEach(r=>{
+        const srcs = String(r?.sources_revenus||'').split(/[;|,]+/).map(s=>s.trim()).filter(Boolean);
+        const mnts = String(r?.montants_revenus||'').split(/[;|,]+/).map(s=>s.trim()).filter(Boolean);
+        const n = Math.min(srcs.length, mnts.length);
+        for(let i=0;i<n;i++){
+          const lab = normalizeLabel(srcs[i]);
+          const val = parseNum(mnts[i]);
+          if(val>0) addCat(lab, val);
+        }
+      });
+    }
+
+    // Mettre à jour l'affichage
+    totRevHist.textContent = fmtGNF(totalRev);
+    totDepHist.textContent = fmtGNF(totalDep);
+    totSoldeHist.textContent = fmtGNF(totalSol);
+    if (totSoldeHist) {
+      totSoldeHist.classList.remove('text-success','text-danger','text-secondary');
+      if (totalSol > 0) totSoldeHist.classList.add('text-success');
+      else if (totalSol < 0) totSoldeHist.classList.add('text-danger');
+      else totSoldeHist.classList.add('text-secondary');
+    }
+    if(totDimesHist) totDimesHist.textContent = fmtGNF(dimes);
+    if(totOffrandesHist) totOffrandesHist.textContent = fmtGNF(offrandes);
+    if(totDonsHist) totDonsHist.textContent = fmtGNF(dons);
+    if(totSubvHist) totSubvHist.textContent = fmtGNF(subv);
+  }
+
+  function updatePeriodeOptions(){
+    if (!histPeriode) return;
+    const periods = [...new Set(histRecords.map(r=>r.periode).filter(Boolean))];
+    histPeriode.innerHTML = '<option value="">Toutes les périodes</option>' + periods.map(p=>`<option value="${p}">${p}</option>`).join('');
+  }
+
+  function renderHistorique(){
+    if (!histTableBody) return;
+    const q = (histSearch?.value||'').toLowerCase();
+    const psel = histPeriode?.value || '';
+    const rpp = parseInt(histRowsSel?.value||'3',10) || 3;
+
+    const filtered = histRecords.filter(r=>{
+      const matchesQ = !q || Object.values(r).some(v=> String(v||'').toLowerCase().includes(q));
+      const matchesP = !psel || r.periode === psel;
+      return matchesQ && matchesP;
+    });
+
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / rpp));
+    if (histPage > pages) histPage = pages;
+    const start = (histPage-1)*rpp;
+    const pageItems = filtered.slice(start, start+rpp);
+
+    histTableBody.innerHTML = '';
+    if (pageItems.length === 0){
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td colspan="24" class="text-center text-muted">Aucun enregistrement</td>';
+      histTableBody.appendChild(tr);
+    } else {
+      pageItems.forEach((r, i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${start + i + 1}</td>
+          <td data-col="eglise">${r.eglise_nom||''}</td>
+          <td data-col="periode">${r.periode||''}</td>
+          <td data-col="responsable">${r.responsable||''}</td>
+          <td data-col="contact">${r.contact||''}</td>
+          <td data-col="email">${r.email||''}</td>
+          <td data-col="verifie_par">${r.verifie_par||''}</td>
+          <td data-col="approuve_par">${r.approuve_par||''}</td>
+          <td data-col="date_rapport">${r.date_rapport||''}</td>
+          <td class="text-end" data-col="solde_initial">${fmtFR(r.solde_initial)}</td>
+          <td data-col="sources_revenus">${r.sources_revenus||''}</td>
+          <td data-col="montants_revenus">${(r.montants_revenus && String(r.montants_revenus).trim()) ? r.montants_revenus : fmtFR(r.total_revenus)}</td>
+          <td data-col="dates_revenus">${(r.dates_revenus && String(r.dates_revenus).trim()) ? r.dates_revenus : (r.date_rapport||'')}</td>
+          <td data-col="modes_paiement_revenus">${r.modes_paiement_revenus||''}</td>
+          <td class="text-end" data-col="total_revenus">${fmtFR(r.total_revenus)}</td>
+          <td data-col="natures_depenses">${r.natures_depenses||''}</td>
+          <td data-col="montants_depenses">${(r.montants_depenses && String(r.montants_depenses).trim()) ? r.montants_depenses : fmtFR(r.total_depenses)}</td>
+          <td data-col="beneficiaires">${r.beneficiaires||''}</td>
+          <td data-col="justificatifs">${renderJustificatifsCell(r)}</td>
+          <td data-col="categories">${r.categories||''}</td>
+          <td class="text-end" data-col="total_depenses">${fmtFR(r.total_depenses)}</td>
+          <td class="text-end" data-col="solde_final">${fmtFR(r.solde_final)}</td>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-primary btn-edit-hist" data-id="${r.id??''}" ${r.id?'' :'disabled'} title="Éditer"><i class="bi bi-pencil-square"></i></button>
+              <button type="button" class="btn btn-outline-warning btn-update-hist" data-id="${r.id??''}" ${r.id?'' :'disabled'} title="Charger dans le formulaire"><i class="bi bi-tools"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-del-hist" data-id="${r.id??''}" ${r.id?'' :'disabled'} title="Supprimer"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        `;
+        histTableBody.appendChild(tr);
+      });
+    }
+
+    if (histInfo){
+      const a = total === 0 ? 0 : start + 1;
+      const b = start + pageItems.length;
+      histInfo.textContent = `Affichage ${a}–${b} sur ${total}`;
+    }
+
+    if (histPagination){
+      histPagination.innerHTML = '';
+      const mk = (lbl, page, dis=false, act=false)=>{
+        const li = document.createElement('li');
+        li.className = `page-item ${dis?'disabled':''} ${act?'active':''}`;
+        const a = document.createElement('a');
+        a.className = 'page-link';
+        a.href = '#';
+        a.textContent = lbl;
+        a.addEventListener('click', (e)=>{ e.preventDefault(); if(!dis){ histPage = page; renderHistorique(); updateTopSummary(); }});
+        li.appendChild(a);
+        return li;
+      };
+      const pagesCount = Math.max(1, Math.ceil(total / rpp));
+      histPagination.appendChild(mk('«', Math.max(1, histPage-1), histPage===1));
+      for(let p=1;p<=pagesCount;p++){ histPagination.appendChild(mk(String(p), p, false, p===histPage)); }
+      histPagination.appendChild(mk('»', Math.min(pagesCount, histPage+1), histPage===pagesCount));
+    }
+    updateTopSummary();
+  }
+
+  function getHistFiltered(){
+    const q = (histSearch?.value||'').toLowerCase();
+    const psel = histPeriode?.value || '';
+    return histRecords.filter(r=>{
+      const matchesQ = !q || Object.values(r).some(v=> String(v||'').toLowerCase().includes(q));
+      const matchesP = !psel || r.periode === psel;
+      return matchesQ && matchesP;
+    });
+  }
+
+  function exportCsvHist(){
+    const data = getHistFiltered();
+    if(!data.length){ alert('Aucune donnée à exporter'); return; }
+    const SEP = ';';
+    const esc = v=> '"' + String(v==null?'':v).replace(/"/g,'""').replace(/[\r\n]+/g,' ') + '"';
+    const num = v=> { const n = Number(v||0); return isNaN(n) ? '0' : String(n); };
+    const headers = [
+      'Église','Période','Responsable','Contact','Email','Vérifié par','Approuvé par','Date rapport',
+      'Solde initial (GNF)','Sources revenus','Montants revenus','Dates revenus','Modes paiement','Total revenus (GNF)',
+      'Natures dépenses','Montants dépenses','Bénéficiaires','Justificatifs','Catégories','Total dépenses (GNF)','Solde final (GNF)','PJ (noms)'
+    ];
+    const lines = [headers.map(esc).join(SEP)];
+    data.forEach(r=>{
+      const row = [
+        r.eglise_nom, r.periode, r.responsable, r.contact, r.email, r.verifie_par, r.approuve_par, r.date_rapport,
+        num(r.solde_initial), r.sources_revenus, r.montants_revenus, r.dates_revenus, r.modes_paiement_revenus, num(r.total_revenus),
+        r.natures_depenses, r.montants_depenses, r.beneficiaires, r.justificatifs, r.categories, num(r.total_depenses), num(r.solde_final), parseAttachments(r.attachments).map(a=>a.name).join(' ')
+      ];
+      lines.push(row.map((v,i)=> [8,13,19,20].includes(i) ? num(v) : esc(v)).join(SEP));
+    });
+    const csv = "\uFEFF" + lines.join('\r\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download = `banque_historique_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  function exportPdfHist(){
+    const data = getHistFiltered();
+    if(!data.length){ alert('Aucune donnée à exporter'); return; }
+    const w = window.open('', '_blank');
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Banque — Historique</title>
+      <style>@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#222}
+      table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:6px;font-size:11px}
+      th{background:#f2f2f2}</style></head><body>
+      <h1 style="font-size:18px;">Historique Banque (filtré)</h1>
+      <table><thead><tr>
+      <th>#</th><th>Église</th><th>Période</th><th>Responsable</th><th>Contact</th><th>Email</th><th>Vérifié par</th><th>Approuvé par</th><th>Date rapport</th>
+      <th>Solde initial</th><th>Sources revenus</th><th>Montants revenus</th><th>Dates revenus</th><th>Modes paiement</th><th>Total revenus</th>
+      <th>Natures dépenses</th><th>Montants dépenses</th><th>Bénéficiaires</th><th>Justificatifs</th><th>Catégories</th><th>Total dépenses</th><th>Solde final</th><th>PJ</th>
+      </tr></thead><tbody>`);
+    data.forEach((r,idx)=>{
+      w.document.write(`<tr>
+        <td>${idx+1}</td><td>${r.eglise_nom||''}</td><td>${r.periode||''}</td><td>${r.responsable||''}</td><td>${r.contact||''}</td><td>${r.email||''}</td><td>${r.verifie_par||''}</td><td>${r.approuve_par||''}</td><td>${r.date_rapport||''}</td>
+        <td style="text-align:right;">${fmtFR(r.solde_initial)}</td><td>${r.sources_revenus||''}</td><td>${r.montants_revenus||''}</td><td>${r.dates_revenus||''}</td><td>${r.modes_paiement_revenus||''}</td><td style="text-align:right;">${fmtFR(r.total_revenus)}</td>
+        <td>${r.natures_depenses||''}</td><td>${r.montants_depenses||''}</td><td>${r.beneficiaires||''}</td><td>${r.justificatifs||''}</td><td>${r.categories||''}</td><td style="text-align:right;">${fmtFR(r.total_depenses)}</td><td style="text-align:right;">${fmtFR(r.solde_final)}</td><td>${parseAttachments(r.attachments).map(a=>a.name).join(', ')}</td>
+      </tr>`);
+    });
+    w.document.write('</tbody></table></body></html>');
+    w.document.close(); w.focus();
+    w.onafterprint = ()=>{ try{ w.close(); }catch(e){} };
+    setTimeout(()=>{ try{ w.print(); }catch(e){} }, 300);
+  }
+
+  function printHist(){
+    const table = document.getElementById('banqueTable');
+    if(!table){ alert('Tableau introuvable'); return; }
+    const original = document.body.innerHTML;
+    document.body.innerHTML = `<div style=\"font-family:Arial,sans-serif;margin:20px;\">${table.outerHTML}</div>`;
+    window.print();
+    document.body.innerHTML = original;
+    location.reload();
+  }
+
+  // Init Historique
+  loadHistFromContext();
+  updatePeriodeOptions();
+  renderHistorique();
+  updateTopSummary();
+
+  // Si on arrive avec un paramètre ?load_id=, charger l'enregistrement dans le formulaire
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const loadId = params.get('load_id');
+    if (loadId){
+      const rec = (histRecords||[]).find(r=> String(r.id)===String(loadId));
+      if (rec){
+        prefillFormFromRecord(rec);
+        flashForm();
+      } else {
+        console.warn('Enregistrement non trouvé dans histRecords pour load_id=', loadId);
+        alert("Impossible de charger cet enregistrement dans le formulaire depuis cette page.");
+      }
+      // Nettoyer le paramètre de l'URL pour éviter un rechargement futur
+      const url = new URL(window.location.href);
+      url.searchParams.delete('load_id');
+      window.history.replaceState({}, '', url);
+    }
+  }catch(e){ console.warn('Erreur traitement load_id', e); }
+  histSearch?.addEventListener('input', ()=>{ histPage=1; renderHistorique(); updateTopSummary(); });
+  histPeriode?.addEventListener('change', ()=>{ histPage=1; renderHistorique(); updateTopSummary(); });
+  histRowsSel?.addEventListener('change', ()=>{ histPage=1; renderHistorique(); updateTopSummary(); });
+  btnCsvHist?.addEventListener('click', exportCsvHist);
+  btnPdfHist?.addEventListener('click', exportPdfHist);
+  btnPrintHist?.addEventListener('click', printHist);
+
+  // Utilitaire CSRF
+  function getCsrfToken(){
+    const fromInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (fromInput && fromInput.value) return fromInput.value;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; csrftoken=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+
+  // Gestion des actions (édition/suppression)
+  histTableBody?.addEventListener('click', async (e)=>{
+    const btnEdit = e.target.closest('.btn-edit-hist');
+    const btnUpdate = e.target.closest('.btn-update-hist');
+    const btnDel = e.target.closest('.btn-del-hist');
+    if (btnEdit) {
+      const id = btnEdit.getAttribute('data-id');
+      if (!id) return;
+      // Rediriger vers la page de détail/édition du rapport
+      window.location.href = `/finances/rapport/${id}/`;
+      return;
+    }
+    if (btnUpdate) {
+      const id = btnUpdate.getAttribute('data-id');
+      if (!id) return;
+      const rec = histRecords.find(r=> String(r.id)===String(id));
+      if (!rec) { alert('Enregistrement introuvable'); return; }
+      prefillFormFromRecord(rec);
+      flashForm();
+      return;
+    }
+    if (btnDel) {
+      const id = btnDel.getAttribute('data-id');
+      if (!id) return;
+      if (!confirm(`Supprimer l'enregistrement #${id} ?`)) return;
+      // Appel backend pour suppression
+      try{
+        const resp = await fetch(`/finances/rapport/supprimer/${id}/`, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCsrfToken(),
+          },
+          credentials: 'same-origin',
+        });
+        const data = await resp.json().catch(()=>({success:false, error:'Réponse invalide'}));
+        if (!resp.ok || !data.success) throw new Error(data.error||'Suppression échouée');
+        // Retirer du cache et re-render
+        histRecords = histRecords.filter(r=> String(r.id) !== String(id));
+        // Si la page devient vide, revenir à la page précédente si possible
+        renderHistorique();
+        updateTopSummary();
+      }catch(err){
+        alert(err.message || 'Erreur lors de la suppression');
+      }
+    }
+  });
+
+})();
+</script>
+<style>
+  #banqueTable thead th {
+    background-color: #f0f0f0;
+  }
+</style>
+{% endblock %}

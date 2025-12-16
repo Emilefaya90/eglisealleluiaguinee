@@ -1,0 +1,851 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% block title %}Effectifs du culte - Complet - {{ block.super }}{% endblock %}
+{% block extra_css %}
+<style>
+  .filters .input-group-text i { color:#6c757d; }
+  .table thead th { white-space: nowrap; }
+  #fullCulteTable { table-layout: auto; font-size: .9rem; }
+  #fullCulteTable th,#fullCulteTable td{ white-space: nowrap; vertical-align: middle; padding: .45rem .6rem; }
+  
+  /* Formulaire EFFECTIF DU CULTE compact */
+  #culteEffectifForm.compact .form-label {
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+  }
+  #culteEffectifForm.compact .input-group-text,
+  #culteEffectifForm.compact .form-control,
+  #culteEffectifForm.compact .form-select {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    height: auto;
+  }
+  #culteEffectifForm.compact .input-group-text i {
+    font-size: 0.9rem;
+  }
+  #culteEffectifForm.compact .input-group {
+    --bs-gutter-x: 0.5rem;
+  }
+  #culteEffectifForm.compact .row.g-2 { --bs-gutter-y: 0.25rem; }
+  
+  /* Couleurs des icônes des champs (EFFECTIF DU CULTE) */
+  #culteEffectifForm .input-group-text .bi-building { color: #6c757d; }
+  #culteEffectifForm .input-group-text .fa-male { color: #0d6efd; }
+  #culteEffectifForm .input-group-text .fa-female { color: #d63384; }
+  #culteEffectifForm .input-group-text .fa-child { color: #fd7e14; }
+  #culteEffectifForm .input-group-text .fa-children { color: #6f42c1; }
+  #culteEffectifForm .input-group-text .fa-user-plus { color: #198754; }
+  #culteEffectifForm .input-group-text .fa-users { color: #20c997; }
+  #culteEffectifForm .input-group-text .fa-calendar-day { color: #dc3545; }
+  /* En-tête coloré pour la page complète */
+  .effectifs-full .card-header{
+    background: linear-gradient(135deg, #4e73df, #224abe) !important;
+    color: #fff !important;
+  }
+  .effectifs-full .card-header .btn-group .btn{ border-color: rgba(255,255,255,0.4); }
+  .effectifs-full .card-header .btn svg,
+  .effectifs-full .card-header .btn i{ color: currentColor; }
+  /* En-tête du tableau complet en couleur, sticky, avec ombre légère */
+  #fullCulteTable thead th{
+    background: linear-gradient(135deg, #4e73df, #224abe);
+    color:#fff;
+    border-color: rgba(255,255,255,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.25);
+  }
+  /* Alignement des en-têtes numériques à droite pour cohérence */
+  #fullCulteTable thead th.text-end { text-align: right; }
+  #fullCulteTable tfoot th,#fullCulteTable tfoot td{ background:#f8f9fc; font-weight:600; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-3 effectifs-full">
+  
+  <!-- Formulaire: Effectif du Culte Dominical -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0"><i class="fas fa-users me-2"></i>EFFECTIF DU CULTE DOMINICAL</h5>
+      <small class="d-block">Voici l'effectif de notre culte du dimanche</small>
+    </div>
+    <div class="card-body">
+      <form id="culteEffectifForm" class="compact" autocomplete="off">
+        <div class="row g-2">
+          <div class="col-md-4">
+            <label class="form-label">Église <span class="text-danger">*</span></label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-building"></i></span>
+              <select id="culteEglise" class="form-select form-select-sm" required>
+                <option value="" disabled selected>Sélectionner…</option>
+                {% for e in eglises %}
+                  <option value="{{ e.id }}">{{ e.nom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Hommes</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-male"></i></span>
+              <input type="number" min="0" step="1" id="culteHommes" class="form-control form-control-sm" placeholder="0">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Femmes</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-female"></i></span>
+              <input type="number" min="0" step="1" id="culteFemmes" class="form-control form-control-sm" placeholder="0">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Filles</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-child"></i></span>
+              <input type="number" min="0" step="1" id="culteFilles" class="form-control form-control-sm" placeholder="0">
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Garçons</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-child"></i></span>
+              <input type="number" min="0" step="1" id="culteGarcons" class="form-control form-control-sm" placeholder="0">
+            </div>
+          </div>
+        </div>
+        <div class="row g-2 mt-0">
+          <div class="col-md-3">
+            <label class="form-label">Total enfants</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-children"></i></span>
+              <input type="number" id="culteTotalEnfants" class="form-control form-control-sm" placeholder="0" readonly>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Nouveaux</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-user-plus"></i></span>
+              <input type="number" min="0" step="1" id="culteNouveaux" class="form-control form-control-sm" placeholder="0">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Effectif Total</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-users"></i></span>
+              <input type="number" id="culteEffectifTotal" class="form-control form-control-sm" placeholder="0" readonly>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Date</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+              <input type="date" id="culteDate" class="form-control form-control-sm">
+            </div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+          <button type="reset" class="btn btn-outline-secondary me-2"><i class="fas fa-undo me-1"></i>Réinitialiser</button>
+          <button type="button" id="culteSaveBtn" class="btn btn-info"><i class="fas fa-save me-1"></i>Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0"><i class="fas fa-users me-2"></i>Effectifs du culte — Liste complète</h4>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body filters">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Église</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-building"></i></span>
+            <select id="fullFilterEglise" class="form-select">
+              <option value="">Toutes les églises</option>
+              {% for e in eglises %}
+                <option value="{{ e.id }}">{{ e.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Du</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
+            <input type="date" id="fullFilterFrom" class="form-control">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Au</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
+            <input type="date" id="fullFilterTo" class="form-control">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Recherche</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" id="fullSearch" class="form-control" placeholder="Église, date…">
+          </div>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+          <button id="fullApply" class="btn btn-sm btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filtrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+      <div>
+        <strong>Liste complète</strong>
+      </div>
+      <div class="btn-group" role="group">
+        <button type="button" id="fullExportExcel" class="btn btn-sm btn-outline-success" title="Exporter Excel (.xls)"><i class="bi bi-file-earmark-excel"></i></button>
+        <button type="button" id="fullExportPdfServer" class="btn btn-sm btn-danger" title="Exporter PDF (serveur)"><i class="bi bi-file-earmark-pdf"></i></button>
+        <button type="button" id="fullExportPdfLocal" class="btn btn-sm btn-outline-danger" title="PDF (navigateur)"><i class="bi bi-printer"></i></button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table id="fullCulteTable" class="table table-sm align-middle">
+          <colgroup>
+            <col style="width:26%">
+            <col style="width:12%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:10%">
+            <col style="width:8%">
+            <col style="width:12%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Église</th>
+              <th>Date</th>
+              <th class="text-end">Hommes</th>
+              <th class="text-end">Femmes</th>
+              <th class="text-end">Filles</th>
+              <th class="text-end">Garçons</th>
+              <th class="text-end">Total enfants</th>
+              <th class="text-end">Nouveaux</th>
+              <th class="text-end">Total</th>
+            </tr>
+          </thead>
+          <tbody id="fullCulteTbody">
+            <tr><td colspan="9" class="text-muted">Chargement…</td></tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2" class="text-end">TOTAL</th>
+              <th class="text-end" id="fullSumH">0</th>
+              <th class="text-end" id="fullSumF">0</th>
+              <th class="text-end" id="fullSumFi">0</th>
+              <th class="text-end" id="fullSumG">0</th>
+              <th class="text-end" id="fullSumTE">0</th>
+              <th class="text-end" id="fullSumNv">0</th>
+              <th class="text-end" id="fullSumTot">0</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="d-flex flex-wrap align-items-center justify-content-between mt-2 gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <label class="form-label mb-0">Taille page</label>
+          <select id="fullPageSize" class="form-select form-select-sm" style="width: 90px;">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="0">Tous</option>
+          </select>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <div id="fullPageInfo" class="text-muted small">Page 1 / 1</div>
+          <div class="btn-group btn-group-sm" role="group">
+            <button class="btn btn-outline-secondary" id="fullFirst">«</button>
+            <button class="btn btn-outline-secondary" id="fullPrev">‹</button>
+            <button class="btn btn-outline-secondary" id="fullNext">›</button>
+            <button class="btn btn-outline-secondary" id="fullLast">»</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+      <span class="text-muted small" id="fullTotalRecords">Total: 0 enregistrements</span>
+      <button type="button" id="fullViewAll" class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalAllEffectifs">
+        <i class="bi bi-eye me-1"></i> Voir tous les effectifs
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Tous les effectifs -->
+<div class="modal fade" id="modalAllEffectifs" tabindex="-1" aria-labelledby="modalAllEffectifsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <div class="d-flex align-items-center gap-3">
+          <div class="modal-icon">
+            <i class="bi bi-people-fill fs-3"></i>
+          </div>
+          <div>
+            <h5 class="modal-title mb-0" id="modalAllEffectifsLabel">
+              <i class="bi bi-list-ul me-2"></i>Tous les Effectifs du Culte
+            </h5>
+            <small class="opacity-75">Liste complète de tous les enregistrements</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <!-- Filtres dans le modal -->
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <div class="row g-2 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label fw-semibold"><i class="bi bi-building me-1"></i>Église</label>
+                <select id="modalFilterEglise" class="form-select form-select-sm">
+                  <option value="">Toutes les églises</option>
+                  {% for e in eglises %}
+                    <option value="{{ e.id }}">{{ e.nom }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-semibold"><i class="bi bi-calendar-date me-1"></i>Du</label>
+                <input type="date" id="modalFilterFrom" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label fw-semibold"><i class="bi bi-calendar-date me-1"></i>Au</label>
+                <input type="date" id="modalFilterTo" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold"><i class="bi bi-search me-1"></i>Recherche</label>
+                <input type="text" id="modalSearch" class="form-control form-control-sm" placeholder="Rechercher...">
+              </div>
+              <div class="col-md-2">
+                <button id="modalApplyFilter" class="btn btn-sm btn-primary w-100">
+                  <i class="bi bi-funnel me-1"></i>Filtrer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <div class="d-flex gap-2">
+            <span class="badge bg-primary fs-6" id="modalTotalBadge">0 enregistrements</span>
+          </div>
+          <div class="btn-group" role="group">
+            <button type="button" id="modalExportExcel" class="btn btn-success" title="Exporter Excel">
+              <i class="bi bi-file-earmark-excel me-1"></i>Excel
+            </button>
+            <button type="button" id="modalExportPdf" class="btn btn-danger" title="Exporter PDF">
+              <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+            </button>
+            <button type="button" id="modalPrint" class="btn btn-secondary" title="Imprimer">
+              <i class="bi bi-printer me-1"></i>Imprimer
+            </button>
+          </div>
+        </div>
+
+        <!-- Tableau -->
+        <div class="card shadow-sm">
+          <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: calc(100vh - 350px); overflow-y: auto;">
+              <table id="modalTable" class="table table-striped table-hover table-sm align-middle mb-0">
+                <thead class="table-dark sticky-top">
+                  <tr>
+                    <th style="width: 5%">#</th>
+                    <th style="width: 22%">Église</th>
+                    <th style="width: 10%">Date</th>
+                    <th class="text-end" style="width: 8%">Hommes</th>
+                    <th class="text-end" style="width: 8%">Femmes</th>
+                    <th class="text-end" style="width: 8%">Filles</th>
+                    <th class="text-end" style="width: 8%">Garçons</th>
+                    <th class="text-end" style="width: 10%">Total Enfants</th>
+                    <th class="text-end" style="width: 8%">Nouveaux</th>
+                    <th class="text-end" style="width: 10%">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="modalTbody">
+                  <tr><td colspan="10" class="text-center text-muted py-4">Chargement...</td></tr>
+                </tbody>
+                <tfoot class="table-secondary">
+                  <tr class="fw-bold">
+                    <th colspan="3" class="text-end">TOTAUX</th>
+                    <th class="text-end" id="modalSumH">0</th>
+                    <th class="text-end" id="modalSumF">0</th>
+                    <th class="text-end" id="modalSumFi">0</th>
+                    <th class="text-end" id="modalSumG">0</th>
+                    <th class="text-end" id="modalSumTE">0</th>
+                    <th class="text-end" id="modalSumNv">0</th>
+                    <th class="text-end text-primary" id="modalSumTot">0</th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-white">
+        <div class="d-flex justify-content-between w-100 align-items-center">
+          <small class="text-muted" id="modalLastUpdate">Dernière mise à jour: --</small>
+          <div class="d-flex gap-2">
+            <button type="button" id="modalRefresh" class="btn btn-outline-primary">
+              <i class="bi bi-arrow-clockwise me-1"></i>Actualiser
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="bi bi-x-lg me-1"></i>Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Styles pour le modal plein écran */
+#modalAllEffectifs .modal-header {
+  background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+}
+#modalAllEffectifs .modal-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#modalAllEffectifs .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #212529;
+}
+#modalAllEffectifs .table tbody tr:hover {
+  background-color: rgba(78, 115, 223, 0.1) !important;
+}
+#modalAllEffectifs .badge {
+  padding: 0.5rem 1rem;
+}
+</style>
+
+<script>
+(function(){
+  function buildQuery(params){
+    const usp = new URLSearchParams();
+    Object.entries(params).forEach(([k,v])=>{ if (v!==undefined && v!==null && String(v).trim()!=='') usp.set(k, v); });
+    return usp.toString();
+  }
+  function showToast(msg,type){ try{ window.showToast(msg,type);}catch(e){ console.log(msg);} }
+
+  let FULL_DATA = [];
+  let fullPage = 1;
+  let fullPageSize = 20; // 0 = Tous
+
+  function applyFilters(items){
+    const search = (document.getElementById('fullSearch')?.value || '').toLowerCase();
+    if (!search) return items;
+    return items.filter(it=>{
+      const eglise = (it.eglise||'').toLowerCase();
+      const date = (it.date||'').toLowerCase();
+      return eglise.includes(search) || date.includes(search);
+    });
+  }
+
+  function renderFull(){
+    const tbody = document.getElementById('fullCulteTbody');
+    const pageInfo = document.getElementById('fullPageInfo');
+    const ps = Number(fullPageSize);
+    const items = applyFilters(FULL_DATA);
+    const total = items.length;
+    const pages = ps>0 ? Math.max(1, Math.ceil(total/ps)) : 1;
+    if (fullPage>pages) fullPage = pages;
+    const start = ps>0 ? (fullPage-1)*ps : 0;
+    const end = ps>0 ? start+ps : total;
+    const pageItems = items.slice(start, end);
+
+    let sH=0,sF=0,sFi=0,sG=0,sTE=0,sNv=0,sTot=0;
+    const rows = pageItems.map(it=>{
+      sH+=Number(it.hommes||0); sF+=Number(it.femmes||0); sFi+=Number(it.filles||0); sG+=Number(it.garcons||0); sTE+=Number(it.total_enfants||0); sNv+=Number(it.nouveaux||0); sTot+=Number(it.total||0);
+      return `<tr>
+        <td>${it.eglise||''}</td>
+        <td>${it.date||''}</td>
+        <td class="text-end">${it.hommes}</td>
+        <td class="text-end">${it.femmes}</td>
+        <td class="text-end">${it.filles}</td>
+        <td class="text-end">${it.garcons}</td>
+        <td class="text-end">${it.total_enfants}</td>
+        <td class="text-end">${it.nouveaux}</td>
+        <td class="text-end fw-semibold">${it.total}</td>
+      </tr>`;
+    }).join('');
+    tbody.innerHTML = rows || '<tr><td colspan="9" class="text-muted">Aucun enregistrement</td></tr>';
+
+    // Totaux de la page courante
+    const map = new Map([
+      ['fullSumH',sH],['fullSumF',sF],['fullSumFi',sFi],['fullSumG',sG],['fullSumTE',sTE],['fullSumNv',sNv],['fullSumTot',sTot]
+    ]);
+    map.forEach((v,id)=>{ const el=document.getElementById(id); if(el) el.textContent=String(v); });
+
+    if (pageInfo){ pageInfo.textContent = ps>0 ? `Page ${fullPage} / ${pages}` : `Tous (${total})`; }
+    
+    // Mise à jour du compteur total d'enregistrements
+    const totalRecordsEl = document.getElementById('fullTotalRecords');
+    if (totalRecordsEl){ totalRecordsEl.textContent = `Total: ${total} enregistrement${total > 1 ? 's' : ''}`; }
+  }
+
+  async function loadFull(){
+    const tbody = document.getElementById('fullCulteTbody');
+    const eg = document.getElementById('fullFilterEglise')?.value || '';
+    const df = document.getElementById('fullFilterFrom')?.value || '';
+    const dt = document.getElementById('fullFilterTo')?.value || '';
+    const q = buildQuery({ all: 1, eglise_id: eg, date_from: df, date_to: dt });
+    try{
+      const resp = await fetch('{% url "main:lister_effectifs_culte" %}?'+q);
+      const data = await resp.json();
+      if (!data || !data.success){
+        tbody.innerHTML = '<tr><td colspan="9" class="text-danger">Erreur de chargement</td></tr>';
+        return;
+      }
+      FULL_DATA = data.items || [];
+      fullPage = 1;
+      renderFull();
+    }catch(err){
+      tbody.innerHTML = '<tr><td colspan="9" class="text-danger">Erreur réseau</td></tr>';
+    }
+  }
+
+  document.getElementById('fullApply')?.addEventListener('click', loadFull);
+  document.getElementById('fullSearch')?.addEventListener('input', ()=>{ fullPage=1; renderFull(); });
+  document.getElementById('fullPageSize')?.addEventListener('change', (e)=>{ fullPageSize = Number(e.target.value); fullPage=1; renderFull(); });
+  document.getElementById('fullFirst')?.addEventListener('click', ()=>{ fullPage=1; renderFull(); });
+  document.getElementById('fullPrev')?.addEventListener('click', ()=>{ if(fullPage>1){ fullPage--; renderFull(); } });
+  document.getElementById('fullNext')?.addEventListener('click', ()=>{ const ps=Number(fullPageSize); const pages = ps>0 ? Math.max(1, Math.ceil(applyFilters(FULL_DATA).length/ps)) : 1; if(fullPage<pages){ fullPage++; renderFull(); } });
+  document.getElementById('fullLast')?.addEventListener('click', ()=>{ const ps=Number(fullPageSize); const pages = ps>0 ? Math.max(1, Math.ceil(applyFilters(FULL_DATA).length/ps)) : 1; fullPage=pages; renderFull(); });
+  
+  // ========== MODAL: TOUS LES EFFECTIFS ==========
+  let MODAL_DATA = [];
+  
+  function applyModalFilters(items){
+    const search = (document.getElementById('modalSearch')?.value || '').toLowerCase();
+    if (!search) return items;
+    return items.filter(it=>{
+      const eglise = (it.eglise||'').toLowerCase();
+      const date = (it.date||'').toLowerCase();
+      return eglise.includes(search) || date.includes(search);
+    });
+  }
+  
+  function renderModal(){
+    const tbody = document.getElementById('modalTbody');
+    if (!tbody) return;
+    
+    const items = applyModalFilters(MODAL_DATA);
+    const total = items.length;
+    
+    let sH=0, sF=0, sFi=0, sG=0, sTE=0, sNv=0, sTot=0;
+    const rows = items.map((it, idx) => {
+      sH += Number(it.hommes||0);
+      sF += Number(it.femmes||0);
+      sFi += Number(it.filles||0);
+      sG += Number(it.garcons||0);
+      sTE += Number(it.total_enfants||0);
+      sNv += Number(it.nouveaux||0);
+      sTot += Number(it.total||0);
+      return `<tr>
+        <td class="text-muted">${idx + 1}</td>
+        <td><strong>${it.eglise||''}</strong></td>
+        <td>${it.date||''}</td>
+        <td class="text-end">${it.hommes}</td>
+        <td class="text-end">${it.femmes}</td>
+        <td class="text-end">${it.filles}</td>
+        <td class="text-end">${it.garcons}</td>
+        <td class="text-end">${it.total_enfants}</td>
+        <td class="text-end">${it.nouveaux}</td>
+        <td class="text-end fw-bold text-primary">${it.total}</td>
+      </tr>`;
+    }).join('');
+    
+    tbody.innerHTML = rows || '<tr><td colspan="10" class="text-center text-muted py-4">Aucun enregistrement trouvé</td></tr>';
+    
+    // Totaux
+    document.getElementById('modalSumH').textContent = String(sH);
+    document.getElementById('modalSumF').textContent = String(sF);
+    document.getElementById('modalSumFi').textContent = String(sFi);
+    document.getElementById('modalSumG').textContent = String(sG);
+    document.getElementById('modalSumTE').textContent = String(sTE);
+    document.getElementById('modalSumNv').textContent = String(sNv);
+    document.getElementById('modalSumTot').textContent = String(sTot);
+    
+    // Badge total
+    const badge = document.getElementById('modalTotalBadge');
+    if (badge){ badge.textContent = `${total} enregistrement${total > 1 ? 's' : ''}`; }
+  }
+  
+  async function loadModalData(){
+    const tbody = document.getElementById('modalTbody');
+    if (tbody){ tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4"><i class="bi bi-hourglass-split me-2"></i>Chargement...</td></tr>'; }
+    
+    const eg = document.getElementById('modalFilterEglise')?.value || '';
+    const df = document.getElementById('modalFilterFrom')?.value || '';
+    const dt = document.getElementById('modalFilterTo')?.value || '';
+    const q = buildQuery({ all: 1, eglise_id: eg, date_from: df, date_to: dt });
+    
+    try{
+      const resp = await fetch('{% url "main:lister_effectifs_culte" %}?' + q);
+      const data = await resp.json();
+      if (!data || !data.success){
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle me-2"></i>Erreur de chargement</td></tr>';
+        return;
+      }
+      MODAL_DATA = data.items || [];
+      renderModal();
+      
+      // Mise à jour de l'heure
+      const now = new Date();
+      const timeStr = now.toLocaleString('fr-FR');
+      const lastUpdate = document.getElementById('modalLastUpdate');
+      if (lastUpdate){ lastUpdate.textContent = `Dernière mise à jour: ${timeStr}`; }
+    } catch(err){
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger py-4"><i class="bi bi-wifi-off me-2"></i>Erreur réseau</td></tr>';
+    }
+  }
+  
+  // Charger les données quand le modal s'ouvre
+  const modalEl = document.getElementById('modalAllEffectifs');
+  if (modalEl){
+    modalEl.addEventListener('shown.bs.modal', loadModalData);
+  }
+  
+  // Filtres du modal
+  document.getElementById('modalApplyFilter')?.addEventListener('click', loadModalData);
+  document.getElementById('modalSearch')?.addEventListener('input', renderModal);
+  document.getElementById('modalRefresh')?.addEventListener('click', loadModalData);
+  
+  // Export Excel depuis le modal
+  document.getElementById('modalExportExcel')?.addEventListener('click', ()=>{
+    const eg = document.getElementById('modalFilterEglise')?.value || '';
+    const df = document.getElementById('modalFilterFrom')?.value || '';
+    const dt = document.getElementById('modalFilterTo')?.value || '';
+    const q = buildQuery({ eglise_id: eg, date_from: df, date_to: dt });
+    const a = document.createElement('a');
+    a.href = '{% url "main:exporter_effectifs_culte_xlsx" %}' + (q ? ('?' + q) : '');
+    a.target = '_self';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('Export Excel démarré…', 'success');
+  });
+  
+  // Export PDF depuis le modal
+  document.getElementById('modalExportPdf')?.addEventListener('click', ()=>{
+    const eg = document.getElementById('modalFilterEglise')?.value || '';
+    const df = document.getElementById('modalFilterFrom')?.value || '';
+    const dt = document.getElementById('modalFilterTo')?.value || '';
+    const q = buildQuery({ eglise_id: eg, date_from: df, date_to: dt });
+    const a = document.createElement('a');
+    a.href = '{% url "main:exporter_effectifs_culte_pdf" %}' + (q ? ('?' + q) : '');
+    a.target = '_self';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('Export PDF démarré…', 'success');
+  });
+  
+  // Imprimer depuis le modal
+  document.getElementById('modalPrint')?.addEventListener('click', ()=>{
+    const table = document.getElementById('modalTable');
+    if (!table) return;
+    const egSel = document.getElementById('modalFilterEglise');
+    const egText = egSel && egSel.value ? egSel.options[egSel.selectedIndex].text : 'Toutes les églises';
+    const df = document.getElementById('modalFilterFrom')?.value || '';
+    const dt = document.getElementById('modalFilterTo')?.value || '';
+    const now = new Date();
+    const nowStr = now.toLocaleString('fr-FR');
+    const header = `
+      <div style="text-align:center; margin-bottom:20px;">
+        <h2 style="margin:0; color:#4e73df;">Effectifs du Culte Dominical</h2>
+        <p style="margin:5px 0; color:#666;">Liste complète de tous les enregistrements</p>
+      </div>
+      <div style="margin-bottom:15px; padding:10px; background:#f8f9fa; border-radius:5px;">
+        <strong>Église:</strong> ${egText} | 
+        <strong>Période:</strong> ${df || 'Toutes'} → ${dt || 'Toutes'} | 
+        <strong>Exporté le:</strong> ${nowStr}
+      </div>
+    `;
+    const styles = `
+      body { font-family: Arial, Helvetica, sans-serif; margin: 20px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+      th { background: #4e73df; color: white; }
+      tfoot th, tfoot td { font-weight: bold; background: #e9ecef; }
+      .text-end { text-align: right; }
+      tr:nth-child(even) { background-color: #f8f9fa; }
+    `;
+    const win = window.open('', '_blank');
+    if (!win){ showToast("Autorisez les fenêtres contextuelles pour l'impression.", 'warning'); return; }
+    win.document.open();
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Effectifs du culte</title><style>${styles}</style></head><body>${header}${table.outerHTML}<script>setTimeout(function(){window.print(); window.close();}, 300);<\/script></body></html>`);
+    win.document.close();
+  });
+
+  // Exports
+  function exportWith(urlName){
+    const eg = document.getElementById('fullFilterEglise')?.value || '';
+    const df = document.getElementById('fullFilterFrom')?.value || '';
+    const dt = document.getElementById('fullFilterTo')?.value || '';
+    const q = buildQuery({ eglise_id: eg, date_from: df, date_to: dt });
+    const a = document.createElement('a');
+    a.href = urlName + (q?('?'+q):'');
+    a.target = '_self';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  document.getElementById('fullExportExcel')?.addEventListener('click', ()=>{
+    exportWith('{% url "main:exporter_effectifs_culte_xlsx" %}');
+    showToast('Export Excel démarré…','info');
+  });
+  document.getElementById('fullExportPdfServer')?.addEventListener('click', ()=>{
+    exportWith('{% url "main:exporter_effectifs_culte_pdf" %}');
+    showToast('Export PDF (serveur) démarré…','info');
+  });
+  document.getElementById('fullExportPdfLocal')?.addEventListener('click', ()=>{
+    const table = document.getElementById('fullCulteTable');
+    if (!table) return;
+    const egSel = document.getElementById('fullFilterEglise');
+    const egText = egSel && egSel.value ? egSel.options[egSel.selectedIndex].text : 'Toutes les églises';
+    const df = document.getElementById('fullFilterFrom')?.value || '';
+    const dt = document.getElementById('fullFilterTo')?.value || '';
+    const now = new Date();
+    const nowStr = now.getFullYear()+ '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    const header = `<h2>Effectifs du culte (complet)</h2><div class="meta">Église: <strong>${egText}</strong> | Période: <strong>${df||'Toutes'}</strong> → <strong>${dt||'Toutes'}</strong> | Exporté le: ${nowStr}</div>`;
+    const styles = `body{font-family:Arial,Helvetica,sans-serif;margin:20px;} h2{margin:0 0 10px;} .meta{margin-bottom:12px;color:#555;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ddd;padding:6px 8px;} th{background:#f5f5f5;text-align:left;} tfoot th,tfoot td{font-weight:bold;background:#fafafa;} .text-end{text-align:right;}`;
+    const win = window.open('', '_blank');
+    if (!win){ showToast("Autorisez les fenêtres contextuelles pour l'export PDF.", 'warning'); return; }
+    win.document.open();
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Effectifs du culte</title><style>${styles}</style></head><body>${header}${table.outerHTML}<script>setTimeout(function(){window.print(); window.close();}, 200);<\/script></body></html>`);
+    win.document.close();
+  });
+
+  // Chargement initial
+  loadFull();
+
+  // ========== FORMULAIRE EFFECTIF DU CULTE ==========
+  function valInt(id){
+    const v = parseInt(document.getElementById(id)?.value || '0', 10);
+    return Number.isFinite(v) && v > 0 ? v : 0;
+  }
+
+  function getCookie(name){
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? m.pop() : '';
+  }
+
+  function updateTotals(){
+    const filles = valInt('culteFilles');
+    const garcons = valInt('culteGarcons');
+    const hommes = valInt('culteHommes');
+    const femmes = valInt('culteFemmes');
+    const nouveaux = valInt('culteNouveaux');
+    const totalEnfants = filles + garcons;
+    const total = hommes + femmes + totalEnfants + nouveaux;
+    const te = document.getElementById('culteTotalEnfants');
+    const tt = document.getElementById('culteEffectifTotal');
+    if (te) te.value = String(totalEnfants);
+    if (tt) tt.value = String(total);
+  }
+
+  // Init date à aujourd'hui si vide
+  const dateInput = document.getElementById('culteDate');
+  if (dateInput && !dateInput.value){
+    const t = new Date();
+    const mm = String(t.getMonth()+1).padStart(2,'0');
+    const dd = String(t.getDate()).padStart(2,'0');
+    dateInput.value = `${t.getFullYear()}-${mm}-${dd}`;
+  }
+
+  ['culteFilles','culteGarcons','culteHommes','culteFemmes','culteNouveaux']
+    .forEach(id=>{
+      const el = document.getElementById(id);
+      if (el){ el.addEventListener('input', updateTotals); }
+    });
+  updateTotals();
+
+  // Envoi API
+  const saveBtn = document.getElementById('culteSaveBtn');
+  const formEl = document.getElementById('culteEffectifForm');
+  if (formEl){
+    formEl.addEventListener('reset', function(){
+      setTimeout(()=>{ updateTotals(); loadFull(); }, 0);
+    });
+  }
+  if (saveBtn){
+    saveBtn.addEventListener('click', async function(){
+      const payload = {
+        date: (document.getElementById('culteDate')?.value || '').trim(),
+        eglise_id: (document.getElementById('culteEglise')?.value || '').trim(),
+        hommes: valInt('culteHommes'),
+        femmes: valInt('culteFemmes'),
+        filles: valInt('culteFilles'),
+        garcons: valInt('culteGarcons'),
+        nouveaux: valInt('culteNouveaux')
+      };
+      if (!payload.eglise_id){
+        alert('Veuillez sélectionner une Église.');
+        return;
+      }
+      try{
+        const resp = await fetch('{% url "main:enregistrer_effectif_culte" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (data && data.success){
+          showToast('Effectif enregistré (' + data.date + ') — Total: ' + data.total, 'success');
+          loadFull();
+          const form = document.getElementById('culteEffectifForm');
+          const egliseSelect = document.getElementById('culteEglise');
+          const savedEglise = egliseSelect ? egliseSelect.value : '';
+          if (form){ form.reset(); }
+          if (egliseSelect){ egliseSelect.value = savedEglise; }
+          const d = document.getElementById('culteDate');
+          if (d){
+            const t = new Date();
+            const mm = String(t.getMonth()+1).padStart(2,'0');
+            const dd = String(t.getDate()).padStart(2,'0');
+            d.value = `${t.getFullYear()}-${mm}-${dd}`;
+          }
+          const te = document.getElementById('culteTotalEnfants');
+          const tt = document.getElementById('culteEffectifTotal');
+          if (te) te.value = '0';
+          if (tt) tt.value = '0';
+          const first = document.getElementById('culteHommes');
+          if (first) first.focus();
+        } else {
+          alert('Erreur: ' + ((data && data.error) || ('Statut ' + resp.status)));
+        }
+      } catch(err){
+        alert('Erreur réseau: ' + err);
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

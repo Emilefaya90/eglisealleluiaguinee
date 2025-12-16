@@ -1,0 +1,237 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Biographie Pasteurs - {{ block.super }}{% endblock %}
+
+{% block content %}
+<!div class="container py-5">
+    <!-- En-tête de la page -->
+    <div class="bio-header mb-5">
+        <div class="d-flex align-items-center justify-content-start">
+            <div class="bio-logo-wrapper me-4">
+                <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo EPAG" class="bio-logo">
+            </div>
+            <div class="bio-text-content text-start">
+                <h1 class="bio-title mb-2">Biographie des Pasteurs</h1>
+                <div class="bio-underline"></div>
+                <p class="bio-subtitle mt-2 mb-0">Découvrez les serviteurs de Dieu qui œuvrent au sein de notre église</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des pasteurs -->
+    <div class="pasteurs-list">
+        {% for i in "12345678901234567890123456789012345"|make_list %}
+        <!-- Pasteur {{ forloop.counter }} -->
+        <div class="pasteur-card mb-4 {% if forloop.counter|divisibleby:2 %}pasteur-reverse{% endif %}">
+            <div class="row align-items-center g-0">
+                <div class="col-md-4 pasteur-photo-col">
+                    <div class="pasteur-photo-wrapper">
+                        {% if forloop.counter == 1 %}
+                        <img src="{% static 'main/images/Eveque.jpg' %}" 
+                             alt="Évêque" 
+                             class="pasteur-photo">
+                        {% elif forloop.counter == 2 %}
+                        <img src="{% static 'main/images/Past antoine.jpg' %}" 
+                             alt="Pasteur Antoine" 
+                             class="pasteur-photo">
+                        {% else %}
+                        <img src="{% static 'main/images/pasteurs/pasteur_' %}{{ forloop.counter }}.jpg" 
+                             alt="Pasteur {{ forloop.counter }}" 
+                             class="pasteur-photo"
+                             data-default="{% static 'main/images/default_pasteur.png' %}"
+                             onerror="this.src=this.dataset.default">
+                        {% endif %}
+                        <div class="pasteur-number">{{ forloop.counter }}</div>
+                    </div>
+                </div>
+                <div class="col-md-8 pasteur-info-col">
+                    <div class="pasteur-info">
+                        <h3 class="pasteur-name">
+                            <i class="bi bi-person-badge me-2"></i>
+                            {% if forloop.counter == 1 %}EVEQUE BANDJOU LENO{% else %}Nom du Pasteur {{ forloop.counter }}{% endif %}
+                        </h3>
+                        <p class="pasteur-titre">
+                            <i class="bi bi-award me-2"></i>
+                            <span>Titre / Fonction</span>
+                        </p>
+                        <div class="pasteur-bio">
+                            <p>
+                                <strong>Date de naissance :</strong> --/--/----<br>
+                                <strong>Lieu de naissance :</strong> ---<br>
+                                <strong>Date d'ordination :</strong> --/--/----<br>
+                                <strong>Église locale :</strong> ---
+                            </p>
+                            <p class="pasteur-description">
+                                Description et parcours du pasteur. Cette section peut contenir des informations sur son ministère, 
+                                ses études théologiques, son parcours spirituel, ses réalisations au sein de l'église, 
+                                et tout autre élément pertinent de sa biographie.
+                            </p>
+                        </div>
+                        <div class="pasteur-contact mt-3">
+                            <span class="badge bg-primary me-2"><i class="bi bi-telephone me-1"></i>Téléphone</span>
+                            <span class="badge bg-success"><i class="bi bi-envelope me-1"></i>Email</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+/* En-tête de la page */
+.bio-header {
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+}
+
+.bio-logo-wrapper {
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.bio-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.bio-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.bio-underline {
+    width: 100px;
+    height: 4px;
+    background: white;
+    border-radius: 2px;
+}
+
+.bio-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Carte Pasteur */
+.pasteur-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid #eee;
+}
+
+.pasteur-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+}
+
+.pasteur-reverse .row {
+    flex-direction: row-reverse;
+}
+
+.pasteur-photo-wrapper {
+    position: relative;
+    height: 100%;
+    min-height: 300px;
+}
+
+.pasteur-photo {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    object-fit: cover;
+}
+
+.pasteur-number {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+}
+
+.pasteur-info {
+    padding: 2rem;
+}
+
+.pasteur-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.pasteur-titre {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pasteur-bio {
+    color: #666;
+    line-height: 1.8;
+}
+
+.pasteur-bio strong {
+    color: #333;
+}
+
+.pasteur-description {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed #ddd;
+}
+
+.pasteur-contact .badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pasteur-reverse .row {
+        flex-direction: column;
+    }
+    
+    .pasteur-photo-wrapper {
+        min-height: 250px;
+    }
+    
+    .pasteur-info {
+        padding: 1.5rem;
+    }
+    
+    .bio-title {
+        font-size: 1.8rem;
+    }
+}
+</style>
+{% endblock %}

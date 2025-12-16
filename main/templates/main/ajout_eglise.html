@@ -1,0 +1,174 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Ajout Eglise - Gestion Église{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container">
+        <header class="page-header">
+            <h1>FORMULAIRE D'ENREGISTREMENT DES EGLISES</h1>
+        </header>
+        
+        <!-- Affichage des messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if error %}
+        <div class="error-message" style="color: #dc3545; font-weight: bold; padding: 10px; margin-bottom: 20px; border-left: 5px solid #dc3545; background-color: rgba(220, 53, 69, 0.1); border-radius: 0 4px 4px 0;">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <div class="content-section">
+            <h2>Informations de l'église</h2>
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nom" class="form-label">Nom de l'église</label>
+                        <input type="text" class="form-control" id="nom" name="nom" list="eglises-list" autocomplete="off" required>
+                        <datalist id="eglises-list">
+                            <option value="Alléluia Bellevue">
+                            <option value="Alléluia Enta">
+                            <option value="Alléluia Cimenterie">
+                            <option value="Alléluia Yattayah">
+                            <option value="Alléluia Kagbelen">
+                            <option value="Alléluia Kenendé">
+                            <option value="Alléluia Kountia">
+                            <option value="Alléluia Gomboyah">
+                            <option value="Alléluia Coyah">
+                            <option value="Alléluia Mangatha">
+                            <option value="Alléluia Tanènè">
+                            <option value="Alléluia Koba">
+                            <option value="Alléluia Kissidougou">
+                            <option value="Alléluia Guéckédou">
+                            <option value="Alléluia de Lola">
+                            <option value="Alléluia Marela">
+                        </datalist>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="ville" class="form-label">Ville</label>
+                        <input type="text" class="form-control" id="ville" name="ville" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <input type="text" class="form-control" id="adresse" name="adresse" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="responsable" class="form-label">Responsable</label>
+                        <input type="text" class="form-control" id="responsable" name="responsable" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="date_creation" class="form-label">Date de création</label>
+                        <input type="date" class="form-control" id="date_creation" name="date_creation" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="nombre_membres" class="form-label">Nombre de membres</label>
+                        <input type="number" class="form-control" id="nombre_membres" name="nombre_membres" value="0" min="0">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="telephone" class="form-label">Téléphone</label>
+                        <input type="text" class="form-control" id="telephone" name="telephone">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a href="{% url 'main:eglises' %}" class="btn btn-secondary">Annuler</a>
+                <a href="{% url 'main:eglises' %}" class="btn btn-info">Voir les Eglises enregistrées</a>
+            </form>
+        </div>
+        
+        <div class="content-section mt-5" style="border: 1px solid #ddd; padding: 20px; border-radius: 5px; background-color: #f9f9f9;">
+            <h2 style="color: #333; margin-bottom: 20px;">Églises déjà enregistrées</h2>
+            
+            {% if eglises %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Ville</th>
+                                <th>Adresse</th>
+                                <th>Responsable</th>
+                                <th>Nombre de membres</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for eglise in eglises %}
+                                <tr>
+                                    <td>{{ eglise.nom }}</td>
+                                    <td>{{ eglise.ville }}</td>
+                                    <td>{{ eglise.adresse }}</td>
+                                    <td>{{ eglise.responsable }}</td>
+                                    <td>{{ eglise.nombre_membres }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="{% url 'main:eglises' %}" class="btn btn-primary">
+                        Voir toutes les églises
+                    </a>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Aucune église n'est encore enregistrée.
+                </div>
+            {% endif %}
+            
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Référence au champ de saisie du nom de l'église
+        const nomEgliseInput = document.getElementById('nom');
+        
+        // Afficher la liste déroulante lorsque le champ reçoit le focus
+        nomEgliseInput.addEventListener('focus', function() {
+            // Simuler un clic sur la flèche déroulante
+            this.click();
+            // Simuler la saisie d'un caractère pour déclencher l'affichage de la liste
+            const event = new Event('input', { bubbles: true });
+            this.dispatchEvent(event);
+        });
+        
+        // Stocker le nom de l'église dans le localStorage lorsqu'il change
+        nomEgliseInput.addEventListener('change', function() {
+            if (this.value.trim() !== '') {
+                localStorage.setItem('selectedEglise', this.value);
+                
+                // Vérifier si la page du personnel pastoral est ouverte dans un autre onglet
+                // et envoyer un message pour mettre à jour le champ église affectée
+                if (window.BroadcastChannel) {
+                    const bc = new BroadcastChannel('eglise_channel');
+                    bc.postMessage({ egliseNom: this.value });
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

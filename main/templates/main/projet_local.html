@@ -1,0 +1,83 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Projet Local - Gestion Église{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container">
+        <header class="page-header">
+            <h1>Gestion des projets locaux</h1>
+        </header>
+        
+        <div class="content-section">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Projets en cours</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Église</th>
+                                            <th>Projet</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Église de Conakry</td>
+                                            <td>Centre de formation</td>
+                                            <td><span class="badge bg-warning">En cours</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary">Détails</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Église de Kankan</td>
+                                            <td>Salle de prière</td>
+                                            <td><span class="badge bg-success">Terminé</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary">Détails</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Nouveau projet</h5>
+                            <form method="post" class="needs-validation" novalidate>
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="eglise" class="form-label">Église</label>
+                                    <select class="form-select" id="eglise" name="eglise" required>
+                                        <option value="">Choisir une église</option>
+                                        <option value="1">Église de Conakry</option>
+                                        <option value="2">Église de Kankan</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="projet" class="form-label">Nom du projet</label>
+                                    <input type="text" class="form-control" id="projet" name="projet" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Créer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

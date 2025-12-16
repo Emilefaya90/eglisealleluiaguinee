@@ -1,0 +1,60 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Visite Pastorale - Gestion Église{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container">
+        <header class="page-header">
+            <h1>Gestion des visites pastorales</h1>
+        </header>
+        
+        <div class="content-section">
+            <h2>Planning des visites</h2>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Prochaines visites</h5>
+                            <div class="list-group">
+                                <div class="list-group-item">
+                                    <h6 class="mb-1">Église de Conakry</h6>
+                                    <small class="text-muted">25 juillet 2025</small>
+                                </div>
+                                <div class="list-group-item">
+                                    <h6 class="mb-1">Église de Kankan</h6>
+                                    <small class="text-muted">30 juillet 2025</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Nouvelle visite</h5>
+                            <form method="post" class="needs-validation" novalidate>
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="eglise" class="form-label">Église</label>
+                                    <select class="form-select" id="eglise" name="eglise" required>
+                                        <option value="">Choisir une église</option>
+                                        <option value="1">Église de Conakry</option>
+                                        <option value="2">Église de Kankan</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="date" name="date" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Planifier</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

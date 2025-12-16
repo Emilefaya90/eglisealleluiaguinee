@@ -1,0 +1,1423 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Accueil" %} - {% trans "Gestion Église" %}{% endblock %}
+
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+<!-- Barre de réseaux sociaux verticale à gauche -->
+<div class="social-sidebar">
+    <div class="social-sidebar-label" style="font-size: 6px; color: white; background: rgba(0,0,0,0.6); padding: 1px 3px; border-radius: 4px; margin-bottom: 4px; text-align: center; white-space: nowrap; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.fontSize='10px'; this.style.padding='3px 6px';" onmouseout="this.style.fontSize='6px'; this.style.padding='1px 3px';">Suivez-nous<br>sur nos réseaux</div>
+    <a href="https://www.facebook.com/share/1AchV2bgQD/?mibextid=wwXIfr" target="_blank" class="social-link facebook" title="Facebook">
+        <i class="bi bi-facebook"></i>
+        <span class="social-label">Facebook</span>
+    </a>
+    <a href="https://www.youtube.com/channel/UCv8RasSbiPMdM8Xq7DumOeg" target="_blank" class="social-link youtube" title="YouTube">
+        <i class="bi bi-youtube"></i>
+        <span class="social-label">YouTube</span>
+    </a>
+    <a href="https://www.instagram.com/eglise_pentecote_alleluia_gn?igsh=MWVyZTVocGxhdzllcQ==" target="_blank" class="social-link instagram" title="Instagram">
+        <i class="bi bi-instagram"></i>
+        <span class="social-label">Instagram</span>
+    </a>
+    <a href="https://whatsapp.com/channel/0029VbBiWy10VycDcvV68w1d" target="_blank" class="social-link whatsapp" title="WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+        <span class="social-label">WhatsApp</span>
+    </a>
+    <a href="https://twitter.com/votre-compte" target="_blank" class="social-link twitter" title="Twitter / X">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" style="display: inline-block;">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        <span class="social-label">Twitter / X</span>
+    </a>
+    <a href="#" class="social-link appel" title="Appel" onclick="showPhoneModal(); return false;">
+        <i class="bi bi-telephone-fill"></i>
+        <span class="social-label">Appel</span>
+    </a>
+</div>
+
+<!-- Modal pour les numéros de téléphone -->
+<div id="phoneModal" class="phone-modal" onclick="closePhoneModal()">
+    <div class="phone-modal-content" onclick="event.stopPropagation()">
+        <div class="phone-modal-header">
+            <h3><i class="bi bi-telephone-fill me-2"></i>Contactez nos Pasteurs</h3>
+            <button class="phone-modal-close" onclick="closePhoneModal()">&times;</button>
+        </div>
+        <div class="phone-modal-body">
+            <div class="phone-list">
+                <div class="phone-item-wrapper">
+                    <div class="phone-item-info">
+                        <i class="bi bi-person-fill person-icon"></i>
+                        <div class="contact-details">
+                            <span class="pastor-name">Evêque Bandjou LENO</span>
+                            <span class="phone-number">+224 622 36 81 48</span>
+                        </div>
+                    </div>
+                    <div class="phone-item-actions">
+                        <a href="tel:+224622368148" class="action-btn call-btn" title="Appeler">
+                            <i class="bi bi-telephone-fill"></i>
+                        </a>
+                        <a href="sms:+224622368148" class="action-btn sms-btn" title="Envoyer un SMS">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </a>
+                        <a href="https://wa.me/224622368148" target="_blank" class="action-btn whatsapp-btn" title="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="phone-item-wrapper">
+                    <div class="phone-item-info">
+                        <i class="bi bi-person-fill person-icon"></i>
+                        <div class="contact-details">
+                            <span class="pastor-name">Evêque Bandjou LENO</span>
+                            <span class="phone-number">+224 664 35 33 82</span>
+                        </div>
+                    </div>
+                    <div class="phone-item-actions">
+                        <a href="tel:+224664353382" class="action-btn call-btn" title="Appeler">
+                            <i class="bi bi-telephone-fill"></i>
+                        </a>
+                        <a href="sms:+224664353382" class="action-btn sms-btn" title="Envoyer un SMS">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </a>
+                        <a href="https://wa.me/224664353382" target="_blank" class="action-btn whatsapp-btn" title="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="phone-item-wrapper">
+                    <div class="phone-item-info">
+                        <i class="bi bi-person-fill person-icon"></i>
+                        <div class="contact-details">
+                            <span class="pastor-name">Rév. Antoine LELANO</span>
+                            <span class="phone-number">+224 622 45 09 31</span>
+                        </div>
+                    </div>
+                    <div class="phone-item-actions">
+                        <a href="tel:+224622450931" class="action-btn call-btn" title="Appeler">
+                            <i class="bi bi-telephone-fill"></i>
+                        </a>
+                        <a href="sms:+224622450931" class="action-btn sms-btn" title="Envoyer un SMS">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </a>
+                        <a href="https://wa.me/224622450931" target="_blank" class="action-btn whatsapp-btn" title="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="phone-item-wrapper">
+                    <div class="phone-item-info">
+                        <i class="bi bi-person-fill person-icon"></i>
+                        <div class="contact-details">
+                            <span class="pastor-name">Rév. Alexis DIAWARA</span>
+                            <span class="phone-number">+224 621 91 91 39</span>
+                        </div>
+                    </div>
+                    <div class="phone-item-actions">
+                        <a href="tel:+224621919139" class="action-btn call-btn" title="Appeler">
+                            <i class="bi bi-telephone-fill"></i>
+                        </a>
+                        <a href="sms:+224621919139" class="action-btn sms-btn" title="Envoyer un SMS">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </a>
+                        <a href="https://wa.me/224621919139" target="_blank" class="action-btn whatsapp-btn" title="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="phone-item-wrapper">
+                    <div class="phone-item-info">
+                        <i class="bi bi-person-fill person-icon"></i>
+                        <div class="contact-details">
+                            <span class="pastor-name">Rév. Victor KOMANO</span>
+                            <span class="phone-number">+224 628 37 43 57</span>
+                        </div>
+                    </div>
+                    <div class="phone-item-actions">
+                        <a href="tel:+224628374357" class="action-btn call-btn" title="Appeler">
+                            <i class="bi bi-telephone-fill"></i>
+                        </a>
+                        <a href="sms:+224628374357" class="action-btn sms-btn" title="Envoyer un SMS">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </a>
+                        <a href="https://wa.me/224628374357" target="_blank" class="action-btn whatsapp-btn" title="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="phone-item-wrapper">
+                    <div class="phone-item-info">
+                        <i class="bi bi-person-fill person-icon"></i>
+                        <div class="contact-details">
+                            <span class="pastor-name">Rév. Kezely BEAVOGUI</span>
+                            <span class="phone-number">+224 628 96 80 23</span>
+                        </div>
+                    </div>
+                    <div class="phone-item-actions">
+                        <a href="tel:+224628968023" class="action-btn call-btn" title="Appeler">
+                            <i class="bi bi-telephone-fill"></i>
+                        </a>
+                        <a href="sms:+224628968023" class="action-btn sms-btn" title="Envoyer un SMS">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </a>
+                        <a href="https://wa.me/224628968023" target="_blank" class="action-btn whatsapp-btn" title="WhatsApp">
+                            <i class="bi bi-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showPhoneModal() {
+    document.getElementById('phoneModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closePhoneModal() {
+    document.getElementById('phoneModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Fermer avec la touche Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closePhoneModal();
+    }
+});
+</script>
+
+<!-- Section hero avec image de fond -->
+<div class="hero-section">
+    <!-- Titre principal au centre -->
+    <div class="hero-title">
+        <h1>Bienvenue à l'Eglise<br>Pentecôte Alléluia de Guinée</h1>
+    </div>
+    
+    <!-- Diaporama d'images de fond -->
+    <div class="hero-background slideshow-container">
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard1.jpg' %}" alt="Diapositive 1" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard2.jpg' %}" alt="Diapositive 2" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard3.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard4.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+           <img src="{% static 'main/images/hero/pgard5.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard6.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard7.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard8.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard9.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard10.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard11.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard12.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard13.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard14.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        <div class="hero-slide">
+            <img src="{% static 'main/images/hero/pgard16.jpg' %}" alt="Diapositive 3" class="hero-main-image">
+        </div>
+        
+        <!-- Boutons de navigation -->
+        <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+        <a class="next" onclick="plusSlides(1)">&#10095;</a>
+        
+        <!-- Indicateurs de diapositives -->
+        <div class="dots-container">
+            <span class="dot" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+            <span class="dot" onclick="currentSlide(3)"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Section avec photo et texte côte à côte -->
+<div class="photo-text-section py-5">
+    <!-- Verset biblique défilant -->
+    <div class="bible-verse-container">
+        <div class="bible-verse-scrolling">
+            <span class="bible-verse-text">✝ Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b) ✝</span>
+        </div>
+    </div>
+    
+    <!div class="container">
+        <div class="row align-items-center">
+            <!-- Colonne pour la photo -->
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="photo-container pageaccueil-animated">
+                    <div class="position-relative" style="padding: 10px; border: 3px solid #6c757d; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);">
+                        <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background-color: white; padding: 0 15px;">
+                            <i class="fas fa-cross text-secondary"></i>
+                        </div>
+                        <img src="{% static 'main/images/gallery/bill.jpg' %}" alt="Évêque Bandjou LENO" class="img-fluid rounded" style="border: 5px solid white;">
+                    </div>
+                    <h4 class="text-center mt-3 fw-bold">Évêque Bandjou LENO</h4>
+                    <hr class="mx-auto" style="width: 120px; height: 3px; background-color: #007bff; opacity: 0.7; margin-top: 10px; margin-bottom: 10px;">
+                    <p class="text-center text-muted">Premier Responsable des Églises Pentecôte Alléluia de Guinée</p>
+                </div>
+            </div>
+            <!-- Colonne pour le texte -->
+            <div class="col-md-8">
+                <div class="text-container pastor-content">
+                    <h2 class="pastor-title mb-4">
+                        <span class="title-icon cross-red">✝</span>
+                        Notre Responsable
+                        <span class="title-icon cross-red">✝</span>
+                    </h2>
+                    
+                    <div class="pastor-intro mb-3">
+                        <p class="lead-text">L'<strong>Évêque Bandjou LENO</strong> est un <span class="highlight">serviteur de Dieu engagé</span>, appelé à proclamer la Parole avec <span class="highlight">puissance, intégrité et compassion</span>. Fondateur et président général de l'Église Pentecôte Alléluia de Guinée, il est un leader spirituel respecté, porteur d'une vision claire pour le réveil et la transformation spirituelle du peuple de Dieu en Guinée et au-delà.</p>
+                    </div>
+                    
+                    <div class="pastor-section mb-3">
+                        <h5 class="section-subtitle"><i class="bi bi-star-fill text-warning me-2"></i>Son Ministère</h5>
+                        <p>Depuis plusieurs années, il œuvre sans relâche pour l'<strong>implantation d'églises</strong>, la <strong>formation des ministères</strong>, et l'<strong>édification du Corps de Christ</strong> à travers un enseignement biblique profond, inspiré par le Saint-Esprit. Il est reconnu pour sa sagesse, son humilité et son amour sincère pour l'Église.</p>
+                    </div>
+                    
+                    <div class="pastor-section mb-3">
+                        <h5 class="section-subtitle"><i class="bi bi-graph-up-arrow text-success me-2"></i>Croissance Remarquable</h5>
+                        <p>Sous sa direction, l'Église Pentecôte Alléluia connaît une croissance remarquable, marquée par la <strong>foi</strong>, la <strong>prière</strong>, les <strong>miracles</strong>, et un engagement actif dans les œuvres sociales.</p>
+                    </div>
+                    
+                    <div class="pastor-section mb-3">
+                        <h5 class="section-subtitle"><i class="bi bi-people-fill text-info me-2"></i>Père Spirituel</h5>
+                        <p>Marié à <strong>Koumba Angéline née TOLNO</strong>, il est aussi un père spirituel pour de nombreux pasteurs, évangélistes et responsables d'églises, qu'il encadre avec discernement et grâce.</p>
+                    </div>
+                    
+                    <div class="pastor-devise">
+                        <div class="devise-box">
+                            <i class="bi bi-quote quote-icon"></i>
+                            <p class="devise-text"><strong>Devise :</strong> "Prêcher l'Évangile avec puissance, manifester l'amour de Christ, et préparer un peuple prêt pour le retour du Seigneur."</p>
+                            <p class="devise-subtitle">D'où l'<strong>Évangile Holistique</strong>.</p>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'main:apropos' %}" class="btn btn-primary btn-lg mt-4 pastor-btn">
+                        <i class="bi bi-book me-2"></i>En savoir plus 
+                        <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Actualités & Événements supprimée comme demandé -->
+
+
+<!-- Galerie d'images en bas -->
+<div class="gallery-section">
+    <div class="gallery-title-container">
+        <h2 class="gallery-title scrolling-text">{% trans "Notre Galerie" %}</h2>
+    </div>
+    <div class="gallery-container">
+        <div class="gallery-item">
+            <img src="{% static 'main/images/gallery/gal1.jpg' %}" alt="{% trans 'Consécration' %}" class="gallery-image">
+            <div class="gallery-caption">{% trans "Consécration" %}</div>
+        </div>
+        <div class="gallery-item">
+            <img src="{% static 'main/images/gallery/gal2.jpg' %}" alt="{% trans 'Consécration' %}" class="gallery-image">
+            <div class="gallery-caption">{% trans "Consécration" %}</div>
+        </div>
+        <div class="gallery-item">
+            <img src="{% static 'main/images/gallery/gal3.jpg' %}" alt="{% trans 'Culte en live' %}" class="gallery-image">
+            <div class="gallery-caption">{% trans "Culte en live" %}</div>
+        </div>
+        <div class="gallery-item">
+            <img src="{% static 'main/images/gallery/gal4.jpg' %}" alt="{% trans 'Prière pour les Pasteurs' %}" class="gallery-image">
+            <div class="gallery-caption">{% trans "Prière pour les Pasteurs" %}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Section d'information en bas de page (taille réduite) -->
+<div class="info-section py-3">
+    <div class="container"> 
+        <div></div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-card p-3">
+                    <h3 class="h5 mb-2">{% trans "À propos de nous" %}</h3>
+                    <p class="small mb-2">{% trans "L'Église Pentecôte Alléluia de Guinée est une communauté chrétienne dynamique et accueillante. Fondée sur les principes bibliques, notre église s'engage à répandre l'amour du Christ." %}</p>
+                    <a href="{% url 'main:apropos' %}" class="btn btn-primary btn-sm mt-1">{% trans "En savoir plus" %}</a>
+                    
+                    <!-- Image Pageaccueil -->
+                    <div class="pageaccueil-container-small mt-3">
+                        <img src="{% static 'main/images/hero/Pageaccueil.jpg' %}" alt="Page d'accueil" class="pageaccueil-image-small">
+                    </div>
+                    
+                    <!-- Image Pageaccueil2 -->
+                    <div class="pageaccueil-container-small pageaccueil-animated mt-3">
+                        <img src="{% static 'main/images/hero/Pageaccueil3.jpg' %}" alt="Page d'accueil 2" class="pageaccueil-image-small">
+                        <div class="pageaccueil-caption">
+                            - Rep. de GUINEE / CONAKRY-DIXINN -
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <!div class="services-card">
+                    <h3 class="services-title">
+                        <i class="bi bi-calendar-week me-2"></i>
+                        NOTRE PROGRAMME
+                    </h3>
+                    <!div class="services-list">
+                        <div class="service-item lundi">
+                            <div class="service-day">
+                                <i class="bi bi-music-note"></i>
+                                <span>Lundi</span>
+                            </div>
+                            <div class="service-details">
+                                <p class="service-name">1ère Répétition de la Chorale</p>
+                                <p class="service-time"><i class="bi bi-clock"></i> 18h00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item mardi">
+                            <div class="service-day">
+                                <i class="bi bi-book"></i>
+                                <span>Mardi</span>
+                            </div>
+                            <div class="service-details">
+                                <p class="service-name">Étude Biblique</p>
+                                <p class="service-time"><i class="bi bi-clock"></i> 18h00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item mercredi">
+                            <div class="service-day">
+                                <i class="bi bi-heart-fill"></i>
+                                <span>Mercredi</span>
+                            </div>
+                            <div class="service-details">
+                                <p class="service-name">Rencontre de Prière</p>
+                                <p class="service-time"><i class="bi bi-clock"></i> 18h00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item jeudi">
+                            <div class="service-day">
+                                <i class="bi bi-people-fill"></i>
+                                <span>Jeudi</span>
+                            </div>
+                            <div class="service-details">
+                                <p class="service-name">Rencontre des Femmes</p>
+                                <p class="service-time"><i class="bi bi-clock"></i> 18h00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item vendredi">
+                            <div class="service-day">
+                                <i class="bi bi-hand-index-thumb"></i>
+                                <span>Vendredi</span>
+                            </div>
+                            <div class="service-details">
+                                <p class="service-name">Groupe d'Intercession</p>
+                                <p class="service-time"><i class="bi bi-clock"></i> 18h00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item samedi">
+                            <div class="service-day">
+                                <i class="bi bi-person-hearts"></i>
+                                <span>Samedi</span>
+                            </div>
+                            <div class="service-details">
+                                <p class="service-name">Rencontre de la Jeunesse</p>
+                                <p class="service-time"><i class="bi bi-clock"></i> 16h00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item samedi">
+                            <div class="service-day">
+                                <i class="bi bi-music-note-list"></i>
+                                <span>Samedi</span>
+                            </div>
+                            <div class="service-details">
+                                <p class="service-name">2ème Répétition de la Chorale</p>
+                                <p class="service-time"><i class="bi bi-clock"></i> 18h00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="service-item dimanche">
+                            <div class="service-day">
+                                <i class="bi bi-calendar-check"></i>
+                                <span>Dimanche</span>
+                            </div>
+                            <div class="service-details">
+                                <p class="service-name">Culte Dominical</p>
+                                <p class="service-time"><i class="bi bi-clock"></i> 10h00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section Codes QR - Position fixe en bas à droite -->
+        <div class="qr-fixed-corner">
+            <div class="d-flex flex-column gap-2 align-items-center">
+                <p class="text-white small mb-1 text-center" style="font-size: 0.7rem; background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;">Scannez ces codes QR<br>pour nous suivre</p>
+                <div class="qr-card text-center">
+                    <img src="{% static 'main/images/QRwinstagram.jpg' %}" alt="QR Code Instagram" class="img-fluid rounded-3" style="max-width: 60px;">
+                </div>
+                <div class="qr-card text-center">
+                    <img src="{% static 'main/images/QRwhasp.jpg' %}" alt="QR Code WhatsApp" class="img-fluid rounded-3" style="max-width: 60px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Styles pour les codes QR - Position fixe en angle */
+.qr-fixed-corner {
+    position: fixed;
+    bottom: 100px;
+    right: 15px;
+    z-index: 1000;
+}
+.qr-card {
+    transition: all 0.3s ease;
+}
+.qr-card:hover {
+    transform: scale(1.1);
+}
+
+/* Image Pageaccueil dans À propos de nous - Style magnifique */
+.pageaccueil-container-small {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.2);
+    transition: all 0.4s ease;
+    border: 3px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, #0d6efd, #0dcaf0, #0d6efd) border-box;
+}
+
+.pageaccueil-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.5));
+    color: white;
+    text-align: center;
+    padding: 12px 15px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    z-index: 2;
+}
+
+@media (max-width: 768px) {
+    .pageaccueil-caption {
+        font-size: 0.75rem;
+        padding: 10px 10px;
+        letter-spacing: 0.3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageaccueil-caption {
+        font-size: 0.65rem;
+        padding: 8px 8px;
+    }
+}
+
+/* Animation pour l'image Pageaccueil3 */
+.pageaccueil-animated {
+    animation: floatImage 6s ease-in-out infinite;
+}
+
+@keyframes floatImage {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-10px) rotate(1deg);
+    }
+    50% {
+        transform: translateY(-5px) rotate(-1deg);
+    }
+    75% {
+        transform: translateY(-15px) rotate(0.5deg);
+    }
+}
+
+.pageaccueil-animated:hover {
+    animation-play-state: paused;
+}
+
+.pageaccueil-container-small::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(13, 202, 240, 0.1));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.pageaccueil-container-small:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(13, 110, 253, 0.3);
+}
+
+.pageaccueil-container-small:hover::before {
+    opacity: 1;
+}
+
+.pageaccueil-image-small {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.pageaccueil-container-small:hover .pageaccueil-image-small {
+    transform: scale(1.05);
+}
+
+/* Animation de brillance */
+.pageaccueil-container-small::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* Section Nos Services - Style moderne */
+.services-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 2px solid #e3f2fd;
+}
+
+.services-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d6efd;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 3px solid #0d6efd;
+}
+
+.services-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.service-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem;
+    background: white;
+    border-radius: 10px;
+    border-left: 4px solid #dee2e6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.service-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.service-item.lundi:hover { border-left-color: #6f42c1; }
+.service-item.mardi:hover { border-left-color: #0dcaf0; }
+.service-item.mercredi:hover { border-left-color: #dc3545; }
+.service-item.jeudi:hover { border-left-color: #fd7e14; }
+.service-item.vendredi:hover { border-left-color: #198754; }
+.service-item.samedi:hover { border-left-color: #ffc107; }
+.service-item.dimanche:hover { border-left-color: #0d6efd; }
+
+.service-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 70px;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-radius: 8px;
+}
+
+.service-day i {
+    font-size: 1.5rem;
+    color: #0d6efd;
+    margin-bottom: 0.3rem;
+}
+
+.service-day span {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1565c0;
+    text-align: center;
+}
+
+.service-details {
+    flex: 1;
+}
+
+.service-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 0.3rem 0;
+}
+
+.service-time {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.service-time i {
+    color: #0d6efd;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .service-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .service-day {
+        width: 100%;
+        flex-direction: row;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+}
+
+/* Section Notre Pasteur - Style amélioré */
+.pastor-content {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #007bff;
+}
+
+.pastor-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0d6efd;
+    text-align: center;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.pastor-title .title-icon {
+    color: #ffc107;
+    font-size: 2rem;
+    margin: 0 1rem;
+    display: inline-block;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.pastor-title .cross-red {
+    color: #dc3545;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.pastor-intro {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid #2196f3;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.lead-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #1565c0;
+    margin: 0;
+}
+
+.highlight {
+    background: linear-gradient(120deg, #ffd54f 0%, #ffeb3b 100%);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #1565c0;
+}
+
+.pastor-section {
+    background: white;
+    padding: 0.9rem;
+    border-radius: 10px;
+    border-left: 4px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.pastor-section:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-left-color: #007bff;
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.pastor-section p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #495057;
+    margin: 0;
+}
+
+.pastor-devise {
+    margin-top: 1.5rem;
+}
+
+.devise-box {
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 2px solid #ff9800;
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
+    position: relative;
+}
+
+.quote-icon {
+    font-size: 1.3rem;
+    color: #ff9800;
+    position: absolute;
+    top: -8px;
+    left: 15px;
+    background: white;
+    padding: 0 6px;
+}
+
+.devise-text {
+    font-size: 1rem;
+    font-style: italic;
+    color: #e65100;
+    margin-bottom: 0.3rem;
+    font-weight: 500;
+    padding-top: 8px;
+}
+
+.devise-subtitle {
+    font-size: 0.9rem;
+    color: #f57c00;
+    font-weight: 600;
+    margin: 0;
+    text-align: right;
+}
+
+.pastor-btn {
+    background: linear-gradient(135deg, #0d6efd, #0056b3);
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+    transition: all 0.3s ease;
+}
+
+.pastor-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.6);
+    background: linear-gradient(135deg, #0056b3, #003d82);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pastor-title {
+        font-size: 2rem;
+    }
+    
+    .pastor-content {
+        padding: 1.5rem;
+    }
+    
+    .lead-text {
+        font-size: 1rem;
+    }
+}
+
+/* Verset biblique défilant */
+.bible-verse-container {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.85), rgba(205, 133, 63, 0.85), rgba(218, 165, 32, 0.85));
+    padding: 15px 0;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.bible-verse-scrolling {
+    display: inline-block;
+    animation: scrollLeftToRight 20s linear infinite;
+    padding-left: 100%;
+}
+
+.bible-verse-text {
+    color: white;
+    font-weight: 700;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+    font-style: italic;
+}
+
+@keyframes scrollLeftToRight {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* Effet de pause au survol */
+.bible-verse-container:hover .bible-verse-scrolling {
+    animation-play-state: paused;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bible-verse-text {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .bible-verse-text {
+        font-size: 0.9rem;
+    }
+}
+
+/* Barre de réseaux sociaux verticale à gauche */
+.social-sidebar {
+    position: fixed;
+    left: 0;
+    top: 60%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 240, 0.95));
+    border-radius: 0 15px 15px 0;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    padding: 10px 0;
+    backdrop-filter: blur(10px);
+}
+
+.social-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 15px 12px;
+    text-decoration: none;
+    color: white;
+    font-size: 24px;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    overflow: hidden;
+    width: 50px;
+}
+
+.social-link i {
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease;
+}
+
+.social-link:hover i {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.social-label {
+    position: absolute;
+    left: 50px;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.social-link:hover {
+    width: 160px;
+    padding-right: 20px;
+}
+
+.social-link:hover .social-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Couleurs spécifiques pour chaque réseau social */
+.social-link.facebook {
+    background: linear-gradient(135deg, #1877f2, #0c5dce);
+}
+
+.social-link.facebook:hover {
+    background: linear-gradient(135deg, #0c5dce, #1877f2);
+    box-shadow: 0 5px 20px rgba(24, 119, 242, 0.5);
+}
+
+.social-link.youtube {
+    background: linear-gradient(135deg, #ff0000, #cc0000);
+}
+
+.social-link.youtube:hover {
+    background: linear-gradient(135deg, #cc0000, #ff0000);
+    box-shadow: 0 5px 20px rgba(255, 0, 0, 0.5);
+}
+
+.social-link.instagram {
+    background: linear-gradient(135deg, #e1306c, #fd1d1d, #f77737, #fcaf45);
+}
+
+.social-link.instagram:hover {
+    background: linear-gradient(135deg, #fcaf45, #f77737, #fd1d1d, #e1306c);
+    box-shadow: 0 5px 20px rgba(225, 48, 108, 0.5);
+}
+
+.social-link.whatsapp {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+}
+
+.social-link.whatsapp:hover {
+    background: linear-gradient(135deg, #128c7e, #25d366);
+    box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
+}
+
+.social-link.twitter {
+    background: linear-gradient(135deg, #000000, #14171a);
+}
+
+.social-link.twitter:hover {
+    background: linear-gradient(135deg, #14171a, #000000);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.7);
+}
+
+.social-link.appel {
+    background: linear-gradient(135deg, #0d6efd, #0056b3);
+}
+
+.social-link.appel:hover {
+    background: linear-gradient(135deg, #0056b3, #0d6efd);
+    box-shadow: 0 5px 20px rgba(13, 110, 253, 0.6);
+}
+
+/* Modal pour les numéros de téléphone */
+.phone-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.phone-modal-content {
+    background: white;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.phone-modal-header {
+    background: linear-gradient(135deg, #0d6efd, #0056b3);
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.phone-modal-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.phone-modal-header h3 i {
+    color: white;
+}
+
+.phone-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.phone-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.phone-modal-body {
+    padding: 1.5rem;
+    max-height: calc(80vh - 100px);
+    overflow-y: auto;
+}
+
+.phone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.phone-item-wrapper {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 12px;
+    border-left: 4px solid #0d6efd;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.phone-item-wrapper:hover {
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+    border-left-color: #0056b3;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+}
+
+.phone-item-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.person-icon {
+    font-size: 1.5rem;
+    color: #0d6efd;
+    flex-shrink: 0;
+}
+
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+}
+
+.pastor-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0d6efd;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.phone-number {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.phone-item-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: flex-end;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.action-btn i {
+    font-size: 1.2rem;
+}
+
+.call-btn {
+    background: linear-gradient(135deg, #0d6efd, #0056b3);
+}
+
+.call-btn:hover {
+    background: linear-gradient(135deg, #0056b3, #003d82);
+}
+
+.sms-btn {
+    background: linear-gradient(135deg, #6c757d, #495057);
+}
+
+.sms-btn:hover {
+    background: linear-gradient(135deg, #495057, #343a40);
+}
+
+.whatsapp-btn {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+}
+
+.whatsapp-btn:hover {
+    background: linear-gradient(135deg, #128c7e, #075e54);
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .phone-modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .phone-modal-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .phone-item-wrapper {
+        padding: 0.8rem 1rem;
+    }
+    
+    .pastor-name {
+        font-size: 0.85rem;
+    }
+    
+    .phone-number {
+        font-size: 0.95rem;
+    }
+    
+    .action-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .action-btn i {
+        font-size: 1rem;
+    }
+    
+    .phone-item-actions {
+        gap: 0.5rem;
+    }
+}
+
+/* Animation de pulsation */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.social-link:hover {
+    animation: pulse 1s infinite;
+}
+
+/* Effet de brillance */
+.social-link::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: rotate(45deg);
+    transition: all 0.6s ease;
+}
+
+.social-link:hover::before {
+    left: 100%;
+}
+
+/* Responsive - Masquer sur mobile */
+@media (max-width: 768px) {
+    .social-sidebar {
+        display: none;
+    }
+}
+
+/* Animation de défilement pour le titre de la galerie */
+.gallery-title-container {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    padding: 15px 0;
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.scrolling-text {
+    display: inline-block;
+    animation: scrollRight 10s linear infinite;
+    color: #333;
+    font-weight: bold;
+    font-size: 2.5rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    text-align: center;
+}
+
+@keyframes scrollRight {
+    0% {
+        transform: translateX(100%);
+    }
+    10% {
+        transform: translateX(0%);
+    }
+    90% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* Effet de pause au survol */
+.gallery-title-container:hover .scrolling-text {
+    animation-play-state: paused;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .scrolling-text {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .scrolling-text {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Actualité - Gestion Église{% endblock %}
+
+{% block body_class %}actualite-page{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container">
+        <h1 class="mb-4">Actualité</h1>
+        
+        <!-- Section Événements -->
+        <div class="card mb-5">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h4 mb-0"><i class="fas fa-calendar-alt me-2"></i>Événements</h2>
+            </div>
+            <div class="card-body">
+                <!-- Première section d'événement -->
+                <div class="event-section mb-5">
+                    <h3 class="h5 mb-3 text-primary">Événement Principal</h3>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <!-- Emplacement pour l'image E -->
+                            <div class="event-image-container">
+                                <img src="{% static 'main/images/E.jpg' %}" alt="Événement Principal" class="img-fluid rounded shadow-sm" onerror="this.onerror=null; this.src='{% static \'main/images/hero/1.jpg\' %}';" style="max-height: 250px; object-fit: cover;">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="event-details">
+                                <h4 class="h6 mb-2">Rencontre Annuelle des Fidèles</h4>
+                                <p class="text-muted mb-2"><i class="far fa-calendar me-2"></i>Date: 15 Décembre 2023</p>
+                                <p class="text-muted mb-3"><i class="fas fa-map-marker-alt me-2"></i>Lieu: Grande Salle de l'Église</p>
+                                <p>Rejoignez-nous pour notre rencontre annuelle des fidèles. Un moment de partage, de prière et de communion fraternelle. Plusieurs activités sont prévues pour tous les âges.</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary">Plus d'informations</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Deuxième section d'événement -->
+                <div class="event-section">
+                    <h3 class="h5 mb-3 text-primary">Événement Communautaire</h3>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="event-details">
+                                <h4 class="h6 mb-2">Journée de Service Communautaire</h4>
+                                <p class="text-muted mb-2"><i class="far fa-calendar me-2"></i>Date: 28 Décembre 2023</p>
+                                <p class="text-muted mb-3"><i class="fas fa-map-marker-alt me-2"></i>Lieu: Centre Communautaire</p>
+                                <p>Une journée dédiée au service de notre communauté. Venez participer à diverses activités de bénévolat pour aider les personnes dans le besoin. Plusieurs projets sont disponibles selon vos compétences et intérêts.</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary">S'inscrire</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <!-- Emplacement pour l'image F -->
+                            <div class="event-image-container">
+                                <img src="{% static 'main/images/F.jpg' %}" alt="Événement Communautaire" class="img-fluid rounded shadow-sm" onerror="this.onerror=null; this.src='{% static \'main/images/hero/2.jpg\' %}';" style="max-height: 250px; object-fit: cover;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Autres sections d'actualité peuvent être ajoutées ici -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h4 mb-0"><i class="fas fa-newspaper me-2"></i>Dernières Nouvelles</h2>
+            </div>
+            <div class="card-body">
+                <p>Contenu des dernières nouvelles à venir...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles spécifiques pour la page Actualité -->
+<style>
+    .event-section {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1.5rem;
+    }
+    
+    .event-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .event-image-container {
+        overflow: hidden;
+        border-radius: 0.25rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .event-image-container img {
+        transition: transform 0.3s ease;
+    }
+    
+    .event-image-container:hover img {
+        transform: scale(1.05);
+    }
+    
+    .event-details {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .event-details p:last-of-type {
+        flex-grow: 1;
+        margin-bottom: 1rem;
+    }
+    
+    .card-header {
+        background-color: #6c757d;
+    }
+    
+    .text-primary {
+        color: #007bff !important;
+    }
+    
+    .btn-outline-primary {
+        color: #007bff;
+        border-color: #007bff;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+{% endblock %}

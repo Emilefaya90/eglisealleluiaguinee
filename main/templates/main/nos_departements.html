@@ -1,0 +1,1568 @@
+{% extends "main/base.html" %}
+{% load i18n static %}
+{% block body_class %}les-departements-page{% endblock %}
+
+{% block title %}Les Départements — Gestion Église{% endblock %}
+{% block content %}
+<!div class="container py-4">
+  <!-- Styles spécifiques -->
+  <style>
+    /* Validé (Conseil Pastoral) — style NOIR sur label et case */
+    .les-departements-page label[for="valide_par_conseil"],
+    .nos-departements-page label[for="valide_par_conseil"] {
+      color:#000 !important; font-weight:600;
+    }
+    .les-departements-page #valide_par_conseil.form-check-input,
+    .nos-departements-page #valide_par_conseil.form-check-input {
+      border-color:#000 !important; border-width:2px; box-shadow:none;
+    }
+    .les-departements-page #valide_par_conseil.form-check-input:hover,
+    .nos-departements-page #valide_par_conseil.form-check-input:hover {
+      border-color:#000 !important; box-shadow: 0 0 0 .15rem rgba(0,0,0,.08) !important;
+    }
+    .les-departements-page #valide_par_conseil.form-check-input:focus,
+    .nos-departements-page #valide_par_conseil.form-check-input:focus {
+      border-color:#000 !important; box-shadow: 0 0 0 .2rem rgba(0,0,0,.15) !important;
+    }
+    .les-departements-page #valide_par_conseil.form-check-input:checked,
+    .nos-departements-page #valide_par_conseil.form-check-input:checked {
+      background-color:#000 !important; border-color:#000 !important;
+    }
+  </style>
+  <style>
+    /* Image d'entête pour le formulaire Départements */
+    .header-dept-img {
+      height: 42px;
+      width: 42px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.9);
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+  </style>
+  <style>
+    /* Image de fond pour cette page (Départements) */
+    body.les-departements-page {
+      background-image: url('{% static "main/images/hero/Dpartmnt.png" %}');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    /* Carte et entête (code couleur BLEU pour Départements) */
+    .dept-header {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: #fff;
+      border: none;
+    }
+    .nos-departements-page .card-beauty { border: 0; border-radius: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .nos-departements-page .table-header {
+      background: linear-gradient(135deg, #5b8cff, #2b4aa3) !important; color: #fff !important; border-bottom: none !important;
+    }
+    .nos-departements-page .section-title { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px; font-size:1.25rem; text-transform:uppercase; }
+    .nos-departements-page .badge-chip { padding:.3rem .6rem; border-radius:999px; font-weight:600; }
+    .section-wrap { --accent:#0d6efd; background:#f1f7ff; padding:.6rem; border:1px solid #d9e6ff; border-left:4px solid var(--accent); border-radius:10px; }
+    .section-wrap .form-control:focus, .section-wrap .form-select:focus { box-shadow: 0 0 0 .2rem rgba(13,110,253,.15); border-color: var(--accent); }
+    .soft-hr { height:1px; border:0; background:linear-gradient(90deg, transparent, rgba(0,0,0,.12), transparent); margin:1rem 0; }
+    .table-modern-wrapper { border-radius: 12px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.06); background: #fff; }
+    .table-modern thead th { position: sticky; top: 0; z-index: 2; background: #2b4aa3; color: #fff; }
+    /* Ajustements largeur/retour à la ligne */
+    /* Par défaut: autoriser le retour à la ligne pour s'adapter au contenu */
+    .text-wrap { white-space: normal !important; }
+    .text-nowrap { white-space: nowrap !important; }
+    /* Colonnes larges pour contenu textuel détaillé */
+    .table-modern th.col-wide, .table-modern td.col-wide { min-width: 320px; }
+    /* Masquer le bouton pagination "Suivant/Suivante" de DataTables */
+    .dataTables_wrapper .dataTables_paginate .paginate_button.next { display: none !important; }
+  </style>
+  <style>
+    /* Accents par section: encadrement des champs avec la couleur de la section */
+    .section-wrap { --accent:#0d6efd; background:#f1f7ff; padding:.6rem; border:1px solid #d9e6ff; border-left:4px solid var(--accent); border-radius:10px; }
+    .section-wrap .form-control,
+    .section-wrap .form-select,
+    .section-wrap .input-group .form-control { border-color: rgba(0,0,0,.125); }
+    .section-wrap .form-control:focus,
+    .section-wrap .form-select:focus { box-shadow: 0 0 0 .2rem rgba(13,110,253,.15); border-color: var(--accent); }
+
+    /* Couleurs d'accent dédiées */
+    .accent-blue { --accent:#0d6efd; background: rgba(13,110,253,.06); border-color: rgba(13,110,253,.25); }
+    .accent-purple { --accent:#6f42c1; background: rgba(111,66,193,.06); border-color: rgba(111,66,193,.25); }
+    .accent-teal { --accent:#20c997; background: rgba(32,201,151,.06); border-color: rgba(32,201,151,.25); }
+    .accent-orange { --accent:#fd7e14; background: rgba(253,126,20,.06); border-color: rgba(253,126,20,.25); }
+    .accent-green { --accent:#198754; background: rgba(25,135,84,.06); border-color: rgba(25,135,84,.25); }
+    .accent-black { --accent:#000000; background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.25); }
+
+    /* Encadrement des champs par couleur de section (bordures permanentes) */
+    .section-wrap.accent-blue   .form-control,
+    .section-wrap.accent-blue   .form-select { border-color: rgba(13,110,253,.55); }
+    .section-wrap.accent-purple .form-control,
+    .section-wrap.accent-purple .form-select { border-color: rgba(111,66,193,.55); }
+    .section-wrap.accent-teal   .form-control,
+    .section-wrap.accent-teal   .form-select { border-color: rgba(32,201,151,.55); }
+    .section-wrap.accent-orange .form-control,
+    .section-wrap.accent-orange .form-select { border-color: rgba(253,126,20,.55); }
+    .section-wrap.accent-green  .form-control,
+    .section-wrap.accent-green  .form-select { border-color: rgba(25,135,84,.55); }
+    .section-wrap.accent-black  .form-control,
+    .section-wrap.accent-black  .form-select { border-color: rgba(0,0,0,.6); }
+
+    /* Focus renforcé selon la section */
+    .section-wrap.accent-blue   .form-control:focus, .section-wrap.accent-blue   .form-select:focus { box-shadow: 0 0 0 .2rem rgba(13,110,253,.2); }
+    .section-wrap.accent-purple .form-control:focus, .section-wrap.accent-purple .form-select:focus { box-shadow: 0 0 0 .2rem rgba(111,66,193,.2); }
+    .section-wrap.accent-teal   .form-control:focus, .section-wrap.accent-teal   .form-select:focus { box-shadow: 0 0 0 .2rem rgba(32,201,151,.2); }
+    .section-wrap.accent-orange .form-control:focus, .section-wrap.accent-orange .form-select:focus { box-shadow: 0 0 0 .2rem rgba(253,126,20,.2); }
+    .section-wrap.accent-green  .form-control:focus, .section-wrap.accent-green  .form-select:focus { box-shadow: 0 0 0 .2rem rgba(25,135,84,.2); }
+    .section-wrap.accent-black  .form-control:focus, .section-wrap.accent-black  .form-select:focus { box-shadow: 0 0 0 .2rem rgba(0,0,0,.18); }
+    /* Couleurs utilitaires pour icônes de titres */
+    .text-blue   { color:#0d6efd !important; }
+    .text-purple { color:#6f42c1 !important; }
+    .text-teal   { color:#20c997 !important; }
+    .text-orange { color:#fd7e14 !important; }
+    .text-green  { color:#198754 !important; }
+    .text-black  { color:#000000 !important; }
+    /* Chips colorées par section */
+    .badge-chip { padding:.3rem .6rem; border-radius:999px; font-weight:600; border:1px solid transparent; }
+    .chip-blue   { color:#0d6efd; background:rgba(13,110,253,.12); border-color:rgba(13,110,253,.35); }
+    .chip-purple { color:#6f42c1; background:rgba(111,66,193,.12); border-color:rgba(111,66,193,.35); }
+    .chip-teal   { color:#20c997; background:rgba(32,201,151,.12); border-color:rgba(32,201,151,.35); }
+    .chip-orange { color:#fd7e14; background:rgba(253,126,20,.12); border-color:rgba(253,126,20,.35); }
+    .chip-green  { color:#198754; background:rgba(25,135,84,.12); border-color:rgba(25,135,84,.35); }
+    .chip-black  { color:#000000; background:rgba(0,0,0,.06); border-color:rgba(0,0,0,.35); }
+    /* Taille des titres de section légèrement augmentée et harmonisée */
+    .section-title { font-size: 1.25rem; }
+    .section-title i { font-size: 1.25rem; }
+  </style>
+  <style>
+    /* Actif — style NOIR sur label et case */
+    .les-departements-page label[for="statut_actif"],
+    .nos-departements-page label[for="statut_actif"] {
+      color:#000 !important; font-weight:600;
+    }
+    .les-departements-page #statut_actif.form-check-input,
+    .nos-departements-page #statut_actif.form-check-input {
+      border-color:#000 !important; border-width:2px; box-shadow:none;
+    }
+    .les-departements-page #statut_actif.form-check-input:hover,
+    .nos-departements-page #statut_actif.form-check-input:hover {
+      border-color:#000 !important; box-shadow: 0 0 0 .15rem rgba(0,0,0,.08) !important;
+    }
+    .les-departements-page #statut_actif.form-check-input:focus,
+    .nos-departements-page #statut_actif.form-check-input:focus {
+      border-color:#000 !important; box-shadow: 0 0 0 .2rem rgba(0,0,0,.18) !important;
+    }
+    .les-departements-page #statut_actif.form-check-input:checked,
+    .nos-departements-page #statut_actif.form-check-input:checked {
+      background-color:#000 !important; border-color:#000 !important;
+    }
+  </style>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+
+      <!-- En-tête -->
+      <div class="card shadow-sm mb-1" id="formulaire-departement">
+        <div class="card-header dept-header py-2">
+          <div class="d-flex justify-content-center align-items-center text-center">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <img src="{% static 'main/images/hero/Departement.png' %}" alt="Départements" class="header-dept-img">
+              <h5 class="mb-0 text-white fw-bold">FORMULAIRE D'ENREGISTREMENT DES DÉPARTEMENTS DE L'ÉGLISE</h5>
+            </div>
+          </div>
+          <div class="w-100 d-flex justify-content-center mt-1">
+            <span class="badge bg-light text-dark rounded-pill px-3 py-1">Sécurisé • Rapide • Fiable</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- JS: Gestion des pièces jointes (aperçu et suppression avant envoi) -->
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          function normalizeRow(el){
+            if (!el) return null;
+            try {
+              const $tr = window.jQuery ? window.jQuery(el) : null;
+              if ($tr && $tr.hasClass('child')) {
+                const prev = $tr.prev();
+                if (prev && prev.hasClass('parent')) return prev.get(0);
+              }
+            } catch(_){}
+            return el;
+          }
+          // Utiliser l'input réel présent dans le formulaire
+          const input = document.getElementById('document_fichier');
+          const list = document.getElementById('deptFilesList');
+          const empty = document.getElementById('deptFilesEmpty');
+          const count = document.getElementById('deptFilesCount');
+          // Partager l'état de la ligne en cours via window pour interopérer avec le handler .btn-edit
+          window.currentDeptRow = window.currentDeptRow || null; // HTMLElement <tr>
+          // Continuer même si count/list/empty n'existent pas
+          if (!input) return;
+          // Restreindre les types
+          try { input.setAttribute('accept', '.doc,.docx,.pdf'); } catch(_){}
+          // Éviter le double branchement de l'événement change
+          if (input.addEventListener) {
+            input.addEventListener('change', function(e){ addFiles(e.target.files); });
+          } else if (input.attachEvent) {
+            input.attachEvent('onchange', function(e){ addFiles(e.target.files); });
+          }
+
+          // Stockage des fichiers via DataTransfer pour pouvoir supprimer
+          let store = new DataTransfer();
+
+          function formatBytes(bytes) {
+            if (!bytes && bytes !== 0) return '';
+            const sizes = ['o', 'Ko', 'Mo', 'Go'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+          }
+
+          // La colonne « Plan d’action du Département » a été supprimée: no-op
+          function setPlanActionCell(rowEl, href, isSaved) { return; }
+
+          function fileIcon(ext) {
+            ext = (ext || '').toLowerCase();
+            if (['.png','.jpg','.jpeg','.gif','.webp'].includes(ext)) return 'bi-file-image text-success';
+            if (ext === '.pdf') return 'bi-file-pdf text-danger';
+            if (['.doc','.docx'].includes(ext)) return 'bi-file-word text-primary';
+            if (['.xls','.xlsx'].includes(ext)) return 'bi-file-excel text-success';
+            return 'bi-file-earmark';
+          }
+
+          function extOf(name) {
+            const i = name.lastIndexOf('.');
+            return i >= 0 ? name.slice(i).toLowerCase() : '';
+          }
+
+          function refreshUI() {
+            if (list) list.innerHTML = '';
+            const files = Array.from(store.files);
+            if (files.length === 0) {
+              if (empty) empty.style.display = '';
+              if (count) count.textContent = '0 fichier';
+              try { document.getElementById('planActionStatus').textContent = 'Aucun plan d’action sélectionné.'; } catch(_)
+              {}
+              // Masquer l'aperçu
+              const prev = document.getElementById('deptFilePreview');
+              const prevContent = document.getElementById('deptFilePreviewContent');
+              if (prev && prevContent) {
+                prev.style.display = 'none';
+                prevContent.innerHTML = 'Aucun aperçu disponible';
+              }
+              // Forcer l'état "aucune PJ" (nouvelle règle) même s'il existait une PJ auparavant
+              // Indiquer au serveur de nettoyer les PJ existantes si on soumet
+              const clearEl = document.getElementById('attachmentsClear');
+              if (clearEl) clearEl.value = '1';
+              // Mettre à jour la cellule « Plan d’action » (colonne index 19) à —
+              try {
+                let rowEl = normalizeRow(window.currentDeptRow);
+                if (!rowEl) {
+                  // Fallback 1: par ID courant
+                  const idEl = document.getElementById('currentDeptId');
+                  const idVal = idEl && idEl.value ? String(idEl.value) : '';
+                  if (idVal) {
+                    const btn = document.querySelector('button.btn-edit[data-id="' + idVal.replace(/"/g,'\\"') + '"]');
+                    if (btn) rowEl = normalizeRow(btn.closest('tr'));
+                  }
+                }
+                if (!rowEl) {
+                  // Fallback 2: par nom saisi dans le formulaire (3ème colonne)
+                  const nomInput = document.querySelector('input[name="nom"]');
+                  const nomVal = nomInput ? nomInput.value.trim() : '';
+                  if (nomVal) {
+                    const rows = document.querySelectorAll('#departementsTable tbody tr');
+                    for (const r of rows) {
+                      const nomCell = r.querySelector('td:nth-child(3)');
+                      if (nomCell && nomCell.textContent.trim() === nomVal) { rowEl = r; break; }
+                    }
+                  }
+                }
+                // Mise à jour directe via DT/DOM
+                let cellNode = null;
+                try {
+                  const dt = $('#departementsTable').DataTable();
+                  const row = dt.row(rowEl);
+                  if (row && row.length) {
+                    cellNode = dt.cell(row.index(), 19).node();
+                  }
+                } catch (e) { }
+                if (!cellNode && rowEl) cellNode = rowEl.children[19] || null;
+                if (cellNode) cellNode.innerHTML = '—';
+              } catch(e) { /* no-op */ }
+              // Synchroniser l'input réel avec l'état interne (aucun fichier)
+              try { input.files = store.files; } catch(_) {}
+            } else {
+              if (empty) empty.style.display = 'none';
+              if (count) count.textContent = files.length + (files.length > 1 ? ' fichiers' : ' fichier');
+              try { document.getElementById('planActionStatus').textContent = 'Fichier(s) sélectionné(s) — non enregistrés'; } catch(_)
+              {}
+              // Construire la liste des fichiers sélectionnés
+              if (list) {
+                list.innerHTML = '';
+                files.forEach(f => {
+                  const ext = extOf(f.name);
+                  const li = document.createElement('li');
+                  li.className = 'd-flex align-items-center gap-2';
+                  const i = document.createElement('i');
+                  i.className = 'bi ' + fileIcon(ext);
+                  const span = document.createElement('span');
+                  span.textContent = `${f.name} (${formatBytes(f.size)})`;
+                  li.appendChild(i);
+                  li.appendChild(span);
+                  list.appendChild(li);
+                });
+              }
+              // Mettre à jour l'aperçu avec le premier fichier si pertinent
+              const first = files[0];
+              const prev = document.getElementById('deptFilePreview');
+              const prevContent = document.getElementById('deptFilePreviewContent');
+              if (prev && prevContent) {
+                const name = first.name || '';
+                const ext = extOf(name);
+                prev.style.display = '';
+                // Réinitialisation
+                prevContent.innerHTML = '';
+                if (['.png','.jpg','.jpeg','.gif','.webp'].includes(ext)) {
+                  const img = document.createElement('img');
+                  img.alt = name;
+                  img.style.maxWidth = '100%';
+                  img.style.maxHeight = '320px';
+                  img.style.display = 'block';
+                  img.style.objectFit = 'contain';
+                  const reader = new FileReader();
+                  reader.onload = e => { img.src = e.target.result; };
+                  reader.readAsDataURL(first);
+                  prevContent.appendChild(img);
+                } else if (ext === '.pdf') {
+                  // Utiliser un object/iframe pour prévisualiser le PDF
+                  const url = URL.createObjectURL(first);
+                  const iframe = document.createElement('iframe');
+                  iframe.src = url;
+                  iframe.style.width = '100%';
+                  iframe.style.height = '360px';
+                  iframe.style.border = '0';
+                  prevContent.appendChild(iframe);
+                } else {
+                  prevContent.innerHTML = '<span class="text-muted">Aperçu non disponible pour ce type de fichier. Vous pouvez tout de même l\'ajouter.</span>';
+                }
+              }
+              // L'aperçu est géré uniquement par #deptFilePreview
+              // On ne souhaite pas nettoyer les PJ existantes si des fichiers sont présents
+              const clearEl = document.getElementById('attachmentsClear');
+              if (clearEl) clearEl.value = '0';
+              // Mettre à jour la cellule du tableau Plan d'action (colonne index 19)
+              // - si on a la ligne courante (via .btn-edit)
+              // - sinon, tenter de retrouver la ligne par l'ID caché #currentDeptId (si défini)
+              if (files[0]) {
+                try {
+                  let rowEl = normalizeRow(window.currentDeptRow);
+                  if (!rowEl) {
+                    // Fallback 1: par ID courant
+                    const idEl = document.getElementById('currentDeptId');
+                    const idVal = idEl && idEl.value ? String(idEl.value) : '';
+                    if (idVal) {
+                      const btn = document.querySelector('button.btn-edit[data-id="' + idVal.replace(/"/g,'\\"') + '"]');
+                      if (btn) rowEl = normalizeRow(btn.closest('tr'));
+                    }
+                  }
+                  if (!rowEl) {
+                    // Fallback 2: par nom saisi dans le formulaire (3ème colonne)
+                    const nomInput = document.querySelector('input[name="nom"]');
+                    const nomVal = nomInput ? nomInput.value.trim() : '';
+                    if (nomVal) {
+                      const rows = document.querySelectorAll('#departementsTable tbody tr');
+                      for (const r of rows) {
+                        const nomCell = r.querySelector('td:nth-child(3)');
+                        if (nomCell && nomCell.textContent.trim() === nomVal) { rowEl = r; break; }
+                      }
+                    }
+                  }
+                  let cellNode = null;
+                  try {
+                    const dt = $('#departementsTable').DataTable();
+                    const row = dt.row(rowEl);
+                    if (row && row.length) {
+                      cellNode = dt.cell(row.index(), 19).node();
+                    }
+                  } catch (e) { /* DataTables non dispo ici */ }
+                  if (!cellNode && rowEl) {
+                    cellNode = rowEl.children[19] || null;
+                  }
+                  if (cellNode) {
+                    const f = files[0];
+                    const blobUrl = URL.createObjectURL(f);
+                    cellNode.innerHTML = '<a href="' + blobUrl + '" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">Voir</a>' +
+                                         '<span class="badge bg-warning text-dark ms-1">non enregistré</span>';
+                    cellNode.classList.add('text-nowrap');
+                  }
+                } catch (e) { /* no-op */ }
+              }
+              // Synchroniser l'input réel avec l'état interne (1 fichier)
+              try { input.files = store.files; } catch(_) {}
+            }
+
+            // Fin refreshUI
+          }
+
+          function addFiles(selected) {
+            const maxSize = 10 * 1024 * 1024; // 10 Mo
+            if (!selected || !selected.length) return;
+            const allowed = ['.doc', '.docx', '.pdf'];
+            const tmp = new DataTransfer();
+            let rejected = [];
+            Array.from(selected).forEach(f => {
+              const ext = extOf(f.name);
+              if (!allowed.includes(ext)) { rejected.push(`${f.name}: type interdit`); return; }
+              if (f.size > maxSize) { rejected.push(`${f.name}: > 10 Mo`); return; }
+              try { tmp.items.add(f); } catch(_) {}
+            });
+            if (rejected.length) {
+              alert('Certains fichiers ont été ignorés:\n' + rejected.join('\n'));
+            }
+            // Si rien de valide, ne pas remplacer
+            if (tmp.files.length === 0) return;
+            store = tmp;
+            refreshUI();
+          }
+
+          // Supprimé: updateInlineFromSelected — on conserve un seul aperçu (#deptFilePreview)
+
+          // Note: l'écouteur est installé plus haut (éviter doublon).
+
+          // Initial UI state
+          refreshUI();
+        });
+      </script>
+
+      <!-- Messages Django -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Formulaire principal -->
+      <div class="card card-beauty shadow-sm mb-4">
+        <div class="card-body">
+          <form method="post" action="" autocomplete="off" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% with fd=form_data %}
+
+            <!-- 1. Informations générales -->
+            <h6 class="section-title mb-2 text-blue"><i class="bi bi-info-circle-fill"></i><span>1. Informations générales</span> <span class="badge-chip chip-blue">Général</span></h6>
+            <div class="section-wrap accent-blue mb-3">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Église</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-blue"><i class="bi bi-building"></i></span>
+                    <select name="eglise_id" class="form-select" required>
+                      <option value="" disabled selected>Choisir une église…</option>
+                      {% for e in eglises %}
+                        <option value="{{ e.id }}" {% if fd.eglise_id == e.id|stringformat:'s' %}selected{% endif %}>{{ e.nom }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Nom du département</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-blue"><i class="bi bi-tag"></i></span>
+                    <input type="text" name="nom" class="form-control" value="{{ fd.nom }}" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Responsable</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-blue"><i class="bi bi-person-badge"></i></span>
+                    <input type="text" name="responsable" class="form-control" value="{{ fd.responsable }}">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Téléphone</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-blue"><i class="bi bi-telephone"></i></span>
+                    <input type="tel" name="telephone" class="form-control" value="{{ fd.telephone }}">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Email</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-blue"><i class="bi bi-envelope"></i></span>
+                    <input type="email" name="email" class="form-control" value="{{ fd.email }}">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Date de nomination</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-blue"><i class="bi bi-calendar-event"></i></span>
+                    <input type="date" name="date_creation" class="form-control" value="{{ fd.date_creation }}">
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label">Description</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-blue"><i class="bi bi-card-text"></i></span>
+                    <textarea name="description" class="form-control" rows="2">{{ fd.description }}</textarea>
+                  </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-center">
+                  <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" name="statut_actif" id="statut_actif" {% if fd.statut_actif %}checked{% endif %}>
+                    <label class="form-check-label" for="statut_actif"><i class="bi bi-eye me-1"></i>Actif</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Objectifs et missions -->
+            <h6 class="section-title mb-2 text-purple"><i class="bi bi-bullseye"></i><span>2. Objectifs et missions</span> <span class="badge-chip chip-purple">Objectifs</span></h6>
+            <div class="section-wrap accent-purple mb-3">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Vision</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-purple"><i class="bi bi-eye"></i></span>
+                    <textarea name="vision" class="form-control" rows="2">{{ fd.vision }}</textarea>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Mission</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-purple"><i class="bi bi-flag"></i></span>
+                    <textarea name="mission" class="form-control" rows="2">{{ fd.mission }}</textarea>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Objectifs spécifiques</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-purple"><i class="bi bi-bullseye"></i></span>
+                    <textarea name="objectifs_specifiques" class="form-control" rows="2">{{ fd.objectifs_specifiques }}</textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Composition équipe -->
+            <h6 class="section-title mb-2 text-teal"><i class="bi bi-people-fill"></i><span>3. Composition équipe</span> <span class="badge-chip chip-teal">Équipe</span></h6>
+            <div class="section-wrap accent-teal mb-3">
+              <div class="row g-3">
+                <div class="col-md-8">
+                  <label class="form-label">Membres du Comité (liste)</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-teal"><i class="bi bi-people"></i></span>
+                    <textarea name="membres_clefs" class="form-control" rows="2" placeholder="Nom — Rôle; Nom — Rôle; …">{{ fd.membres_clefs }}</textarea>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Nombre de membres</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-teal"><i class="bi bi-123"></i></span>
+                    <input type="number" min="0" name="nombre_membres" class="form-control" value="{{ fd.nombre_membres|default:'0' }}">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Ressources et besoins -->
+            <h6 class="section-title mb-2 text-orange"><i class="bi bi-box-seam"></i><span>4. Ressources et besoins</span> <span class="badge-chip chip-orange">Ressources</span></h6>
+            <div class="section-wrap accent-orange mb-3">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Ressources disponibles</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-orange"><i class="bi bi-box-seam"></i></span>
+                    <textarea name="ressources_disponibles" class="form-control" rows="2">{{ fd.ressources_disponibles }}</textarea>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Besoins prioritaires</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-orange"><i class="bi bi-exclamation-circle"></i></span>
+                    <textarea name="besoins_prioritaires" class="form-control" rows="2">{{ fd.besoins_prioritaires }}</textarea>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label text-nowrap">Budget annuel estimé <span class="small text-muted">(en Francs Guinéens — GNF)</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text text-orange"><i class="bi bi-cash-stack"></i></span>
+                    <input type="text" id="budget_annuel_estime_display" class="form-control" inputmode="decimal" placeholder="0">
+                    <span class="input-group-text">GNF</span>
+                  </div>
+                  <input type="hidden" name="budget_annuel_estime" id="budget_annuel_estime" value="{{ fd.budget_annuel_estime }}">
+                </div>
+              </div>
+            </div>
+
+            
+
+            <!-- 6. Validation par le Conseil Pastoral -->
+            <h6 class="section-title mb-2 text-black"><i class="bi bi-check2-circle"></i><span>6. Validation par le Conseil Pastoral</span> <span class="badge-chip chip-black">Validation</span></h6>
+            <div class="section-wrap accent-black mb-2">
+              <div class="row g-3">
+                <div class="col-md-12">
+                  <label class="form-label">Observations du Conseil</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-black"><i class="bi bi-chat-left-text"></i></span>
+                    <textarea name="observations_conseil" class="form-control" rows="2">{{ fd.observations_conseil }}</textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-3 align-items-center">
+                <div class="col-md-5 d-flex align-items-start flex-column">
+                  <div class="card-body p-2 mb-0">
+                    <div class="row">
+                        <div class="col-12 mb-2">
+                            <label for="document_fichier" class="form-label mb-0 p-0 d-inline-flex align-items-center" style="white-space:nowrap;">
+                              <span class="fw-semibold" style="font-size:0.9rem;">Plan d’action du Département</span>
+                            </label>
+                            <div class="input-group input-group-sm">
+                              <span class="input-group-text text-black"><i class="bi bi-journal-text"></i></span>
+                              <input type="file" class="form-control form-control-sm" id="document_fichier" name="attachments[]" accept=".doc,.docx,.pdf" multiple>
+                            </div>
+                            <div class="form-text text-muted mt-1" style="font-size:0.8rem; white-space:nowrap;">
+                              <i class="fas fa-check-circle text-success me-1"></i>
+                              Fichiers autorisés : Word (.doc, .docx), PDF
+                            </div>
+                            <!-- Statut de sélection/sauvegarde -->
+                            <div id="planActionStatus" class="small mt-1 text-muted">Aucun plan d’action sélectionné.</div>
+                            <!-- Résumé des fichiers sélectionnés (non enregistrés) -->
+                            <div class="mt-2">
+                              <span class="badge bg-light text-dark border me-2" id="deptFilesCount">0 fichier</span>
+                              <ul id="deptFilesList" class="small mb-0 mt-2"></ul>
+                            </div>
+                            <!-- Aperçu inline du premier fichier existant/en cours -->
+                            <div id="planActionInline" class="mt-2"></div>
+                            <!-- Liste des fichiers déjà enregistrés pour le département en cours d’édition -->
+                            <div id="deptExistingWrapper" class="mt-2" style="display:none;">
+                              <div class="small fw-semibold mb-1"><i class="bi bi-paperclip me-1"></i>Plan d’action enregistré</div>
+                              <ul id="deptExistingList" class="list-group list-group-flush"></ul>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                  <!-- ID du département en cours (renseigné quand on clique sur Modifier dans le tableau) -->
+                  <input type="hidden" id="currentDeptId" name="current_dept_id" value="">
+                  <!-- Indicateur: effacer les pièces jointes existantes à la soumission (0/1) -->
+                  <input type="hidden" id="attachmentsClear" name="attachments_clear" value="0">
+                </div>
+                <div class="col-md-3 d-flex align-items-center">
+                  <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" name="valide_par_conseil" id="valide_par_conseil" {% if fd.valide_par_conseil %}checked{% endif %}>
+                    <label class="form-check-label" for="valide_par_conseil"><i class="bi bi-check2-circle me-1"></i>Validé</label>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Date de validation</label>
+                  <div class="input-group">
+                    <span class="input-group-text text-black"><i class="bi bi-calendar-check"></i></span>
+                    <input type="date" name="date_validation" class="form-control" value="{{ fd.date_validation }}">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button type="submit" class="btn btn-dark"><i class="bi bi-save me-1"></i>Enregistrer</button>
+              <button type="reset" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser</button>
+            </div>
+
+
+            {% endwith %}
+          </form>
+        </div>
+      </div>
+
+      <!-- Tableau des départements -->
+      <div class="card shadow-sm">
+        <div class="card-header table-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold d-flex align-items-center">
+            <i class="bi bi-list-ul me-2"></i>Liste des Départements enregistrés
+            <span class="ms-2 text-white-50">({{ departements|length }} éléments)</span>
+          </span>
+          <div class="d-flex gap-2">
+            <button id="btnExportExcel" class="btn btn-success btn-sm"><i class="bi bi-file-earmark-excel me-1"></i>Excel</button>
+            <button id="btnExportPDF" class="btn btn-danger btn-sm"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</button>
+            <button id="btnPrint" class="btn btn-primary btn-sm"><i class="bi bi-printer me-1"></i>Imprimer</button>
+          </div>
+        </div>
+        <div class="card-body table-modern-wrapper">
+          <style>
+            /* Centrer le texte des en-têtes et garder un rendu compact */
+            #departementsTable thead th {
+              text-align: center;
+              vertical-align: middle;
+              white-space: nowrap;
+            }
+          </style>
+          <div class="table-responsive">
+            <table id="departementsTable" class="table table-sm table-hover table-striped align-middle table-modern" style="width:100%">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Église</th>
+                  <th>Nom du département</th>
+                  <th>Responsable</th>
+                  <th>Contacts</th>
+                  <th>Date nomination</th>
+                  <th>Actif</th>
+                  <th>Vision</th>
+                  <th>Mission</th>
+                  <th>Objectifs</th>
+                  <th>Membres clés</th>
+                  <th>Nb</th>
+                  <th>Ressources</th>
+                  <th>Besoins</th>
+                  <th class="text-nowrap"><i class="bi bi-cash-stack me-1"></i>Budget annuel estimé (GNF)</th>
+                  
+                  <th>Obs. Conseil</th>
+                  <th class="text-nowrap"><i class="bi bi-file-earmark-text me-1"></i>Documents Plan d'action</th>
+                  <th>Validé</th>
+                  <th>Date de validation</th>
+                  <th class="text-center no-export">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for d in departements|slice:':3' %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ d.eglise.nom }}</td>
+                  <td>{{ d.nom }}</td>
+                  <td>{{ d.responsable|default:"—" }}</td>
+                  <td>
+                    {% if d.telephone %}<span class="badge bg-light text-dark border">{{ d.telephone }}</span>{% endif %}
+                    {% if d.email %}<span class="badge bg-light text-dark border ms-1">{{ d.email }}</span>{% endif %}
+                    {% if not d.telephone and not d.email %}—{% endif %}
+                  </td>
+                  <td>{{ d.date_creation|date:"d/m/Y" }}</td>
+                  <td>
+                    {% if d.statut_actif %}<span class="badge bg-success">Actif</span>{% else %}<span class="badge bg-secondary">Inactif</span>{% endif %}
+                  </td>
+                  <td>{{ d.vision|default:"—" }}</td>
+                  <td>{{ d.mission|default:"—" }}</td>
+                  <td>{{ d.objectifs_specifiques|default:"—" }}</td>
+                  <td>{{ d.membres_clefs|default:"—" }}</td>
+                  <td>{{ d.nombre_membres|default:0 }}</td>
+                  <td>{{ d.ressources_disponibles|default:"—" }}</td>
+                  <td>{{ d.besoins_prioritaires|default:"—" }}</td>
+                  <td>{% if d.budget_annuel_estime %}{{ d.budget_annuel_estime }}{% else %}—{% endif %}</td>
+                  
+                  <td>{{ d.observations_conseil|default:"—" }}</td>
+                  <td class="documents-plan-action-cell">
+                    {% with count=d.attachments.count %}
+                      {% if count > 0 %}
+                        <div class="d-flex align-items-center gap-1">
+                          <span class="badge bg-success" title="{{ count }} document(s)">
+                            <i class="bi bi-file-earmark-check me-1"></i>{{ count }}
+                          </span>
+                          <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle py-0 px-2" type="button" data-bs-toggle="dropdown">
+                              <i class="bi bi-download me-1"></i>Télécharger
+                            </button>
+                            <ul class="dropdown-menu">
+                              {% for att in d.attachments.all %}
+                                <li>
+                                  <a class="dropdown-item d-flex align-items-center" href="{{ att.fichier.url }}" target="_blank" rel="noopener" download>
+                                    {% with fname=att.nom_original|default:att.fichier.name %}
+                                      {% with lower=fname|lower %}
+                                        {% if lower|slice:"-4:" == ".pdf" %}
+                                          <i class="bi bi-file-pdf text-danger me-2"></i>
+                                        {% elif lower|slice:"-5:" == ".docx" or lower|slice:"-4:" == ".doc" %}
+                                          <i class="bi bi-file-word text-primary me-2"></i>
+                                        {% else %}
+                                          <i class="bi bi-file-earmark me-2"></i>
+                                        {% endif %}
+                                        <span class="text-truncate">{{ fname|truncatechars:25 }}</span>
+                                      {% endwith %}
+                                    {% endwith %}
+                                  </a>
+                                </li>
+                              {% endfor %}
+                            </ul>
+                          </div>
+                        </div>
+                      {% else %}
+                        <span class="text-muted small">Aucun document ({{ count }})</span>
+                      {% endif %}
+                    {% endwith %}
+                  </td>
+                  <td>{% if d.valide_par_conseil %}<span class="badge bg-success">Oui</span>{% else %}<span class="badge bg-secondary">Non</span>{% endif %}</td>
+                  <td>{{ d.date_validation|date:"d/m/Y" }}</td>
+                  <td class="text-center no-export">
+                    <div class="btn-group btn-group-sm" role="group">
+                      <button type="button" class="btn btn-info text-white btn-view" title="Voir" data-id="{{ d.id }}"><i class="bi bi-eye"></i></button>
+                      <button type="button" class="btn btn-primary btn-edit" title="Modifier"
+                              data-id="{{ d.id }}"
+                              data-eglise-id="{{ d.eglise.id }}"
+                              data-nom="{{ d.nom|escape }}"
+                              data-responsable="{{ d.responsable|default:''|escape }}"
+                              data-telephone="{{ d.telephone|default:''|escape }}"
+                              data-email="{{ d.email|default:''|escape }}"
+                              data-date-creation="{{ d.date_creation|date:'Y-m-d' }}"
+                              data-description="{{ d.description|default:''|escape }}"
+                              data-statut-actif="{% if d.statut_actif %}1{% else %}0{% endif %}"
+                              data-vision="{{ d.vision|default:''|escape }}"
+                              data-mission="{{ d.mission|default:''|escape }}"
+                              data-objectifs-specifiques="{{ d.objectifs_specifiques|default:''|escape }}"
+                              data-membres-clefs="{{ d.membres_clefs|default:''|escape }}"
+                              data-nombre-membres="{{ d.nombre_membres|default:0 }}"
+                              data-ressources-disponibles="{{ d.ressources_disponibles|default:''|escape }}"
+                              data-besoins-prioritaires="{{ d.besoins_prioritaires|default:''|escape }}"
+                              data-budget-annuel-estime="{{ d.budget_annuel_estime|default:'' }}"
+                              data-activites-majeures="{{ d.activites_majeures|default:''|escape }}"
+                              data-prochaine-activite-date="{{ d.prochaine_activite_date|date:'Y-m-d' }}"
+                              data-prochaine-activite-lieu="{{ d.prochaine_activite_lieu|default:''|escape }}"
+                              data-valide-par-conseil="{% if d.valide_par_conseil %}1{% else %}0{% endif %}"
+                              data-observations-conseil="{{ d.observations_conseil|default:''|escape }}"
+                              data-date-validation="{{ d.date_validation|date:'Y-m-d' }}">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button type="button" class="btn btn-danger btn-delete" title="Supprimer" data-id="{{ d.id }}" data-url="{% url 'main:supprimer_departement' d.id %}"><i class="bi bi-trash"></i></button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div class="d-flex justify-content-center my-3">
+              <a href="{% url 'main:voir_departements' %}" class="btn btn-outline-primary">
+                <i class="bi bi-list-ul me-1"></i> Voir tous les Départements
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <!-- jQuery & DataTables + Buttons -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" />
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+  <script>
+    (function(){
+      // Utilitaire: récupérer le token CSRF depuis le cookie, un input caché ou une balise meta
+      function getCSRFToken(){
+        // 1) Cookie 'csrftoken'
+        try {
+          const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+          if (match) return decodeURIComponent(match[1]);
+        } catch(_){}
+        // 2) Input caché classique Django
+        try {
+          const inp = document.querySelector('input[name="csrfmiddlewaretoken"]');
+          if (inp && inp.value) return inp.value;
+        } catch(_){}
+        // 3) Meta tag optionnel
+        try {
+          const meta = document.querySelector('meta[name="csrf-token"], meta[name="csrf"]');
+          if (meta && meta.content) return meta.content;
+        } catch(_){}
+        return '';
+      }
+
+      const table = $('#departementsTable').DataTable({
+        autoWidth: true,
+        scrollX: true,
+        deferRender: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        ordering: false,
+        language: {
+          url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/fr-FR.json'
+        },
+        dom: 'lfrtip',
+        columnDefs: [
+          // Par défaut: toutes les colonnes sont en wrap
+          { targets: '_all', className: 'text-wrap' },
+          // Colonnes à élargir: Église(1), Nom(2), Vision(7), Mission(8), Objectifs(9), Membres clés(10), Besoins(13), Obs. Conseil(15)
+          { targets: [1,2,7,8,9,10,13,15], className: 'text-wrap col-wide' },
+          // Colonnes numériques/état/dates: centrées et non-wrap (#, Actif, Nb, Validé, Date de validation, Actions)
+          { targets: [0,6,11,17,18,19], className: 'text-center text-nowrap' },
+          // Date de création (5): non-wrap
+          { targets: [5], className: 'text-nowrap' },
+          // Budget (14): aligné à droite et non-wrap + formatage affichage GNF
+          { targets: [14], className: 'text-end text-nowrap', render: function(data, type, row){
+              if(type === 'display' || type === 'filter'){
+                const n = Number(String(data).replace(/[^0-9.-]/g, ''));
+                if(!isFinite(n)) return '—';
+                return new Intl.NumberFormat('fr-FR').format(n) + ' GNF';
+              }
+              return data;
+            }
+          },
+          // Actions (19): centrée, non-wrap, non-recherchable, exclue des exports via classe
+          { targets: [19], className: 'text-center text-nowrap no-export', searchable: false }
+        ],
+        drawCallback: function(){ this.api().columns.adjust(); },
+        initComplete: function(){ this.api().columns.adjust(); }
+      });
+
+      // Formatage live du champ Budget (séparateurs de milliers) + synchro valeur numérique cachée
+      (function(){
+        const display = document.getElementById('budget_annuel_estime_display');
+        const hidden = document.getElementById('budget_annuel_estime');
+        if(!display || !hidden) return;
+
+        function toNumber(val){
+          if(val == null) return NaN;
+          let s = String(val).trim();
+          // Retirer espaces et caractères non numériques (garder , . et -)
+          s = s.replace(/\s+/g, '').replace(/[^0-9,.-]/g, '');
+          // Unifier la virgule en point pour décimales
+          s = s.replace(/,/g, '.');
+          // Conserver au plus un point décimal (le premier)
+          const firstDot = s.indexOf('.');
+          if(firstDot !== -1){
+            const head = s.slice(0, firstDot + 1);
+            const tail = s.slice(firstDot + 1).replace(/\./g, '');
+            s = head + tail;
+          }
+          // Nettoyer les multiples signes - (ne garder qu'au début)
+          s = s.replace(/(?!^)-/g, '');
+          const n = Number(s);
+          return isFinite(n) ? n : NaN;
+        }
+
+        function formatFR(n){
+          try {
+            return new Intl.NumberFormat('fr-FR', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2
+            }).format(n);
+          } catch(e){ return String(n); }
+        }
+
+        // Initialiser l'affichage à partir de la valeur cachée (si présente)
+        if(hidden.value){
+          const n = toNumber(hidden.value);
+          if(isFinite(n)) display.value = formatFR(n);
+        }
+
+        function syncHiddenFromDisplay(){
+          const n = toNumber(display.value);
+          if(isFinite(n)){
+            hidden.value = n; // valeur numérique brute pour le serveur
+            // Reformater l'affichage proprement
+            display.value = formatFR(n);
+          } else {
+            hidden.value = '';
+          }
+        }
+
+        display.addEventListener('blur', syncHiddenFromDisplay);
+        display.addEventListener('change', syncHiddenFromDisplay);
+        display.addEventListener('input', function(){
+          // N'essaye pas de reformater en temps réel agressif; laisser à blur pour éviter le curseur qui saute
+          const n = toNumber(display.value);
+          if(isFinite(n)) hidden.value = n; else hidden.value = '';
+        });
+
+        // Sécuriser à la soumission du formulaire
+        const form = display.closest('form');
+        if(form){
+          form.addEventListener('submit', function(){ syncHiddenFromDisplay(); });
+        }
+      })();
+
+      // Ajustements supplémentaires après chargement et sur évènements d'affichage/redimensionnement
+      setTimeout(() => { table.columns.adjust(); }, 100);
+      $(window).on('resize', function(){ table.columns.adjust(); });
+      $(document).on('shown.bs.tab shown.bs.collapse shown.bs.modal', function(){
+        setTimeout(() => table.columns.adjust(), 50);
+      });
+
+      // Aperçu immédiat du "Plan Annuel" choisi avant enregistrement
+      (function(){
+        const input = document.getElementById('document_fichier');
+        if(!input) return;
+
+        function findRowForPreview(){
+          // 1) Priorité: par ID (mode modification)
+          const currentIdInput = document.getElementById('currentDeptId');
+          const currentId = currentIdInput ? String(currentIdInput.value || '').trim() : '';
+          if(currentId){
+            const editBtn = document.querySelector('.btn-edit[data-id="' + currentId + '"]');
+            if(editBtn){
+              const tr = editBtn.closest('tr');
+              if(tr) return tr;
+            }
+          }
+          // 2) Fallback: par nom saisi dans le formulaire (3ème colonne)
+          const nomInput = document.querySelector('input[name="nom"]');
+          const nomVal = nomInput ? nomInput.value.trim() : '';
+          if(nomVal){
+            const rows = document.querySelectorAll('#departementsTable tbody tr');
+            for(const r of rows){
+              const nomCell = r.querySelector('td:nth-child(3)');
+              if(nomCell && nomCell.textContent.trim() === nomVal){
+                return r;
+              }
+            }
+          }
+          return null;
+        }
+
+        function renderPreviewInRow(tr, file){
+          // Utiliser DataTables pour récupérer la cellule, même en mode responsive
+          let cellNode = null;
+          try {
+            const dt = $('#departementsTable').DataTable();
+            const row = dt.row(tr);
+            if(row && row.length){
+              // Colonne "Documents Plan d'action" => index 16 (0-based)
+              cellNode = dt.cell(row.index(), 16).node();
+            }
+          } catch(e){}
+          if(!cellNode){
+            // Fallback DOM (si DataTables pas initialisé ici)
+            cellNode = tr.querySelector('td.documents-plan-action-cell') || tr.querySelector('td:nth-child(17)');
+          }
+          if(!cellNode) return;
+
+          // Nettoyer l'ancien lien de prévisualisation
+          if(input._previewUrl){
+            try { URL.revokeObjectURL(input._previewUrl); } catch(e){}
+          }
+          const url = URL.createObjectURL(file);
+          input._previewUrl = url;
+
+          // Injecter le lien
+          cellNode.innerHTML = '';
+          const a = document.createElement('a');
+          a.href = url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.className = 'small text-decoration-none';
+          const icon = document.createElement('i');
+          icon.className = 'bi bi-file-earmark me-1';
+          a.appendChild(icon);
+          a.append(document.createTextNode(file.name));
+          cellNode.appendChild(a);
+        }
+
+        input.addEventListener('change', function(){
+          const file = this.files && this.files[0];
+          if(!file) return;
+
+          // Avec DataTables, s'assurer que la table est ajustée puis cibler la ligne visible
+          try { $('#departementsTable').DataTable().columns.adjust(); } catch(e){}
+
+          const tr = findRowForPreview();
+          if(!tr) return; // Pas de ligne trouvée (peut-être mode création sans ligne encore)
+          renderPreviewInRow(tr, file);
+        });
+      })();
+
+      // Ajouter dynamiquement les boutons invisibles au DataTable
+      new $.fn.dataTable.Buttons(table, {
+        buttons: [
+          {
+            extend: 'excelHtml5',
+            title: 'Departements',
+            className: 'd-none buttons-excel',
+            filename: function(){ const d=new Date(); return `Departements_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; },
+            exportOptions: {
+              columns: ':visible:not(.no-export)',
+              modifier: { search: 'applied' },
+              format: {
+                body: function(data, row, column, node){
+                  // Récupérer le texte brut de la cellule (retire les balises HTML, badges, liens)
+                  let text = '';
+                  if (node) {
+                    try { text = $(node).text(); } catch(e) { text = typeof data === 'string' ? data : ''; }
+                  } else {
+                    text = typeof data === 'string' ? data : '';
+                  }
+                  text = String(text).replace(/\s+/g, ' ').trim();
+                  // Budget (col 14): renvoyer un nombre brut pour Excel (pas de GNF), sinon Excel prend du texte
+                  if (column === 14){
+                    const n = Number(String(text).replace(/[^0-9.-]/g,''));
+                    return isFinite(n) ? n : '';
+                  }
+                  return text;
+                }
+              }
+            }
+          },
+          {
+            extend: 'pdfHtml5',
+            title: 'Departements',
+            className: 'd-none buttons-pdf',
+            orientation: 'landscape', pageSize: 'A4',
+            filename: function(){ const d=new Date(); return `Departements_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; },
+            exportOptions: {
+              columns: ':visible:not(.no-export)',
+              modifier: { search: 'applied' },
+              format: {
+                body: function(data, row, column, node){
+                  // Utiliser le texte du nœud pour enlever icônes/badges/liens
+                  let text = '';
+                  if (node) {
+                    try { text = $(node).text(); } catch(e) { text = typeof data === 'string' ? data : ''; }
+                  } else {
+                    text = typeof data === 'string' ? data : '';
+                  }
+                  text = String(text).replace(/\s+/g, ' ').trim();
+                  if (column === 14){
+                    const n = Number(String(text).replace(/[^0-9.-]/g, ''));
+                    return isFinite(n) ? new Intl.NumberFormat('fr-FR').format(n) + ' GNF' : '';
+                  }
+                  return text;
+                }
+              }
+            },
+            customize: function (doc) {
+              try {
+                // Marges et polices
+                doc.pageMargins = [20, 20, 20, 20];
+                doc.defaultStyle = doc.defaultStyle || {};
+                doc.styles = doc.styles || {};
+                doc.defaultStyle.fontSize = 9;
+                doc.styles.tableHeader = Object.assign({}, doc.styles.tableHeader, { fontSize: 10, alignment: 'left' });
+
+                // Largeurs auto pour toutes les colonnes
+                const table = doc.content && doc.content[1] && doc.content[1].table ? doc.content[1].table : null;
+                if (table && table.body && table.body[0]) {
+                  const colCount = table.body[0].length;
+                  table.widths = Array(colCount).fill('*');
+                  // Empêcher la coupure de mots agressive
+                  if (!table.body[1] || !table.body[1][0] || typeof table.body[1][0].text === 'undefined') {
+                    // Rien
+                  }
+                }
+                // Style de bordures léger
+                doc.content[1].layout = 'lightHorizontalLines';
+              } catch (e) { /* silencieux */ }
+            }
+          },
+          {
+            extend: 'print',
+            title: 'Liste des départements',
+            className: 'd-none buttons-print',
+            exportOptions: {
+              columns: ':visible:not(.no-export)',
+              modifier: { search: 'applied' },
+              format: {
+                body: function(data, row, column, node){
+                  // Utiliser le texte du nœud pour enlever icônes/badges/liens
+                  let text = '';
+                  if (node) {
+                    try { text = $(node).text(); } catch(e) { text = typeof data === 'string' ? data : ''; }
+                  } else {
+                    text = typeof data === 'string' ? data : '';
+                  }
+                  text = String(text).replace(/\s+/g, ' ').trim();
+                  if (column === 14){
+                    const n = Number(String(text).replace(/[^0-9.-]/g, ''));
+                    return isFinite(n) ? new Intl.NumberFormat('fr-FR').format(n) + ' GNF' : '';
+                  }
+                  return text;
+                }
+              }
+            }
+          }
+        ]
+      });
+      // Enregistrer le container (index 0) pour finaliser l'initialisation
+      table.buttons(0, null).container();
+
+      // Boutons externes
+      function triggerExport(type){
+        if(type === 'excel') table.button('.buttons-excel').trigger();
+        if(type === 'pdf') table.button('.buttons-pdf').trigger();
+        if(type === 'print') table.button('.buttons-print').trigger();
+      }
+
+      $('#btnExportExcel').on('click', function(e){ e.preventDefault(); triggerExport('excel'); });
+      $('#btnExportPDF').on('click', function(e){ e.preventDefault(); triggerExport('pdf'); });
+      $('#btnPrint').on('click', function(e){ e.preventDefault(); triggerExport('print'); });
+
+      // Handlers Actions (Voir / Modifier / Supprimer)
+      function ensureInfoModal(){
+        let modal = document.getElementById('deptInfoModal');
+        if(modal) return modal;
+        const html = `
+          <div class="modal fade" id="deptInfoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Détails du département</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body" id="deptInfoBody"></div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+        return document.getElementById('deptInfoModal');
+      }
+
+      function getRowData(tr){
+        const cells = $(tr).children('td');
+        return {
+          id: cells.eq(0).text().trim(),
+          eglise: cells.eq(1).text().trim(),
+          nom: cells.eq(2).text().trim(),
+          responsable: cells.eq(3).text().trim(),
+          contacts: cells.eq(4).text().trim(),
+          date_creation: cells.eq(5).text().trim(),
+          actif: cells.eq(6).text().trim(),
+          vision: cells.eq(7).text().trim(),
+          mission: cells.eq(8).text().trim(),
+          objectifs: cells.eq(9).text().trim(),
+          membres: cells.eq(10).text().trim(),
+          nb: cells.eq(11).text().trim(),
+          ressources: cells.eq(12).text().trim(),
+          besoins: cells.eq(13).text().trim(),
+          budget: cells.eq(14).text().trim(),
+          activites: cells.eq(15).text().trim(),
+          prochaine_date: cells.eq(16).text().trim(),
+          lieu: cells.eq(17).text().trim(),
+          valide: cells.eq(18).text().trim(),
+          obs: cells.eq(19).text().trim()
+        };
+      }
+
+      $(document).on('click', '.btn-view', function(){
+        const tr = $(this).closest('tr');
+        const data = getRowData(tr);
+        const modalEl = ensureInfoModal();
+        const body = modalEl.querySelector('#deptInfoBody');
+        body.innerHTML = `
+          <div class="row g-2">
+            <div class="col-md-6"><strong>Église:</strong> ${data.eglise}</div>
+            <div class="col-md-6"><strong>Nom:</strong> ${data.nom}</div>
+            <div class="col-md-6"><strong>Responsable:</strong> ${data.responsable}</div>
+            <div class="col-md-6"><strong>Contacts:</strong> ${data.contacts}</div>
+            <div class="col-md-4"><strong>Date création:</strong> ${data.date_creation}</div>
+            <div class="col-md-4"><strong>Actif:</strong> ${data.actif}</div>
+            <div class="col-md-4"><strong>Validé:</strong> ${data.valide}</div>
+            <div class="col-12"><hr class="soft-hr"></div>
+            <div class="col-12"><strong>Vision:</strong><br>${data.vision || '—'}</div>
+            <div class="col-12"><strong>Mission:</strong><br>${data.mission || '—'}</div>
+            <div class="col-12"><strong>Objectifs:</strong><br>${data.objectifs || '—'}</div>
+            <div class="col-12"><strong>Membres clés:</strong><br>${data.membres || '—'}</div>
+            <div class="col-12"><strong>Ressources:</strong><br>${data.ressources || '—'}</div>
+            <div class="col-12"><strong>Besoins:</strong><br>${data.besoins || '—'}</div>
+            <div class="col-12"><strong>Activités:</strong><br>${data.activites || '—'}</div>
+            <div class="col-md-6"><strong>Prochaine date:</strong> ${data.prochaine_date}</div>
+            <div class="col-md-6"><strong>Lieu:</strong> ${data.lieu}</div>
+            <div class="col-md-6"><strong>Budget annuel estimé (GNF):</strong> ${data.budget}</div>
+            <div class="col-md-6"><strong>Effectif:</strong> ${data.nb}</div>
+          </div>`;
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      });
+
+      $(document).on('click', '.btn-edit', function(e){
+        e.preventDefault();
+        const btn = $(this);
+        const tr = btn.closest('tr');
+        // Contexte de la ligne en cours d'édition pour MAJ du tableau après sélection de fichiers
+        currentDeptRow = tr.get(0);
+        window.currentDeptRow = currentDeptRow;
+        // Stocker aussi l'ID du département dans l'input caché pour usage depuis le formulaire
+        const idHidden = document.getElementById('currentDeptId');
+        if (idHidden) idHidden.value = String(btn.attr('data-id') || '');
+        // Helper de lecture fiable des data-* (kebab-case)
+        const el = btn.get(0);
+        const getData = (k) => {
+          let v = btn.attr('data-' + k);
+          if ((v === undefined || v === null) && el && el.dataset) {
+            const camel = k.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+            v = el.dataset[camel];
+          }
+          return v == null ? '' : v;
+        };
+        // Pré-remplir le formulaire principal à partir des data-* du bouton
+        try {
+          const form = document.querySelector('form');
+          if (form) {
+            const setVal = (sel, val) => { const el = form.querySelector(sel); if (el) el.value = (val ?? ''); };
+            const setChk = (sel, on) => { const el = form.querySelector(sel); if (el) el.checked = !!on; };
+            // Église
+            setVal('select[name="eglise_id"]', String(getData('eglise-id') || ''));
+            try { const sel = form.querySelector('select[name="eglise_id"]'); if (sel) sel.dispatchEvent(new Event('change', { bubbles:true })); } catch(_){}
+            // Champs texte
+            setVal('input[name="nom"]', getData('nom'));
+            setVal('input[name="responsable"]', getData('responsable'));
+            setVal('input[name="telephone"]', getData('telephone'));
+            setVal('input[name="email"]', getData('email'));
+            setVal('input[name="date_creation"]', getData('date-creation'));
+            const desc = form.querySelector('textarea[name="description"]'); if (desc) desc.value = getData('description') || '';
+            // Statut actif
+            setChk('#statut_actif', String(getData('statut-actif')) === '1');
+            // Objectifs & co
+            setVal('textarea[name="vision"]', getData('vision'));
+            setVal('textarea[name="mission"]', getData('mission'));
+            setVal('textarea[name="objectifs_specifiques"]', getData('objectifs-specifiques'));
+            setVal('textarea[name="membres_clefs"]', getData('membres-clefs'));
+            setVal('input[name="nombre_membres"]', getData('nombre-membres'));
+            setVal('textarea[name="ressources_disponibles"]', getData('ressources-disponibles'));
+            setVal('textarea[name="besoins_prioritaires"]', getData('besoins-prioritaires'));
+            // Budget: hidden et display
+            const budgetRaw = (getData('budget-annuel-estime') ?? '');
+            setVal('#budget_annuel_estime', budgetRaw);
+            const budgetDisp = form.querySelector('#budget_annuel_estime_display');
+            if (budgetDisp) {
+              const n = Number(String(budgetRaw).replace(/[^0-9.-]/g,''));
+              budgetDisp.value = isFinite(n) ? new Intl.NumberFormat('fr-FR').format(n) : String(budgetRaw);
+            }
+            // Activités
+            setVal('textarea[name="activites_majeures"]', getData('activites-majeures'));
+            setVal('input[name="prochaine_activite_date"]', getData('prochaine-activite-date'));
+            setVal('input[name="prochaine_activite_lieu"]', getData('prochaine-activite-lieu'));
+            // Validation Conseil
+            setChk('#valide_par_conseil', String(getData('valide-par-conseil')) === '1');
+            setVal('input[name="date_validation"]', getData('date-validation'));
+            setVal('textarea[name="observations_conseil"]', getData('observations-conseil'));
+            // Par défaut, ne pas effacer les PJ existantes à la soumission (clear=0)
+            const clearEl = document.getElementById('attachmentsClear'); if (clearEl) clearEl.value = '0';
+          }
+        } catch(_){}
+        const existingWrapper = document.getElementById('deptExistingWrapper');
+        const existingList = document.getElementById('deptExistingList');
+        const inlineWrap = document.getElementById('planActionInline');
+        const statusEl = document.getElementById('planActionStatus');
+        if (existingWrapper && existingList) {
+          existingList.innerHTML = '';
+          // Récupérer les liens existants dans la cellule Plan d’action de la ligne
+          const links = tr.find('td.plan-annuel-cell a[href]');
+          if (links.length) {
+            existingWrapper.style.display = '';
+            // Par défaut en édition avec PJ existantes: ne pas nettoyer (clear=0)
+            const clearEl = document.getElementById('attachmentsClear');
+            if (clearEl) clearEl.value = '0';
+            if (statusEl) statusEl.textContent = 'Plan d’action enregistré';
+            links.each(function(){
+              const href = this.href;
+              const txt = (this.textContent || '').trim() || href.split('/').pop();
+              const li = document.createElement('li');
+              li.className = 'list-group-item d-flex justify-content-between align-items-center';
+              const left = document.createElement('div');
+              left.className = 'd-flex align-items-center';
+              const icon = document.createElement('i');
+              icon.className = 'bi bi-paperclip me-2';
+              const a = document.createElement('a');
+              a.href = href; a.target = '_blank'; a.rel = 'noopener'; a.className = 'text-decoration-none'; a.textContent = txt;
+              left.appendChild(icon); left.appendChild(a);
+              li.appendChild(left);
+              existingList.appendChild(li);
+            });
+            // Mettre à jour l'affichage inline du Plan d'action avec le premier fichier
+            if (inlineWrap) {
+              const firstHref = links[0].href;
+              const name = (links[0].textContent || '').trim() || firstHref.split('/').pop();
+              const lower = firstHref.toLowerCase();
+              inlineWrap.innerHTML = '';
+              // Déterminer le type (image/pdf/autre)
+              if (/(\.png|\.jpe?g|\.gif|\.webp)(\?|$)/.test(lower)) {
+                const img = document.createElement('img');
+                img.src = firstHref;
+                img.alt = name;
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '240px';
+                img.style.display = 'block';
+                img.style.objectFit = 'contain';
+                img.className = 'border rounded';
+                inlineWrap.appendChild(img);
+              } else if (/\.pdf(\?|$)/.test(lower)) {
+                const iframe = document.createElement('iframe');
+                iframe.src = firstHref;
+                iframe.style.width = '100%';
+                iframe.style.height = '260px';
+                iframe.style.border = '0';
+                inlineWrap.appendChild(iframe);
+              } else {
+                const p = document.createElement('div');
+                p.className = 'small';
+                p.innerHTML = '<i class="bi bi-paperclip me-1"></i><a href="' + firstHref + '" target="_blank" rel="noopener">' + name + '</a>';
+                inlineWrap.appendChild(p);
+              }
+              // Synchroniser aussi la cellule « Plan d’action » (colonne index 19) de la ligne courante (enregistré)
+              setPlanActionCell(tr.get(0), firstHref, true);
+            }
+          } else {
+            existingWrapper.style.display = 'none';
+            if (inlineWrap) {
+              inlineWrap.innerHTML = '<div class="small text-muted">Aucun plan d’action sélectionné.</div>';
+            }
+            if (statusEl) statusEl.textContent = 'Aucun plan d’action sélectionné.';
+            // Pas de PJ existante -> cellule « Plan d’action » = —
+            setPlanActionCell(tr.get(0), null, true);
+          }
+        }
+        const modalEl = document.getElementById('deptFilesModal');
+        if (modalEl) {
+          const modal = new bootstrap.Modal(modalEl);
+          modal.show();
+        }
+        // Amélioration UX: défiler vers le formulaire et focuser le champ Nom
+        try {
+          const form = document.querySelector('form');
+          if (form) {
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const nomInput = form.querySelector('input[name="nom"]');
+            if (nomInput) setTimeout(() => nomInput.focus(), 250);
+          }
+        } catch(_){}
+      });
+
+      $(document).on('click', '.btn-delete', function(e){
+        e.preventDefault();
+        const btn = $(this);
+        const tr = btn.closest('tr');
+        const id = btn.data('id');
+        const url = btn.attr('data-url');
+        if(!url){ alert("URL de suppression introuvable."); return; }
+        // Vérifier la présence d'un token CSRF
+        const csrf = getCSRFToken();
+        if(!csrf){
+          alert("Token CSRF introuvable. Rafraîchissez la page (Ctrl+F5) puis réessayez.");
+          return;
+        }
+        if(!confirm('Supprimer ce département (ID: ' + id + ')?')) return;
+        // Désactiver le bouton pour éviter les doubles clics et afficher un spinner
+        const originalHtml = btn.html();
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+        fetch(url, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'X-CSRFToken': csrf,
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        }).then(async r => {
+          console.debug('DELETE response status:', r.status, r.statusText);
+          console.debug('DELETE response headers content-type:', r.headers.get('content-type'));
+          const ct = r.headers.get('content-type') || '';
+          let data = null;
+          try { data = ct.includes('application/json') ? await r.json() : null; } catch(_) { data = null; }
+          if(!r.ok){
+            // Fallback si 403: soumettre un formulaire POST classique pour supprimer
+            if (r.status === 403) {
+              try {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = url;
+                const inp = document.createElement('input');
+                inp.type = 'hidden'; inp.name = 'csrfmiddlewaretoken'; inp.value = csrf;
+                form.appendChild(inp);
+                document.body.appendChild(form);
+                form.submit();
+                return; // On quitte; la page va recharger
+              } catch(_){}
+            }
+            let msg = (data && data.error) ? data.error : ('Suppression refusée (' + r.status + ').');
+            if (r.status === 404) msg = 'Département introuvable (404). Rafraîchissez la page.';
+            throw new Error(msg);
+          }
+          if(!(data && data.success)){
+            const msg = (data && data.error) ? data.error : 'Échec de la suppression.';
+            throw new Error(msg);
+          }
+          // Gérer DataTables responsive: si ligne "child", cibler la ligne parent
+          const $tr = tr;
+          const isChild = $tr.hasClass('child');
+          const $parentTr = isChild ? $tr.prev('tr') : $tr;
+          try {
+            if (typeof table !== 'undefined' && table.row) {
+              table.row($parentTr).remove().draw(false);
+            } else if ($.fn.dataTable) {
+              const dt = $parentTr.closest('table').DataTable();
+              dt.row($parentTr).remove().draw(false);
+            } else {
+              // Fallback DOM si DataTables indisponible
+              if (isChild) { $tr.remove(); $parentTr.remove(); }
+              else { $parentTr.remove(); }
+            }
+          } catch(err) {
+            console.warn('Suppression DT fallback:', err);
+            if (isChild) { $tr.remove(); $parentTr.remove(); }
+            else { $parentTr.remove(); }
+          }
+          console.log('Département supprimé:', id);
+          // Si on était en train d'éditer ce même département: fermer le modal, réinitialiser le formulaire
+          try {
+            const idHidden = document.getElementById('currentDeptId');
+            const editingSame = idHidden && idHidden.value && String(idHidden.value) === String(id);
+            if (editingSame) {
+              // Fermer le modal d'édition s'il est ouvert
+              const filesModalEl = document.getElementById('deptFilesModal');
+              if (filesModalEl) {
+                const m = bootstrap.Modal.getInstance(filesModalEl) || new bootstrap.Modal(filesModalEl);
+                m.hide();
+              }
+              // Réinitialiser le formulaire principal (si présent)
+              const form = document.querySelector('form');
+              if (form) {
+                form.reset();
+                // Réinitialiser affichage inline Plan d’action
+                const inlineWrap = document.getElementById('planActionInline');
+                if (inlineWrap) inlineWrap.innerHTML = '<div class="small text-muted">Aucun plan d’action sélectionné.</div>';
+                const existingList = document.getElementById('deptExistingList');
+                if (existingList) existingList.innerHTML = '';
+                const existingWrapper = document.getElementById('deptExistingWrapper');
+                if (existingWrapper) existingWrapper.style.display = 'none';
+                // Effacer input fichiers pour éviter références obsolètes
+                const fileInput = form.querySelector('input[type="file"][name="plan_annuel"]');
+                if (fileInput) fileInput.value = '';
+                // Nettoyer champs cachés
+                const clearEl = document.getElementById('attachmentsClear');
+                if (clearEl) clearEl.value = '';
+              }
+              // Nettoyer état global
+              window.currentDeptRow = null;
+              idHidden.value = '';
+            }
+          } catch(_){}
+        }).catch(err => {
+          alert(err && err.message ? err.message : 'Erreur réseau lors de la suppression.');
+          console.error('Erreur suppression département:', err);
+          // Fallback ultime: tentative de POST standard avec CSRF
+          try {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            const inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = 'csrfmiddlewaretoken'; inp.value = getCSRFToken();
+            form.appendChild(inp);
+            document.body.appendChild(form);
+            form.submit();
+            return;
+          } catch(_){}
+          // Restaurer le bouton en cas d'échec
+          btn.prop('disabled', false).html(originalHtml);
+          return;
+        }).finally(() => {
+          // Si la ligne existe encore (non supprimée), restaurer le bouton
+          try {
+            if ($.contains(document, tr.get(0))) {
+              btn.prop('disabled', false).html(originalHtml);
+            }
+          } catch(_){}
+        });
+      });
+    })();
+  </script>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'main/base.html' %}
+
+{% block title %}À propos - Gestion Église{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container">
+        <h1>À propos</h1>
+        
+        <div class="content-section">
+            <div class="apropos-nav">
+                <a href="{% url 'main:historique' %}" class="apropos-link">Historique</a>
+                <a href="{% url 'main:objectif_general' %}" class="apropos-link">Vision Générale</a>
+                <a href="{% url 'main:objectif_specifique' %}" class="apropos-link">Vision Spécifique</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

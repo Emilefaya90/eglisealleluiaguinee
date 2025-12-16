@@ -1,0 +1,741 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Vision Générale - Église Pentecôte Alléluia de Guinée{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* =============================================
+       HERO SECTION - BANNIÈRE PRINCIPALE
+       ============================================= */
+    .vision-hero {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: linear-gradient(135deg, #1a0a00 0%, #3d1a00 50%, #1a0a00 100%);
+        padding: 4rem 0;
+    }
+    
+    .vision-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("{% static 'main/images/hero/fond6.jpg' %}") center/cover no-repeat;
+        opacity: 0.4;
+        animation: slowZoom 20s ease-in-out infinite alternate;
+    }
+    
+    @keyframes slowZoom {
+        from { transform: scale(1); }
+        to { transform: scale(1.1); }
+    }
+    
+    .vision-hero::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.7) 100%);
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        padding: 2rem;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .hero-icon {
+        margin-bottom: 1.5rem;
+        animation: floatIcon 3s ease-in-out infinite;
+    }
+    
+    .hero-logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 5px;
+    }
+    
+    @keyframes floatIcon {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-10px) scale(1.05); }
+    }
+    
+    .hero-title-main {
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        font-weight: 900;
+        color: white;
+        text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        margin-bottom: 1rem;
+        line-height: 1.3;
+        padding: 0 1rem;
+    }
+    
+    .hero-title-main .highlight {
+        background: linear-gradient(135deg, #daa520, #ffd700, #daa520);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 3s linear infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+    
+    .hero-subtitle-main {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        max-width: 100%;
+        margin: 0 auto 2rem;
+        line-height: 1.8;
+        padding: 0 2rem;
+    }
+    
+    .hero-verse {
+        background: rgba(218, 165, 32, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(218, 165, 32, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem 2rem;
+        max-width: 90%;
+        margin: 0 auto;
+        animation: fadeInUp 1s ease 0.5s both;
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .hero-verse p {
+        color: white;
+        font-style: italic;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .hero-verse cite {
+        color: #daa520;
+        font-weight: 700;
+    }
+    
+    .verse-link {
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .verse-link:hover {
+        transform: scale(1.05);
+    }
+    
+    .verse-link:hover cite {
+        color: #ffd700;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    /* Scroll indicator */
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        animation: bounce 2s infinite;
+    }
+    
+    .scroll-indicator i {
+        font-size: 2rem;
+        color: #daa520;
+        text-shadow: 0 0 10px rgba(218, 165, 32, 0.5);
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+        40% { transform: translateX(-50%) translateY(-15px); }
+        60% { transform: translateX(-50%) translateY(-7px); }
+    }
+    
+    /* =============================================
+       MAIN CONTENT AREA
+       ============================================= */
+    body {
+        background: linear-gradient(135deg, #1a0a00 0%, #3d1a00 50%, #1a0a00 100%);
+        min-height: 100vh;
+    }
+    
+    /* Section Cards */
+    .vision-section {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .vision-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 50px rgba(218, 165, 32, 0.2);
+    }
+    
+    .vision-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(180deg, #daa520, #8b4513);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .section-icon.blue { background: linear-gradient(135deg, #5b8cff, #2b4aa3); }
+    .section-icon.green { background: linear-gradient(135deg, #20c997, #0ea5a5); }
+    .section-icon.purple { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+    .section-icon.orange { background: linear-gradient(135deg, #ff8c00, #cc6600); }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #8b4513;
+        margin: 0;
+    }
+    
+    .section-content p {
+        color: #5a3a1a;
+        line-height: 1.8;
+        font-size: 1.05rem;
+    }
+    
+    .section-content ul {
+        list-style: none;
+        padding: 0;
+        margin: 1rem 0;
+    }
+    
+    .section-content ul li {
+        padding: 0.8rem 0;
+        padding-left: 2rem;
+        position: relative;
+        color: #5a3a1a;
+        border-bottom: 1px solid rgba(218, 165, 32, 0.2);
+    }
+    
+    .section-content ul li:last-child {
+        border-bottom: none;
+    }
+    
+    .section-content ul li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #daa520;
+        font-weight: bold;
+    }
+    
+    /* =============================================
+       QUOTE SECTION
+       ============================================= */
+    .quote-section {
+        background: linear-gradient(135deg, #3d1a00, #1a0a00);
+        padding: 4rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quote-section::before {
+        content: '"';
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 15rem;
+        color: rgba(218, 165, 32, 0.1);
+        font-family: Georgia, serif;
+        line-height: 1;
+    }
+    
+    .quote-text {
+        font-size: 1.5rem;
+        color: white;
+        font-style: italic;
+        max-width: 800px;
+        margin: 0 auto 1rem;
+        position: relative;
+        z-index: 1;
+        line-height: 1.8;
+    }
+    
+    .quote-author {
+        color: #daa520;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    .verse-link-footer {
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .verse-link-footer:hover {
+        transform: scale(1.05);
+    }
+    
+    .verse-link-footer:hover .quote-author {
+        color: #ffd700;
+        text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+
+    /* =============================================
+       VISION CARDS - NOUVEAU DESIGN ÉLÉGANT
+       ============================================= */
+    .vision-card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 24px;
+        padding: 2.5rem;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(218, 165, 32, 0.1);
+    }
+
+    .vision-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 25px 60px rgba(218, 165, 32, 0.25);
+    }
+
+    .card-glow {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(218, 165, 32, 0.08) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+    }
+
+    .vision-card:hover .card-glow {
+        opacity: 1;
+    }
+
+    .card-icon-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+    }
+
+    .vision-card:hover .card-icon {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    .icon-ring {
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 24px;
+        border: 2px dashed rgba(218, 165, 32, 0.4);
+        animation: spin 20s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .blue-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .green-gradient { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .purple-gradient { background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%); }
+    .orange-gradient { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #2d1810;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .card-divider {
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #daa520, #b8860b);
+        border-radius: 2px;
+        margin-bottom: 1.5rem;
+        transition: width 0.3s ease;
+    }
+
+    .vision-card:hover .card-divider {
+        width: 100px;
+    }
+
+    .card-text, .card-intro {
+        color: #5a4030;
+        line-height: 1.8;
+        font-size: 1.05rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-decoration {
+        position: absolute;
+        bottom: 15px;
+        right: 20px;
+        font-size: 4rem;
+        color: rgba(218, 165, 32, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .vision-card:hover .card-decoration {
+        color: rgba(218, 165, 32, 0.15);
+        transform: scale(1.1);
+    }
+
+    /* Vision List */
+    .vision-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .vision-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 0.7rem 0;
+        border-bottom: 1px solid rgba(218, 165, 32, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .vision-list li:last-child {
+        border-bottom: none;
+    }
+
+    .vision-list li:hover {
+        padding-left: 10px;
+        background: rgba(218, 165, 32, 0.05);
+        border-radius: 8px;
+    }
+
+    .vision-list li i {
+        color: #daa520;
+        font-size: 1rem;
+        margin-top: 4px;
+        flex-shrink: 0;
+    }
+
+    .vision-list li span {
+        color: #5a4030;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .vision-list li strong {
+        color: #2d1810;
+    }
+
+    /* Highlight Words */
+    .highlight-word {
+        background: linear-gradient(135deg, rgba(218, 165, 32, 0.2), rgba(184, 134, 11, 0.2));
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        color: #8b4513;
+    }
+
+    /* Values Badges */
+    .values-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 1.5rem;
+    }
+
+    .value-badge {
+        background: linear-gradient(135deg, #89253e, #b8860b);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(137, 37, 62, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .value-badge:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(137, 37, 62, 0.4);
+    }
+
+    /* Engagement Icons */
+    .engagement-icons {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(218, 165, 32, 0.2);
+    }
+
+    .eng-icon {
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .eng-icon:hover {
+        transform: translateY(-5px);
+    }
+
+    .eng-icon i {
+        display: block;
+        font-size: 2rem;
+        color: #daa520;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .eng-icon:hover i {
+        color: #b8860b;
+        transform: scale(1.2);
+    }
+
+    .eng-icon span {
+        font-size: 0.85rem;
+        color: #5a4030;
+        font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 991px) {
+        .vision-card {
+            padding: 2rem;
+        }
+        
+        .card-icon {
+            width: 65px;
+            height: 65px;
+            font-size: 1.6rem;
+        }
+        
+        .card-icon-wrapper {
+            width: 65px;
+            height: 65px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .values-badges {
+            justify-content: center;
+        }
+        
+        .engagement-icons {
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .eng-icon {
+            flex: 0 0 33%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="vision-hero">
+    <div class="hero-content">
+        <div class="hero-icon">
+            <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo EPAG" class="hero-logo">
+        </div>
+        <h1 class="hero-title-main" style="text-transform: uppercase;">
+            <span style="font-size: 0.7em;">Vision Générale de l'Église Pentecôte</span><br><span class="highlight">Alléluia de Guinée</span>
+        </h1>
+        <p class="hero-subtitle-main">
+            Découvrez notre mission et nos valeurs fondamentales qui guident notre communauté chrétienne
+        </p>
+        <div class="hero-verse">
+            <p>"Là où il n'y a pas de vision, le peuple périt."</p>
+            <a href="https://www.bible.com/fr/bible/93/PRO.29.18.LSG" target="_blank" class="verse-link">
+                <cite><i class="fas fa-bible me-1"></i>Proverbes 29:18 <i class="fas fa-external-link-alt ms-1" style="font-size: 0.8rem;"></i></cite>
+            </a>
+        </div>
+    </div>
+    <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="container py-5">
+    
+    <!-- Grille des 4 sections -->
+    <div class="row g-4">
+        
+        <!-- Section Mission Principale -->
+        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
+            <section class="vision-card mission-card">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrapper">
+                    <div class="card-icon blue-gradient">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="icon-ring"></div>
+                </div>
+                <h3 class="card-title">Notre Mission Principale</h3>
+                <div class="card-divider"></div>
+                <p class="card-text">La vision générale de notre Église est de servir Dieu et notre communauté en créant un environnement spirituel accueillant où chacun peut grandir dans la foi et trouver sa place.</p>
+                <div class="card-decoration">
+                    <i class="fas fa-cross"></i>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Section Vision Globale -->
+        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="200">
+            <section class="vision-card globe-card">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrapper">
+                    <div class="card-icon green-gradient">
+                        <i class="fas fa-globe-africa"></i>
+                    </div>
+                    <div class="icon-ring"></div>
+                </div>
+                <h3 class="card-title">Vision Globale</h3>
+                <div class="card-divider"></div>
+                <p class="card-intro">Nous aspirons à être une église qui :</p>
+                <ul class="vision-list">
+                    <li><i class="fas fa-dove"></i><span><strong>Proclame l'Évangile</strong> avec amour et vérité</span></li>
+                    <li><i class="fas fa-users"></i><span><strong>Accueille tous les membres</strong> de la communauté</span></li>
+                    <li><i class="fas fa-seedling"></i><span><strong>Encourage la croissance spirituelle</strong> personnelle</span></li>
+                    <li><i class="fas fa-hands-helping"></i><span><strong>Soutient les familles et les individus</strong> dans leurs défis</span></li>
+                    <li><i class="fas fa-hand-holding-heart"></i><span><strong>Contribue positivement</strong> à la société</span></li>
+                </ul>
+                <div class="card-decoration">
+                    <i class="fas fa-praying-hands"></i>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Section Valeurs Fondamentales -->
+        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="300">
+            <section class="vision-card values-card">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrapper">
+                    <div class="card-icon purple-gradient">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <div class="icon-ring"></div>
+                </div>
+                <h3 class="card-title">Valeurs Fondamentales</h3>
+                <div class="card-divider"></div>
+                <p class="card-text">Nos actions sont guidées par des valeurs chrétiennes d'<span class="highlight-word">amour</span>, de <span class="highlight-word">compassion</span>, d'<span class="highlight-word">intégrité</span> et de <span class="highlight-word">service désintéressé</span> envers autrui.</p>
+                <div class="values-badges">
+                    <span class="value-badge"><i class="fas fa-heart me-1"></i>Amour</span>
+                    <span class="value-badge"><i class="fas fa-hand-holding-heart me-1"></i>Compassion</span>
+                    <span class="value-badge"><i class="fas fa-shield-alt me-1"></i>Intégrité</span>
+                    <span class="value-badge"><i class="fas fa-hands me-1"></i>Service</span>
+                </div>
+                <div class="card-decoration">
+                    <i class="fas fa-star"></i>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Section Engagement -->
+        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="400">
+            <section class="vision-card engagement-card">
+                <div class="card-glow"></div>
+                <div class="card-icon-wrapper">
+                    <div class="card-icon orange-gradient">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="icon-ring"></div>
+                </div>
+                <h3 class="card-title">Notre Engagement</h3>
+                <div class="card-divider"></div>
+                <p class="card-text">Nous nous engageons à créer un environnement spirituel accueillant où chaque personne peut découvrir l'amour de Dieu, développer sa foi et contribuer à l'édification de la communauté.</p>
+                <div class="engagement-icons">
+                    <div class="eng-icon"><i class="fas fa-church"></i><span>Accueil</span></div>
+                    <div class="eng-icon"><i class="fas fa-bible"></i><span>Foi</span></div>
+                    <div class="eng-icon"><i class="fas fa-people-carry"></i><span>Communauté</span></div>
+                </div>
+                <div class="card-decoration">
+                    <i class="fas fa-dove"></i>
+                </div>
+            </section>
+        </div>
+        
+    </div>
+    
+</div>
+
+<!-- Quote Section -->
+<section class="quote-section">
+    <p class="quote-text">
+        "Car je connais les projets que j'ai formés sur vous, dit l'Éternel, projets de paix et non de malheur, afin de vous donner un avenir et de l'espérance."
+    </p>
+    <a href="https://www.bible.com/fr/bible/93/JER.29.11.LSG" target="_blank" class="verse-link-footer">
+        <span class="quote-author"><i class="fas fa-bible me-2"></i>Jérémie 29:11 <i class="fas fa-external-link-alt ms-1" style="font-size: 0.8rem;"></i></span>
+    </a>
+</section>
+{% endblock %}

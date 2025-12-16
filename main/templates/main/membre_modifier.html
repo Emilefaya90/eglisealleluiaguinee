@@ -1,0 +1,160 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between">
+    <h3 class="mb-0">Modifier le membre</h3>
+    <a class="btn btn-secondary" href="{% url 'main:details_membre' membre.id %}"><i class="bi bi-arrow-left"></i> Annuler</a>
+  </div>
+
+  <form class="mt-3" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger" role="alert">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="row g-3">
+      {# Colonne 1 #}
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="form-label" for="id_eglise">Église</label>
+          {{ form.eglise }}
+          {{ form.eglise.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_nom">Nom</label>
+          {{ form.nom }}
+          {{ form.nom.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_prenom">Prénom(s)</label>
+          {{ form.prenom }}
+          {{ form.prenom.errors }}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_sexe">Sexe</label>
+            {{ form.sexe }}
+            {{ form.sexe.errors }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_date_naissance">Date de naissance</label>
+            {{ form.date_naissance }}
+            {{ form.date_naissance.errors }}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_lieu_naissance">Lieu de naissance</label>
+          {{ form.lieu_naissance }}
+          {{ form.lieu_naissance.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_adresse">Adresse</label>
+          {{ form.adresse }}
+          {{ form.adresse.errors }}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_telephone">Téléphone</label>
+            {{ form.telephone }}
+            {{ form.telephone.errors }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_email">Email</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_profession">Profession</label>
+          {{ form.profession }}
+          {{ form.profession.errors }}
+        </div>
+      </div>
+
+      {# Colonne 2 #}
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_date_bapteme">Date de baptême</label>
+            {{ form.date_bapteme }}
+            {{ form.date_bapteme.errors }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_lieu_bapteme">Lieu de baptême</label>
+            {{ form.lieu_bapteme }}
+            {{ form.lieu_bapteme.errors }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_date_adhesion">Date d'adhésion</label>
+            {{ form.date_adhesion }}
+            {{ form.date_adhesion.errors }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_etat_civil">État civil</label>
+            {{ form.etat_civil }}
+            {{ form.etat_civil.errors }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_nom_conjoint">Nom du conjoint</label>
+            {{ form.nom_conjoint }}
+            {{ form.nom_conjoint.errors }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label" for="id_nombre_enfants">Nombre d'enfants</label>
+            {{ form.nombre_enfants }}
+            {{ form.nombre_enfants.errors }}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_motivation">Motivation</label>
+          {{ form.motivation }}
+          {{ form.motivation.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_services">Services</label>
+          {{ form.services }}
+          {{ form.services.errors }}
+        </div>
+        <div class="form-check form-switch mb-3">
+          {{ form.soutien_financier }}
+          <label class="form-check-label" for="id_soutien_financier">Soutien financier</label>
+          {{ form.soutien_financier.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_montant_souhaite">Montant souhaité</label>
+          {{ form.montant_souhaite }}
+          {{ form.montant_souhaite.errors }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_piece_identite">Pièce d'identité</label>
+          {{ form.piece_identite }}
+          {{ form.piece_identite.errors }}
+          {% if membre.piece_identite %}
+            <div class="form-text">Fichier actuel: <a href="{{ membre.piece_identite.url }}" target="_blank" rel="noopener">ouvrir</a></div>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="id_certificat_bapteme">Certificat de baptême</label>
+          {{ form.certificat_bapteme }}
+          {{ form.certificat_bapteme.errors }}
+          {% if membre.certificat_bapteme %}
+            <div class="form-text">Fichier actuel: <a href="{{ membre.certificat_bapteme.url }}" target="_blank" rel="noopener">ouvrir</a></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Enregistrer</button>
+      <a class="btn btn-outline-secondary" href="{% url 'main:details_membre' membre.id %}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,669 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Communication - Gestion Église{% endblock %}
+
+{% block content %}
+
+<!-- En-tête Communication - Design Moderne -->
+<div class="comm-header-section mb-4">
+    <div class="comm-header-content">
+        <div class="comm-logo-container mb-3">
+            <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo EPAG" class="comm-logo-animated">
+        </div>
+        <h1 class="comm-header-title">
+            <i class="fas fa-satellite-dish me-3"></i>COMMUNICATION
+        </h1>
+        <p class="comm-header-subtitle">
+            <i class="fas fa-broadcast-tower me-2"></i>Découvrez nos différents canaux de communication et restez informé des activités et événements de notre église.
+        </p>
+        <div class="comm-header-badges mt-3">
+            <span class="comm-badge" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Cliquez sur Réseaux sociaux" style="cursor: pointer;"><i class="fas fa-globe me-1"></i>Site Web</span>
+            <span class="comm-badge" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Cliquez sur Réseaux sociaux" style="cursor: pointer;"><i class="fab fa-facebook me-1"></i>Facebook</span>
+            <span class="comm-badge" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Cliquez sur Réseaux sociaux" style="cursor: pointer;"><i class="fab fa-whatsapp me-1"></i>WhatsApp</span>
+            <span class="comm-badge" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Cliquez sur Réseaux sociaux" style="cursor: pointer;"><i class="fab fa-youtube me-1"></i>YouTube</span>
+        </div>
+    </div>
+</div>
+
+<!-- Script pour ouvrir le menu À propos depuis le lien "Présentation de l'église" -->
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    // Initialiser les tooltips Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Appliquer le fond spécifique à cette page
+    document.body.classList.add('communication-bg');
+    document.querySelectorAll('.open-apropos-link').forEach(function(el){
+      el.addEventListener('click', function(e){
+        e.preventDefault();
+        try {
+          // Trouver le déclencheur du dropdown À propos dans la barre de navigation
+          var trigger = document.getElementById('aproposDropdown');
+          if (trigger && window.bootstrap && bootstrap.Dropdown) {
+            // Créer/obtenir l'instance et ouvrir le menu
+            var dd = bootstrap.Dropdown.getOrCreateInstance(trigger);
+            dd.show();
+            // Faire défiler en haut pour le rendre visible si besoin
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            return;
+          }
+        } catch (err) {}
+        // Fallback: rediriger vers Historique si le dropdown n'est pas disponible
+        window.location.href = "{% url 'main:historique' %}";
+      });
+    });
+
+    // Ouvrir le menu Actualité depuis l’item Calendrier des événements
+    document.querySelectorAll('.open-actualite-link').forEach(function(el){
+      el.addEventListener('click', function(e){
+        e.preventDefault();
+        try{
+          var trigger = document.getElementById('actualiteDropdown');
+          if (trigger && window.bootstrap && bootstrap.Dropdown){
+            var dd = bootstrap.Dropdown.getOrCreateInstance(trigger);
+            dd.show();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            return;
+          }
+        }catch(err){}
+        // Fallback: rediriger vers la page Événements
+        window.location.href = "{% url 'main:evenements' %}";
+      });
+    });
+
+    // Ouvrir le menu Gestion (Nos Départements) depuis l’item Ministères et services
+    document.querySelectorAll('.open-gestion-departements-link').forEach(function(el){
+      el.addEventListener('click', function(e){
+        e.preventDefault();
+        try{
+          var trigger = document.getElementById('gestionDropdown');
+          if (trigger && window.bootstrap && bootstrap.Dropdown){
+            var dd = bootstrap.Dropdown.getOrCreateInstance(trigger);
+            dd.show();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+            return;
+          }
+        }catch(err){}
+        // Fallback: rediriger vers la page Nos Départements
+        window.location.href = "{% url 'main:departements' %}";
+      });
+    });
+  });
+  </script>
+        </div>
+        
+        <!-- Navigation horizontale des sections avec onglets colorés et toujours visibles -->
+        <div class="nav-section mb-4">
+            <div class="bg-white rounded-4 shadow p-3">
+                <ul class="nav nav-tabs-custom nav-fill flex-column flex-md-row" id="communicationTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active custom-tab site-web-tab" id="site-web-tab" data-bs-toggle="pill" data-bs-target="#site-web" type="button" role="tab" aria-controls="site-web" aria-selected="true">
+                            <i class="fas fa-globe me-2"></i>Site web paroissial
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link custom-tab reseaux-sociaux-tab" id="reseaux-sociaux-tab" data-bs-toggle="pill" data-bs-target="#reseaux-sociaux" type="button" role="tab" aria-controls="reseaux-sociaux" aria-selected="false">
+                            <i class="fas fa-hashtag me-2"></i>Réseaux sociaux
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Styles CSS pour les onglets colorés -->
+        <style>
+            /* =============================================
+               EN-TÊTE COMMUNICATION - DESIGN MODERNE
+               ============================================= */
+            .comm-header-section {
+                background: linear-gradient(135deg, #1da1f2 0%, #4e73df 50%, #6f42c1 100%);
+                border-radius: 20px;
+                padding: 2.5rem;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 15px 50px rgba(29, 161, 242, 0.3);
+            }
+            
+            .comm-header-section::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: url("{% static 'main/images/hero/fond6.jpg' %}") center/cover no-repeat;
+                opacity: 0.15;
+            }
+            
+            .comm-header-section::after {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+                animation: rotateGlow 20s linear infinite;
+            }
+            
+            @keyframes rotateGlow {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .comm-header-content {
+                position: relative;
+                z-index: 2;
+                text-align: center;
+            }
+            
+            .comm-logo-container {
+                display: inline-block;
+                animation: floatComm 3s ease-in-out infinite;
+            }
+            
+            .comm-logo-animated {
+                width: 100px;
+                height: 100px;
+                object-fit: contain;
+                filter: drop-shadow(0 5px 20px rgba(255, 255, 255, 0.4));
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 8px;
+                transition: transform 0.3s ease;
+            }
+            
+            .comm-logo-animated:hover {
+                transform: scale(1.1) rotate(5deg);
+            }
+            
+            @keyframes floatComm {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+            
+            .comm-header-title {
+                font-size: clamp(1.8rem, 5vw, 2.8rem);
+                font-weight: 900;
+                color: white;
+                text-transform: uppercase;
+                letter-spacing: 4px;
+                margin-bottom: 1rem;
+                text-shadow: 2px 2px 15px rgba(0,0,0,0.3);
+            }
+            
+            .comm-header-subtitle {
+                font-size: 1.1rem;
+                color: rgba(255,255,255,0.95);
+                max-width: 700px;
+                margin: 0 auto;
+                line-height: 1.6;
+            }
+            
+            .comm-header-badges {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.8rem;
+            }
+            
+            .comm-badge {
+                display: inline-block;
+                background: rgba(255,255,255,0.2);
+                backdrop-filter: blur(10px);
+                color: white;
+                padding: 0.5rem 1rem;
+                border-radius: 50px;
+                font-size: 0.9rem;
+                font-weight: 600;
+                border: 1px solid rgba(255,255,255,0.3);
+                transition: all 0.3s ease;
+            }
+            
+            .comm-badge:hover {
+                background: rgba(255,255,255,0.3);
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            }
+            
+            /* Ancien Hero Communication (conservé pour compatibilité) */
+            .comm-hero{
+                position: relative;
+                background: linear-gradient(135deg, rgba(255, 140, 0, 0.95), rgba(255, 99, 71, 0.95));
+                color:#fff;
+                padding: 1.25rem 1rem;
+                border-radius: 16px;
+                box-shadow: 0 12px 30px rgba(0,0,0,.12);
+                overflow:hidden;
+            }
+            .comm-title{ font-weight:800; letter-spacing:.3px; text-shadow: 0 2px 6px rgba(0,0,0,.15); font-size:2rem; line-height:1.15 }
+            .comm-underline{ width:86px; height:4px; background:#fff; border-radius:3px; opacity:.92 }
+            .comm-subtitle{ color: rgba(255,255,255,.95); font-size:1.05rem; margin-top:.4rem }
+            /* Style de base pour tous les onglets personnalisés */
+            .nav-tabs-custom .nav-link {
+                border-radius: 8px 8px 0 0;
+                font-weight: 600;
+                padding: 12px 15px;
+                margin-right: 4px;
+                border: 1px solid rgba(0,0,0,0.1);
+                border-bottom: none;
+                position: relative;
+                transition: all 0.3s ease;
+            }
+            
+            /* Styles spécifiques pour chaque onglet avec couleurs distinctes */
+            .site-web-tab {
+                background-color: #4e73df;
+                color: white;
+            }
+            
+            .reseaux-sociaux-tab {
+                background-color: #1da1f2; /* Couleur Twitter */
+                color: white;
+            }
+            
+            .newsletter-tab {
+                background-color: #6f42c1; /* Violet */
+                color: white;
+            }
+            
+            .feuille-eglise-tab {
+                background-color: #20c997; /* Vert teal */
+                color: white;
+            }
+            
+            .panneaux-tab {
+                background-color: #fd7e14; /* Orange */
+                color: white;
+            }
+            
+            .annonces-tab {
+                background-color: #dc3545; /* Rouge */
+                color: white;
+            }
+            
+            .groupes-tab {
+                background-color: #28a745; /* Vert */
+                color: white;
+            }
+            
+            /* Style pour l'onglet actif */
+            .nav-tabs-custom .nav-link.active {
+                box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+                transform: translateY(-5px);
+                border-bottom: none;
+                font-weight: 700;
+            }
+            
+            /* Style au survol */
+            .nav-tabs-custom .nav-link:hover:not(.active) {
+                opacity: 0.9;
+                transform: translateY(-2px);
+            }
+            
+            /* Adaptation pour mobile */
+            @media (max-width: 767.98px) {
+                .nav-tabs-custom .nav-link {
+                    margin-bottom: 5px;
+                    border-radius: 8px;
+                    border: 1px solid rgba(0,0,0,0.1);
+                }
+            }
+            /* Liens cliquables des fonctionnalités (meilleure affordance) */
+            .feature-link{border-radius:.35rem; transition: color .2s ease, background-color .2s ease, text-decoration-color .2s ease}
+            .feature-link:hover, .feature-link:focus{
+                text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px;
+                color: #0d6efd; background-color: rgba(13,110,253,.06);
+            }
+            .feature-link:focus{outline: 2px solid rgba(13,110,253,.35); outline-offset: 2px}
+            /* Fond pleine page pour Communication */
+            .communication-bg{
+                background-image:url("{% static 'main/images/hero/Communication2.jpg' %}");
+                background-size:cover; background-position:center; background-repeat:no-repeat; background-attachment:fixed;
+            }
+        </style>
+        
+        <!-- Contenu des onglets -->
+        <div class="tab-content">
+            <!-- Première section : Site Web Paroissial -->
+            <div class="tab-pane fade show active" id="site-web">
+                <div class="event-section border-start border-primary border-4">
+                    <div class="section-header bg-light text-primary">
+                        <h4><i class="fas fa-globe me-2"></i>Site Web Paroissial</h4>
+                    </div>
+                    
+                    <!-- Légende de la section -->
+                    <div class="section-legend mx-3 mt-3 p-4 bg-light rounded-3 border-start border-primary border-5">
+                        <h5 class="text-primary mb-2"><i class="fas fa-info-circle me-2"></i>Notre présence en ligne</h5>
+                        <p class="mb-0">Le site web de notre église est notre vitrine principale sur internet. Il permet aux membres et aux visiteurs de découvrir notre communauté, nos activités et notre message.</p>
+                    </div>
+                    
+                    <!-- Contenu principal -->
+                    <div class="px-3 py-4">
+                        <!-- Caractéristiques du site web -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Fonctionnalités du site</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item p-0">
+                                                <a href="{% url 'main:historique' %}" class="d-flex align-items-center px-3 py-2 text-decoration-none feature-link">
+                                                    <i class="fas fa-church text-primary me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Présentation de l'église</h6>
+                                                        <small class="text-muted">Histoire, vision, équipe pastorale</small>
+                                                    </div>
+                                                </a>
+                                            </li>
+                                            <li class="list-group-item p-0">
+                                                <a href="{% url 'main:evenements' %}" class="d-flex align-items-center px-3 py-2 text-decoration-none feature-link">
+                                                    <i class="fas fa-calendar-alt text-primary me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Calendrier des événements</h6>
+                                                        <small class="text-muted">Cultes, études bibliques, activités spéciales</small>
+                                                    </div>
+                                                </a>
+                                            </li>
+                                            <li class="list-group-item d-flex align-items-center">
+                                                <i class="fas fa-microphone-alt text-primary me-3"></i>
+                                                <div>
+                                                    <h6 class="mb-0">Prédications en ligne</h6>
+                                                    <small class="text-muted">Écoute et téléchargement des messages</small>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item p-0">
+                                                <a href="{% url 'main:departements' %}" class="d-flex align-items-center px-3 py-2 text-decoration-none feature-link">
+                                                    <i class="fas fa-hands-helping text-primary me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Ministères et services</h6>
+                                                        <small class="text-muted">Présentation des différents départements</small>
+                                                    </div>
+                                                </a>
+                                            </li>
+                                            <li class="list-group-item p-0">
+                                                <a href="{% url 'main:contact' %}" class="d-flex align-items-center px-3 py-2 text-decoration-none feature-link">
+                                                    <i class="fas fa-envelope text-primary me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">Formulaire de contact</h6>
+                                                        <small class="text-muted">Pour nous joindre facilement</small>
+                                                    </div>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-4 mt-md-0">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Gestion du site</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Responsable :</strong> Équipe communication</p>
+                                        <p><strong>Fréquence de mise à jour :</strong> Hebdomadaire</p>
+                                        <p><strong>Contact :</strong> webmaster@eglisealleluia.org</p>
+                                        
+                                        <div class="alert alert-info mt-3">
+                                            <h6 class="alert-heading"><i class="fas fa-lightbulb me-2"></i>Contribuer au site</h6>
+                                            <p class="mb-0">Vous souhaitez proposer du contenu pour le site web ? Contactez l'équipe communication avec vos idées et suggestions !</p>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2 mt-3">
+                                            <a href="http://127.0.0.1:8000/" target="_blank" class="btn btn-outline-primary">
+                                                <i class="fas fa-external-link-alt me-2"></i>Visiter le site
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deuxième section : Réseaux Sociaux -->
+            <div class="tab-pane fade" id="reseaux-sociaux">
+                <div class="event-section border-start border-info border-4">
+                    <div class="section-header bg-light text-info">
+                        <h4><i class="fas fa-hashtag me-2"></i>Réseaux Sociaux</h4>
+                    </div>
+                    
+                    <!-- Légende de la section -->
+                    <div class="section-legend mx-3 mt-3 p-4 bg-light rounded-3 border-start border-info border-5">
+                        <h5 class="text-info mb-2"><i class="fas fa-info-circle me-2"></i>Notre présence sur les réseaux sociaux</h5>
+                        <p class="mb-0">Suivez-nous sur les réseaux sociaux pour rester connectés avec notre communauté et recevoir des mises à jour régulières sur nos activités et enseignements.</p>
+                    </div>
+                    
+                    <!-- Contenu principal -->
+                    <div class="px-3 py-4">
+                        <!-- Plateformes de réseaux sociaux -->
+                        <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+                            <div class="col">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <i class="fab fa-facebook fa-3x text-primary mb-2"></i>
+                                        <h5 class="card-title">Facebook</h5>
+                                        <p class="card-text">Suivez notre page pour les annonces officielles et les événements à venir.</p>
+                                        <p><strong>Abonnés :</strong> 1,200+</p>
+                                        <p><strong>Fréquence :</strong> 3-4 publications par semaine</p>
+                                        <a href="https://www.facebook.com/share/1AchV2bgQD/?mibextid=wwXIfr" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                            <i class="fas fa-external-link-alt me-1"></i>Visiter la page
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <i class="fab fa-instagram fa-3x text-danger mb-2"></i>
+                                        <h5 class="card-title">Instagram</h5>
+                                        <p class="card-text">Découvrez des moments forts de notre communauté en images et vidéos.</p>
+                                        <p><strong>Abonnés :</strong> 850+</p>
+                                        <p><strong>Fréquence :</strong> 2-3 publications par semaine</p>
+                                        <a href="https://www.instagram.com/eglise_pentecote_alleluia_gn?igsh=MWVyZTVocGxhdzllcQ==" target="_blank" class="btn btn-sm btn-outline-danger mt-2">
+                                            <i class="fas fa-external-link-alt me-1"></i>Visiter le profil
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <i class="fab fa-youtube fa-3x text-danger mb-2"></i>
+                                        <h5 class="card-title">YouTube</h5>
+                                        <p class="card-text">Regardez nos cultes en direct et nos prédications archivées.</p>
+                                        <p><strong>Abonnés :</strong> 500+</p>
+                                        <p><strong>Fréquence :</strong> 1-2 vidéos par semaine</p>
+                                        <a href="https://www.youtube.com/channel/UCv8RasSbiPMdM8Xq7DumOeg" target="_blank" class="btn btn-sm btn-outline-danger mt-2">
+                                            <i class="fas fa-external-link-alt me-1"></i>Visiter la chaîne
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- WhatsApp -->
+                            <div class="col">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <i class="fab fa-whatsapp fa-3x mb-2" style="color:#25D366;"></i>
+                                        <h5 class="card-title">WhatsApp</h5>
+                                        <p class="card-text">Rejoignez notre canal pour recevoir des nouvelles et annonces en temps réel.</p>
+                                        <p><strong>Mise à jour :</strong> Quotidienne</p>
+                                        <a href="https://whatsapp.com/channel/0029VbBiWy10VycDcvV68w1d" target="_blank" class="btn btn-sm btn-outline-success mt-2">
+                                            <i class="fas fa-external-link-alt me-1"></i>Ouvrir le canal
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Équipe et stratégie -->
+                        <div class="card shadow-sm mt-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-users-cog me-2"></i>Équipe et stratégie</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="border-bottom pb-2 mb-3">Équipe réseaux sociaux</h6>
+                                        <p><strong>Responsable :</strong> Révérend Alexis DIAWARA</p>
+                                        <p><strong>Membres :</strong> 3 volontaires</p>
+                                        <p><strong>Contact :</strong> reseaux@eglisealleluia.org</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="border-bottom pb-2 mb-3">Notre stratégie</h6>
+                                        <ul class="list-unstyled">
+                                            <li><i class="fas fa-check-circle text-success me-2"></i>Contenu inspirant et encourageant</li>
+                                            <li><i class="fas fa-check-circle text-success me-2"></i>Annonces d'événements</li>
+                                            <li><i class="fas fa-check-circle text-success me-2"></i>Témoignages de membres</li>
+                                            <li><i class="fas fa-check-circle text-success me-2"></i>Versets bibliques et méditations</li>
+                                            <li><i class="fas fa-check-circle text-success me-2"></i>Retours sur les activités passées</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+               
+    
+
+<!-- Sixième section : Annonces orales -->
+<div class="tab-pane fade" id="annonces">
+    <div class="event-section border-start border-danger border-4">
+        <div class="section-header bg-light text-danger">
+            <h4><i class="fas fa-bullhorn me-2"></i>Annonces orales</h4>
+        </div>
+        
+        <!-- Légende de la section -->
+        <div class="section-legend mx-3 mt-3 p-4 bg-light rounded-3 border-start border-danger border-5">
+            <h5 class="text-danger mb-2"><i class="fas fa-info-circle me-2"></i>Nos annonces pendant les cultes</h5>
+            <p class="mb-0">Les annonces orales sont faites pendant les cultes pour informer la communauté des événements importants et des nouvelles de l'église.</p>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="px-3 py-4">
+            <!-- Informations sur les annonces -->
+            <div class="row mb-4">
+                <div class="col-md-8 mx-auto">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-microphone-alt me-2"></i>Procédure d'annonces</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span><strong>Moment :</strong> Avant la prédication</span>
+                                <span class="badge bg-danger">Durée max : 5 minutes</span>
+                            </div>
+                            <p><strong>Responsable :</strong> Animateur du culte</p>
+                            <p><strong>Contact pour demandes :</strong> annonces@eglisealleluia.org</p>
+                            
+                            <!-- Procédure -->
+                            <div class="mt-4">
+                                <h6 class="border-bottom pb-2">Comment soumettre une annonce</h6>
+                                <ol class="list-group list-group-numbered mt-3">
+                                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                                        <div class="ms-2 me-auto">
+                                            <div class="fw-bold">Envoyez votre demande</div>
+                                            Par email à annonces@eglisealleluia.org
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                                        <div class="ms-2 me-auto">
+                                            <div class="fw-bold">Délai</div>
+                                            Au plus tard le jeudi précédant le culte
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                                        <div class="ms-2 me-auto">
+                                            <div class="fw-bold">Format</div>
+                                            Texte court (max 100 mots) avec les informations essentielles
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                                        <div class="ms-2 me-auto">
+                                            <div class="fw-bold">Validation</div>
+                                            Par le pasteur ou le responsable du culte
+                                        </div>
+                                    </li>
+                                </ol>
+                            </div>
+                            
+                            <!-- Conseils -->
+                            <div class="alert alert-light border mt-4">
+                                <h6 class="alert-heading"><i class="fas fa-lightbulb me-2 text-warning"></i>Conseils pour une annonce efficace</h6>
+                                <ul class="mb-0">
+                                    <li>Soyez concis et précis</li>
+                                    <li>Mentionnez la date, l'heure et le lieu</li>
+                                    <li>Indiquez une personne de contact</li>
+                                    <li>Précisez si une inscription est nécessaire</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Script JavaScript pour la gestion des onglets -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Récupération de tous les boutons d'onglets
+    const tabButtons = document.querySelectorAll('#communicationTabs button');
+    
+    // Récupération de tous les contenus d'onglets
+    const tabContents = document.querySelectorAll('.tab-pane');
+    
+    // Fonction pour afficher un onglet spécifique
+    function showTab(tabId) {
+        // Masquer tous les contenus d'onglets
+        tabContents.forEach(content => {
+            content.classList.remove('show', 'active');
+        });
+        
+        // Désactiver tous les boutons d'onglets
+        tabButtons.forEach(button => {
+            button.classList.remove('active');
+            button.setAttribute('aria-selected', 'false');
+        });
+        
+        // Afficher le contenu de l'onglet sélectionné
+        const selectedContent = document.getElementById(tabId);
+        if (selectedContent) {
+            selectedContent.classList.add('show', 'active');
+        }
+        
+        // Activer le bouton d'onglet correspondant
+        const selectedButton = document.querySelector(`button[data-bs-target="#${tabId}"]`);
+        if (selectedButton) {
+            selectedButton.classList.add('active');
+            selectedButton.setAttribute('aria-selected', 'true');
+        }
+    }
+    
+    // Ajouter des écouteurs d'événements à tous les boutons d'onglets
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const targetTabId = this.getAttribute('data-bs-target').substring(1);
+            showTab(targetTabId);
+        });
+    });
+    
+    // Afficher l'onglet actif par défaut (le premier)
+    showTab('site-web');
+});
+</script>
+
+{% endblock %}

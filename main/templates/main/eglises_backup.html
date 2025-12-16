@@ -1,0 +1,1671 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Styles pour la fonctionnalité de recherche */
+    mark {
+        padding: 0.1em 0.2em;
+        border-radius: 3px;
+    }
+    
+    .search-container {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    #searchInput:focus {
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        border-color: #86b7fe;
+    }
+    
+    #resultCount {
+        transition: all 0.3s ease;
+    }
+    
+    /* Animation pour le spinner de recherche */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    #searchSpinner {
+        animation: spin 1s linear infinite;
+    }
+    
+    /* Styles pour le tableau des églises */
+    .table-eglises {
+        table-layout: fixed;
+        width: 100%;
+    }
+    
+    .table-eglises th, .table-eglises td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 150px; /* Limiter la largeur maximale */
+    }
+    
+    /* Augmenter la taille de la cellule Nom */
+    .table-eglises .col-nom {
+        min-width: 250px;
+        max-width: 300px;
+        width: 20%;
+    }
+    
+    /* S'assurer que les boutons d'action restent sur la même ligne */
+    .table-eglises .d-flex {
+        flex-wrap: nowrap;
+        justify-content: center;
+    }
+    
+    /* Animation pour le modal de confirmation */
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        20% { transform: translateX(-10px); }
+        40% { transform: translateX(10px); }
+        60% { transform: translateX(-5px); }
+        80% { transform: translateX(5px); }
+        100% { transform: translateX(0); }
+    }
+    
+    .shake-animation {
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    /* Styles pour le modal de confirmation de suppression */
+    #modalConfirmationSuppression {
+        z-index: 9999;
+    }
+    
+    /* Styles pour s'assurer que le modal de confirmation est toujours visible */
+    #modalConfirmationSuppression .modal-content {
+        transform: scale(1.05);
+        transition: transform 0.3s ease;
+    }
+    
+    #modalConfirmationSuppression.show .modal-content {
+        transform: scale(1);
+    }
+    
+    /* Style pour les boutons du modal de confirmation */
+    #modalConfirmationSuppression .btn {
+        transition: all 0.2s ease;
+        min-width: 150px;
+    }
+    
+    #modalConfirmationSuppression .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .confirmation-visible .modal-dialog {
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.8); /* Ombre rouge autour du modal */
+        transform: scale(1.03); /* Légèrement plus grand pour attirer l'attention */
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    
+    .confirmation-visible .modal-content {
+        border: 2px solid #dc3545; /* Bordure rouge */
+    }
+    
+    #modalConfirmationSuppression .modal-header {
+        background-color: #dc3545 !important;
+        color: white !important;
+        font-weight: bold;
+    }
+    
+    /* Overlay personnalisé pour le modal de confirmation */
+    #confirmationOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 9998; /* Juste en dessous du modal */
+        display: none;
+    }
+    
+    /* Largeurs spécifiques pour chaque colonne */
+    .table-eglises .col-nom { width: 15%; }
+    .table-eglises .col-pays { width: 7%; }
+    .table-eglises .col-ville { width: 10%; }
+    .table-eglises .col-quartier { width: 10%; }
+    .table-eglises .col-pasteur { width: 12%; }
+    .table-eglises .col-telephone { width: 10%; }
+    .table-eglises .col-email { width: 12%; }
+    .table-eglises .col-date { width: 8%; }
+    .table-eglises .col-association { width: 6%; }
+    .table-eglises .col-membres { width: 5%; }
+
+    
+    /* Ajouter un tooltip pour voir le contenu complet au survol */
+    .table-eglises td[title] {
+        cursor: help;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-weight: bold;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-left: 5px solid #dc3545;
+        background-color: rgba(220, 53, 69, 0.1);
+        border-radius: 0 4px 4px 0;
+    }
+</style>
+</head>
+{% endblock %}
+
+{% block title %}Enregistrement d'église - Gestion église{% endblock %}
+
+{% block content %}
+<!-- Overlay pour le modal de confirmation -->
+<div id="confirmationOverlay"></div>
+
+<div class="page-content" style="position: relative; min-height: 100vh;">
+    <div style="position: fixed; left: 0; bottom: 0; width: 100vw; height: auto; min-height: 40vh; z-index: 0; pointer-events: none;">
+        <img src="{% static 'main/images/hero/fond1.jpg' %}" alt="Fond bas" style="width: 100vw; height: auto; display: block; object-fit: cover; object-position: bottom;">
+    </div>
+    <div class="container" style="position: relative; z-index: 2;">
+        <header class="page-header d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="text-primary mb-1"><i class="fas fa-church me-2"></i>Formulaire d'Enregistrement d'église</h1>
+                <p class="text-muted"><em>Enregistrez une nouvelle église dans le réseau de l'église Pentecôte Alléluia de Guinée</em></p>
+            </div>
+           
+        </header>
+        
+
+        
+        <!-- Affichage des messages -->
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' and "Le champ" in message|stringformat:"s" %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-left: 5px solid #721c24; font-weight: bold; color: #721c24;">
+                        <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% else %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+        <div class="content-section bg-white shadow-sm rounded p-4 border border-light">
+            <form method="post" class="needs-validation" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                
+                <!-- Section 1: Informations sur l'église -->
+                <div class="form-section mb-4 bg-light p-4 rounded shadow-sm border-start border-primary border-4">
+                    <h4 class="section-title text-primary mb-3"><i class="fas fa-info-circle me-2"></i> 1. Informations sur l'église</h4>
+                    
+                    <!-- Ligne 1: Nom de l'église, Pays, Ville -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="nom" class="form-label fw-bold required-field">Nom de l'église</label>
+                            <input type="text" class="form-control shadow-sm" id="nom" name="nom" value="{{ form_data.nom }}" list="eglises-list" placeholder="Sélectionnez ou saisissez un nom" required>
+                            <datalist id="eglises-list">
+                                <option value="Alléluia Bellevue">
+                                <option value="Alléluia Enta">
+                                <option value="Alléluia Cimenterie">
+                                <option value="Alléluia Yattayah">
+                                <option value="Alléluia Kagbelen">
+                                <option value="Alléluia Kenendé">
+                                <option value="Alléluia Kountia">
+                                <option value="Alléluia Gomboyah">
+                                <option value="Alléluia Coyah">
+                                <option value="Alléluia Mangatha">
+                                <option value="Alléluia Tanènè">
+                                <option value="Alléluia Koba">
+                                <option value="Alléluia Kissidougou">
+                                <option value="Alléluia Guéckédou">
+                                <option value="Alléluia de Lola">
+                                <option value="Alléluia Marela">
+                                <option value="Alléluia Koundara">
+                            </datalist>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="pays" class="form-label fw-bold required-field">Pays</label>
+                            <input type="text" class="form-control shadow-sm" id="pays" name="pays" value="{% if form_data.pays %}{{ form_data.pays }}{% else %}Guinée{% endif %}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="ville" class="form-label fw-bold required-field">Ville</label>
+                            <input type="text" class="form-control shadow-sm" id="ville" name="ville" value="{{ form_data.ville }}" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Ligne 2: Quartier, Pasteur en charge, Téléphone -->
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="quartier" class="form-label fw-bold">Quartier</label>
+                            <input type="text" class="form-control shadow-sm" id="quartier" name="quartier" value="{{ form_data.quartier }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="responsable" class="form-label fw-bold required-field">Pasteur en charge</label>
+                            <input type="text" class="form-control shadow-sm" id="responsable" name="responsable" value="{{ form_data.responsable }}" list="liste-pasteurs" required>
+                            <datalist id="liste-pasteurs">
+                                <!-- Les options seront chargées dynamiquement via JavaScript -->
+                            </datalist>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="telephone" class="form-label fw-bold required-field">Téléphone</label>
+                            <input type="tel" class="form-control shadow-sm" id="telephone" name="telephone" value="{{ form_data.telephone }}" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Ligne 3: Email, Date de fondation -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label fw-bold">Email</label>
+                            <input type="email" class="form-control shadow-sm" id="email" name="email" value="{{ form_data.email }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="date_creation" class="form-label fw-bold required-field">Date de fondation de l'église</label>
+                            <input type="date" class="form-control shadow-sm" id="date_creation" name="date_creation" value="{{ form_data.date_creation }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre_membres" class="form-label fw-bold">Nombre de membres</label>
+                            <input type="number" class="form-control shadow-sm" id="nombre_membres" name="nombre_membres" value="{{ form_data.nombre_membres|default:0 }}" min="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="adresse" class="form-label fw-bold">Adresse</label>
+                            <input type="text" class="form-control shadow-sm" id="adresse" name="adresse" value="{{ form_data.adresse }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 2: Statut Juridique -->
+                <div class="form-section mb-4 bg-light p-4 rounded shadow-sm border-start border-success border-4">
+                    <h4 class="section-title text-success mb-3"><i class="fas fa-gavel me-2"></i> 2. Statut Juridique</h4>
+                    
+                    <div class="row">
+
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold required-field">Association à but non lucratif ?</label>
+                            <div class="mt-2">
+                                <div class="form-check form-check-inline me-3">
+                                    <input class="form-check-input shadow-sm" type="radio" name="est_association" id="association_oui" value="True" {% if form_data.est_association %}checked{% endif %} required>
+                                    <label class="form-check-label" for="association_oui">
+                                        <span class="badge bg-dark">Oui</span>
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input shadow-sm" type="radio" name="est_association" id="association_non" value="False" {% if form_data.est_association == False %}checked{% endif %} required>
+                                    <label class="form-check-label" for="association_non">
+                                        <span class="badge bg-dark">Non</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="detailsAssociation" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="numero_autorisation" class="form-label fw-bold">Numéro d'enregistrement</label>
+                                <input type="text" class="form-control shadow-sm" id="numero_autorisation" name="numero_autorisation" value="{{ form_data.numero_autorisation }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="date_declaration" class="form-label fw-bold">Date d'enregistrement</label>
+                                <input type="date" class="form-control shadow-sm" id="date_enregistrement" name="date_enregistrement" value="{{ form_data.date_enregistrement }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 3: Activités et Services -->
+                <div class="form-section mb-4 bg-light p-4 rounded shadow-sm border-start border-info border-4">
+                    <h4 class="section-title text-info mb-3"><i class="fas fa-tasks me-2"></i> 3. Activités et Services</h4>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold text-dark fw-bold">Principales activités (cochez les cases applicables) :</label>
+                            <div class="activities-grid">
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="checkbox" id="culte_hebdomadaire" name="activites[]" value="culte_hebdomadaire" {% if 'culte_hebdomadaire' in form_data.activites %}checked{% endif %}>
+                                    <label class="form-check-label text-dark" for="culte_hebdomadaire">
+                                        <i class="fas fa-pray"></i> Culte hebdomadaire
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="checkbox" id="ecole_dimanche" name="activites[]" value="ecole_dimanche" {% if 'ecole_dimanche' in form_data.activites %}checked{% endif %}>
+                                    <label class="form-check-label text-dark" for="ecole_dimanche">
+                                        <i class="fas fa-child"></i> École du dimanche
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="checkbox" id="actions_sociales" name="activites[]" value="actions_sociales" {% if 'actions_sociales' in form_data.activites %}checked{% endif %}>
+                                    <label class="form-check-label text-dark" for="actions_sociales">
+                                        <i class="fas fa-hands-helping"></i> Actions sociales (soutien aux nécessiteux, etc.)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="checkbox" id="etudes_bibliques" name="activites[]" value="etudes_bibliques" {% if 'etudes_bibliques' in form_data.activites %}checked{% endif %}>
+                                    <label class="form-check-label text-dark" for="etudes_bibliques">
+                                        <i class="fas fa-book-open"></i> Études bibliques
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-sm" type="checkbox" id="autres_activites" name="activites[]" value="autres" {% if 'autres' in form_data.activites %}checked{% endif %}>
+                                    <label class="form-check-label text-dark" for="autres_activites">
+                                        <i class="fas fa-plus"></i> Autres (précisez)
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="autresActivitesDetail" class="mt-3" {% if 'autres' not in form_data.activites %}style="display: none;"{% endif %}>
+                                <label for="autres_activites_detail" class="form-label fw-bold">Précisez les autres activités :</label>
+                                <textarea class="form-control shadow-sm" id="autres_activites_detail" name="autres_activites_detail" rows="3" placeholder="Décrivez les autres activités de l'église...">{{ form_data.autres_activites_detail }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 4: Pièces Jointes Requises -->
+                <div class="form-section mb-4 bg-light p-4 rounded shadow-sm border-start border-warning border-4">
+                    <h4 class="section-title text-warning mb-3"><i class="fas fa-paperclip me-2"></i> 4. Pièces Jointes Requises</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="liste_membres_fondateurs" class="form-label fw-bold">Liste des membres fondateurs (noms et signatures)</label>
+                            <input type="file" class="form-control shadow-sm" id="liste_membres_fondateurs" name="liste_membres_fondateurs" accept=".pdf,.doc,.docx">
+                            <div class="form-text small">Formats acceptés : PDF, DOC, DOCX</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="statuts_reglements" class="form-label fw-bold">Copie des statuts et règlements intérieurs</label>
+                            <input type="file" class="form-control shadow-sm" id="statuts_reglements" name="statuts_reglements" accept=".pdf,.doc,.docx">
+                            <div class="form-text small">Formats acceptés : PDF, DOC, DOCX</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="piece_identite_responsable" class="form-label fw-bold">Copie de la pièce d'identité du responsable</label>
+                            <input type="file" class="form-control shadow-sm" id="piece_identite_responsable" name="piece_identite_responsable" accept=".pdf,.jpg,.jpeg,.png">
+                            <div class="form-text small">Formats acceptés : PDF, JPG, PNG</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="preuve_adresse" class="form-label fw-bold">Preuve d'adresse (facture, etc.)</label>
+                            <input type="file" class="form-control shadow-sm" id="preuve_adresse" name="preuve_adresse" accept=".pdf,.jpg,.jpeg,.png">
+                            <div class="form-text small">Formats acceptés : PDF, JPG, PNG</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section 5: Déclaration -->
+                <div class="form-section mb-4">
+                    <h4 class="section-title"><i class="fas fa-signature"></i> 5. Déclaration</h4>
+                    
+                    <div class="declaration-section">
+                        <p class="declaration-text">
+                            Je soussigné(e), <input type="text" class="form-control d-inline-block" id="nom_declarant" name="nom_declarant" style="width: 200px; display: inline-block !important;" placeholder="Nom complet" value="{{ form_data.nom_declarant }}" required>, 
+                            en ma qualité de <input type="text" class="form-control d-inline-block" id="qualite_declarant" name="qualite_declarant" style="width: 150px; display: inline-block !important;" placeholder="Qualité" value="{{ form_data.qualite_declarant }}" required> 
+                            de l'église <input type="text" class="form-control d-inline-block" id="nom_eglise_inline" name="nom_eglise_inline" style="width: 200px; display: inline-block !important;" placeholder="Nom de l'église" value="{{ form_data.nom }}" required>, 
+                            certifie que les informations fournies sont exactes et complètes.
+                        </p>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="date_declaration" class="form-label fw-bold required-field">Date</label>
+                                <input type="date" class="form-control shadow-sm" id="date_enregistrement" name="date_enregistrement" value="{{ form_data.date_enregistrement }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="signature_electronique" class="form-label fw-bold">Signature</label>
+                                <input type="file" class="form-control shadow-sm" id="signature_electronique" name="signature_electronique" accept=".jpg,.jpeg,.png">
+                                <div class="form-text small">Formats acceptés : JPG, PNG (optionnel)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+                        <button type="button" id="btnAnnuler" class="btn btn-secondary"><i class="fas fa-times"></i> Annuler</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="content-section mt-5 bg-white shadow p-4 rounded border border-light">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary mb-0"><i class="fas fa-list-alt me-2"></i>Églises déjà enregistrées</h2>
+                <a href="#" class="btn btn-primary px-4 py-2 shadow-sm" id="btnVoirEglises">
+                    <i class="fas fa-eye me-2"></i> <strong>Voir les Églises Entrées</strong>
+                </a>
+            </div>
+            
+            {% if eglises %}
+                <!-- Barre de recherche -->
+                <div class="row mb-3 search-container">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="searchInput" class="form-control shadow-sm" placeholder="Rechercher une église..." aria-label="Rechercher">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearch" title="Effacer la recherche">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Recherchez par nom, ville, pasteur, etc.</small>
+                    </div>
+                    <div class="col-md-3">
+                        <select id="filterCategory" class="form-select">
+                            <option value="all" selected>Tous les filtres</option>
+                            <option value="nom">Nom</option>
+                            <option value="ville">Ville</option>
+                            <option value="responsable">Pasteur</option>
+                            <option value="association">Association</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 text-end d-flex align-items-center justify-content-end">
+                        <div id="searchSpinner" class="spinner-border spinner-border-sm text-primary me-2 d-none" role="status">
+                            <span class="visually-hidden">Recherche en cours...</span>
+                        </div>
+                        <span id="resultCount" class="badge bg-primary">{{ eglises|length }} église(s) trouvée(s)</span>
+                    </div>
+                </div>
+                
+                <div class="table-responsive" style="max-height: 150px; overflow-y: auto; overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table class="table table-striped table-bordered table-hover table-eglises">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="col-nom">Nom de l'Église</th>
+                                <th class="col-pasteur">Pasteur en charge</th>
+                                <th class="col-membres">Membres</th>
+                                <th class="col-telephone">Téléphone</th>
+                                <th class="col-email">Email</th>
+                                <th class="col-date">Date de fondation</th>
+                                <th class="col-pays">Pays</th>
+                                <th class="col-ville">Ville</th>
+                                <th class="col-quartier">Quartier</th>
+                                <th class="col-adresse">Adresse</th>
+                                <th class="col-association">A. but non lucratif</th>
+                                <th class="col-numero">N° d'enregistrement</th>
+                                <th class="col-date-enreg">Date d'enregistrement</th>
+                                <th class="col-activites">Principales activités</th>
+                                <th class="col-autres-activites">Autres activités</th>
+                                <th class="col-fondateurs">Liste des membres fondateurs</th>
+                                <th class="col-statuts">Statuts et règlements intérieurs</th>
+                                <th class="col-identite">Pièce d'identité</th>
+                                <th class="col-preuve">Preuve d'adresse</th>
+                                <th class="col-declaration">Déclaration</th>
+                                <th class="col-date-decl">Date</th>
+                                <th class="col-signature">Signature</th>
+                                <th class="col-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for eglise in eglises %}
+                                <tr data-id="{{ eglise.id }}">
+                                    <td title="{{ eglise.nom }}">{{ eglise.nom }}</td>
+                                    <td title="{{ eglise.pays|default:'Guinée' }}">{{ eglise.pays|default:"Guinée" }}</td>
+                                    <td title="{{ eglise.ville }}">{{ eglise.ville }}</td>
+                                    <td title="{{ eglise.quartier|default:'-' }}">{{ eglise.quartier|default:"-" }}</td>
+                                    <td title="{{ eglise.adresse|default:'-' }}">{{ eglise.adresse|default:"-" }}</td>
+                                    <td title="{{ eglise.est_association|yesno:'Oui,Non' }}">{{ eglise.est_association|yesno:"Oui,Non" }}</td>
+                                    <td title="{{ eglise.numero_autorisation|default:'-' }}">{{ eglise.numero_autorisation|default:"-" }}</td>
+                                    <td title="{{ eglise.date_enregistrement|date:'d/m/Y'|default:'-' }}">{{ eglise.date_enregistrement|date:"d/m/Y"|default:"-" }}</td>
+                                    <td title="{{ eglise.activites|default:'-' }}">{{ eglise.activites|default:"-" }}</td>
+                                    <td title="{{ eglise.autres_activites_detail|default:'-' }}">{{ eglise.autres_activites_detail|default:"-" }}</td>
+                                    <td title="Document">{% if eglise.membres_fondateurs_doc %}<i class="fas fa-file-alt text-success"></i>{% else %}-{% endif %}</td>
+                                    <td title="Document">{% if eglise.statuts_doc %}<i class="fas fa-file-alt text-success"></i>{% else %}-{% endif %}</td>
+                                    <td title="Document">{% if eglise.pieces_identite_doc %}<i class="fas fa-file-alt text-success"></i>{% else %}-{% endif %}</td>
+                                    <td title="Document">{% if eglise.preuve_adresse_doc %}<i class="fas fa-file-alt text-success"></i>{% else %}-{% endif %}</td>
+                                    <td title="{{ eglise.nom_declarant|default:'-' }}">{{ eglise.nom_declarant|default:"-" }}</td>
+                                    <td title="{{ eglise.date_declaration|date:'d/m/Y'|default:'-' }}">{{ eglise.date_declaration|date:"d/m/Y"|default:"-" }}</td>
+                                    <td title="Signature">{% if eglise.qualite_declarant %}<i class="fas fa-signature text-primary"></i>{% else %}-{% endif %}</td>
+                                    <td title="{{ eglise.telephone }}">{{ eglise.telephone }}</td>
+                                    <td title="{{ eglise.email|default:'-' }}">{{ eglise.email|default:"-" }}</td>
+                                    <td title="{{ eglise.date_creation|date:'d/m/Y' }}">{{ eglise.date_creation|date:"d/m/Y" }}</td>
+
+                                    <td title="{{ eglise.nombre_membres }}">{{ eglise.nombre_membres }}</td>
+                                    
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <button type="button" class="btn btn-sm btn-info btn-voir rounded-circle shadow-sm" data-id="{{ eglise.id }}" data-nom="{{ eglise.nom }}" title="Voir les détails">
+                                                <i class="fas fa-search-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-warning btn-modifier rounded-circle shadow-sm" data-id="{{ eglise.id }}" data-nom="{{ eglise.nom }}" title="Modifier">
+                                                <i class="fas fa-pen-fancy"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger btn-supprimer rounded-circle shadow-sm" data-id="{{ eglise.id }}" data-nom="{{ eglise.nom }}" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Toast de confirmation de suppression -->
+                <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                    <div id="toastConfirmationSuppression" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+                        <div class="toast-header bg-danger text-white">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong class="me-auto">Confirmation de suppression</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-trash-alt text-danger me-2"></i>
+                                <span>Supprimer l'église <strong id="nomEgliseASupprimer" class="text-danger"></strong> ?</span>
+                            </div>
+                            <div class="small text-muted mb-3">
+                                <i class="fas fa-exclamation-circle me-1"></i> Cette action est <strong>irréversible</strong>.
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" id="btnAnnulerSuppression" class="btn btn-sm btn-secondary" data-bs-dismiss="toast">
+                                    <i class="fas fa-times me-1"></i> Annuler
+                                </button>
+                                <form id="formSupprimerEglise" method="post" action="" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" id="btnConfirmerSuppression" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash-alt me-1"></i> Confirmer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Aucune église n'est encore enregistrée.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Styles CSS pour le formulaire -->
+<style>
+.form-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 4px solid #007bff;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.section-title {
+    color: #007bff;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+}
+
+.section-title i {
+    font-size: 1.4rem;
+}
+
+.form-check-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.activities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+    justify-content: flex-start;
+}
+
+.activities-grid .form-check {
+    margin-bottom: 0;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.activities-grid .form-check:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+}
+
+.activities-grid .form-check-label {
+    font-size: 0.9rem;
+    line-height: 1.3;
+    text-align: left;
+    display: inline-block;
+}
+
+.activities-grid .form-check-label i {
+    font-size: 0.8rem;
+    margin-right: 6px;
+    width: 14px;
+}
+
+.declaration-section {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.declaration-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    text-align: justify;
+}
+
+.declaration-text .form-control.d-inline-block {
+    border: none;
+    border-bottom: 2px solid #007bff;
+    border-radius: 0;
+    background: transparent;
+    padding: 2px 8px;
+    margin: 0 5px;
+    font-weight: 600;
+    color: #007bff;
+    vertical-align: baseline;
+    transition: all 0.3s ease;
+}
+
+.declaration-text .form-control.d-inline-block:focus {
+    outline: none;
+    border-bottom-color: #0056b3;
+    background: rgba(0, 123, 255, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.declaration-text .form-control.d-inline-block::placeholder {
+    color: #6c757d;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.form-text.small {
+    font-size: 0.7rem;
+    margin-top: 2px;
+}
+
+
+.table-responsive {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.table-eglises {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-eglises thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #343a40;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 8px;
+    white-space: nowrap;
+}
+
+.table-eglises tbody td {
+    padding: 10px 8px;
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table-eglises tbody tr:hover {
+    background-color: rgba(0,123,255,0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.col-nom { min-width: 150px; }
+.col-pays { min-width: 100px; }
+.col-ville { min-width: 120px; }
+.col-quartier { min-width: 120px; }
+.col-pasteur { min-width: 150px; }
+.col-telephone { min-width: 120px; }
+.col-email { min-width: 180px; }
+.col-date { min-width: 120px; }
+.col-membres { min-width: 100px; }
+
+
+
+
+
+.content-section {
+    margin-bottom: 30px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.required-field::after {
+    content: '*';
+    color: #dc3545;
+    margin-left: 4px;
+    font-weight: bold;
+}
+
+    .error-message {
+        color: #dc3545;
+        font-weight: bold;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-left: 5px solid #dc3545;
+        background-color: rgba(220, 53, 69, 0.1);
+        border-radius: 0 4px 4px 0;
+    }
+</style>
+
+<!-- JavaScript pour le formulaire -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser les boutons d'action dans le tableau
+    initBoutonsAction();
+    
+    // Initialiser les boutons du modal de confirmation
+    initModalConfirmation();
+    
+    // Charger la liste des pasteurs pour le champ "Pasteur en charge"
+    chargerListePasteurs();
+    
+    // Synchroniser le nom de l'église avec le champ inline
+    const nomEglise = document.getElementById('nom');
+    const nomEgliseInline = document.getElementById('nom_eglise_inline');
+    
+    // Gestion de l'affichage de la section d'association gérée plus bas
+    
+    // Gestion de l'affichage du champ de détails des autres activités si l'option est cochée
+    // lors du rechargement du formulaire après une erreur
+    if (document.getElementById('autres_activites') && document.getElementById('autres_activites').checked) {
+        document.getElementById('autresActivitesDetail').style.display = 'block';
+    }
+    
+    if (nomEglise && nomEgliseInline) {
+        nomEglise.addEventListener('input', function() {
+            nomEgliseInline.value = this.value;
+        });
+    }
+    
+    // Gérer l'affichage des détails d'association
+    const associationOui = document.getElementById('association_oui');
+    const associationNon = document.getElementById('association_non');
+    const detailsAssociation = document.getElementById('detailsAssociation');
+    
+    // Initialiser l'affichage au chargement de la page
+    if (associationOui && associationOui.checked && detailsAssociation) {
+        detailsAssociation.style.display = 'block';
+    } else if (detailsAssociation) {
+        detailsAssociation.style.display = 'none';
+    }
+    
+    if (associationOui && associationNon && detailsAssociation) {
+        associationOui.addEventListener('change', function() {
+            if (this.checked) {
+                detailsAssociation.style.display = 'block';
+            }
+        });
+        
+        associationNon.addEventListener('change', function() {
+            if (this.checked) {
+                detailsAssociation.style.display = 'none';
+            }
+        });
+    }
+    
+    // Gérer l'affichage du champ pour préciser les autres activités
+    const autresActivites = document.getElementById('autres_activites');
+    const autresActivitesDetail = document.getElementById('autresActivitesDetail');
+    
+    if (autresActivites && autresActivitesDetail) {
+        autresActivites.addEventListener('change', function() {
+            if (this.checked) {
+                autresActivitesDetail.style.display = 'block';
+            } else {
+                autresActivitesDetail.style.display = 'none';
+            }
+        });
+    }
+    
+    // Définir la date du jour par défaut pour la date de déclaration
+    const dateDeclaration = document.getElementById('date_declaration');
+    if (dateDeclaration) {
+        const today = new Date().toISOString().split('T')[0];
+        dateDeclaration.value = today;
+    }
+    
+    // Gérer le bouton Annuler
+    const btnAnnuler = document.getElementById('btnAnnuler');
+    if (btnAnnuler) {
+        btnAnnuler.addEventListener('click', function() {
+            if (confirm('Êtes-vous sûr de vouloir annuler ? Toutes les données saisies seront perdues.')) {
+                // Réinitialiser le formulaire
+                const form = this.closest('form');
+                form.reset();
+                
+                // Masquer les sections conditionnelles
+                if (detailsAssociation) {
+                    detailsAssociation.style.display = 'none';
+                }
+                
+                if (autresActivitesDetail) {
+                    autresActivitesDetail.style.display = 'none';
+                }
+                
+                // Réinitialiser les champs inline
+                if (nomEgliseInline) {
+                    nomEgliseInline.value = '';
+                }
+                
+                // Réinitialiser les autres champs inline si présents
+                const nomDeclarantInline = document.getElementById('nom_declarant_inline');
+                const qualiteDeclarantInline = document.getElementById('qualite_declarant_inline');
+                
+                if (nomDeclarantInline) {
+                    nomDeclarantInline.value = '';
+                }
+                
+                if (qualiteDeclarantInline) {
+                    qualiteDeclarantInline.value = '';
+                }
+                
+                // Réinitialiser la date de déclaration à aujourd'hui
+                if (dateDeclaration) {
+                    const today = new Date().toISOString().split('T')[0];
+                    dateDeclaration.value = today;
+                }
+                
+                // Faire défiler vers le haut du formulaire
+                window.scrollTo({
+                    top: document.querySelector('form').offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    }
+    
+    // Fonctionnalité de recherche dans le tableau
+    const searchInput = document.getElementById('searchInput');
+    const resultCount = document.getElementById('resultCount');
+    const clearSearch = document.getElementById('clearSearch');
+    const filterCategory = document.getElementById('filterCategory');
+    
+    // Fonction pour mettre en surbrillance le texte recherché
+    function highlightText(element, searchTerm) {
+        if (!searchTerm) return;
+        
+        const originalText = element.textContent;
+        const lowerText = originalText.toLowerCase();
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        
+        if (lowerText.includes(lowerSearchTerm)) {
+            const regex = new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+            element.innerHTML = originalText.replace(regex, match => `<mark class="bg-warning">${match}</mark>`);
+        }
+    }
+    
+    // Fonction pour réinitialiser la surbrillance
+    function resetHighlights() {
+        document.querySelectorAll('tbody td').forEach(cell => {
+            // Conserver uniquement le texte original sans les balises de surbrillance
+            if (cell.innerHTML.includes('<mark')) {
+                cell.textContent = cell.textContent;
+            }
+        });
+    }
+    
+    // Fonction de recherche et filtrage avec délai d'exécution
+    let searchTimeout;
+    function performSearch() {
+        // Afficher le spinner pendant la recherche
+        const searchSpinner = document.getElementById('searchSpinner');
+        if (searchSpinner) searchSpinner.classList.remove('d-none');
+        
+        // Annuler la recherche précédente si elle est en cours
+        if (searchTimeout) clearTimeout(searchTimeout);
+        
+        // Exécuter la recherche après un court délai pour éviter les recherches trop fréquentes
+        searchTimeout = setTimeout(() => {
+            resetHighlights(); // Réinitialiser les surbrillances précédentes
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            const filterValue = filterCategory.value;
+            const rows = document.querySelectorAll('table tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                let found = false;
+                
+                if (filterValue === 'all') {
+                    // Rechercher dans toutes les cellules sauf la dernière (actions)
+                    const cells = row.querySelectorAll('td:not(:last-child)');
+                    cells.forEach(cell => {
+                        if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                            found = true;
+                            if (searchTerm) highlightText(cell, searchTerm);
+                        }
+                    });
+                } else {
+                    // Déterminer l'index de la colonne à filtrer
+                    let columnIndex;
+                    switch(filterValue) {
+                        case 'nom': columnIndex = 0; break;
+                        case 'ville': columnIndex = 2; break;
+                        case 'responsable': columnIndex = 4; break;
+                        case 'association': columnIndex = 8; break;
+                        default: columnIndex = -1;
+                    }
+                    
+                    if (columnIndex >= 0) {
+                        const cell = row.querySelectorAll('td')[columnIndex];
+                        if (cell && cell.textContent.toLowerCase().includes(searchTerm)) {
+                            found = true;
+                            if (searchTerm) highlightText(cell, searchTerm);
+                        }
+                    }
+                }
+                
+                if (found) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Mettre à jour le compteur de résultats
+            if (resultCount) {
+                resultCount.textContent = visibleCount + ' église(s) trouvée(s)';
+                
+                // Changer la couleur du badge selon le nombre de résultats
+                if (visibleCount === 0) {
+                    resultCount.className = 'badge bg-danger';
+                } else if (visibleCount < rows.length) {
+                    resultCount.className = 'badge bg-warning text-dark';
+                } else {
+                    resultCount.className = 'badge bg-primary';
+                }
+            }
+            
+            // Masquer le spinner une fois la recherche terminée
+            if (searchSpinner) searchSpinner.classList.add('d-none');
+        }, 300); // Délai de 300ms pour éviter les recherches trop fréquentes
+    }
+    
+    // Ajouter les écouteurs d'événements
+    if (searchInput) {
+        searchInput.addEventListener('input', performSearch);
+    }
+    
+    if (filterCategory) {
+        filterCategory.addEventListener('change', performSearch);
+    }
+    
+    // Bouton pour effacer la recherche
+    if (clearSearch) {
+        clearSearch.addEventListener('click', function() {
+            searchInput.value = '';
+            filterCategory.value = 'all';
+            performSearch();
+            searchInput.focus();
+        });
+    }
+    
+    // Initialiser la recherche au chargement de la page
+    // Utile si l'utilisateur revient en arrière dans le navigateur avec un terme de recherche déjà saisi
+    if (searchInput && searchInput.value) {
+        performSearch();
+    }
+    
+    // Ajouter un raccourci clavier pour la recherche (Ctrl+F)
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault(); // Empêcher le comportement par défaut du navigateur
+            searchInput.focus();
+        }
+    });
+    
+    // Fonction pour confirmer la suppression d'une église
+    function confirmerSuppression(egliseId, nomEglise) {
+        // Fermer tous les modals ouverts
+        fermerTousLesModals();
+        
+        // Mettre à jour le nom de l'église dans le modal
+        const nomEgliseElement = document.getElementById('nomEgliseASupprimer');
+        if (nomEgliseElement) {
+            nomEgliseElement.textContent = nomEglise;
+        }
+        
+        // Définir l'action du formulaire pour qu'elle pointe vers la vue de suppression
+        const formSuppression = document.getElementById('formSupprimerEglise');
+        formSuppression.action = "{% url 'main:supprimer_eglise' 0 %}".replace('/0/', '/' + egliseId + '/');
+        
+        // Afficher l'overlay de confirmation
+        const overlay = document.getElementById('confirmationOverlay');
+        if (overlay) {
+            overlay.style.display = 'block';
+        }
+        
+        // Afficher le modal de confirmation
+        const modalConfirmationEl = document.getElementById('modalConfirmationSuppression');
+        const modalConfirmation = new bootstrap.Modal(modalConfirmationEl);
+        modalConfirmation.show();
+        
+        // Ajouter un gestionnaire d'événements pour fermer l'overlay lorsque le modal est fermé
+        modalConfirmationEl.addEventListener('hidden.bs.modal', function () {
+            const overlay = document.getElementById('confirmationOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        });
+        
+        // Ajouter une animation d'alerte
+        const modalContent = document.querySelector('#modalConfirmationSuppression .modal-content');
+        if (modalContent) {
+            modalContent.classList.add('shake-animation');
+            setTimeout(() => {
+                modalContent.classList.remove('shake-animation');
+            }, 500);
+        }
+        
+        // Mettre le focus sur le bouton Annuler pour l'accessibilité
+        setTimeout(function() {
+            const btnAnnuler = document.querySelector('#modalConfirmationSuppression .btn-secondary');
+            if (btnAnnuler) {
+                btnAnnuler.focus();
+            }
+        }, 600);
+    }
+    
+    // Initialiser les boutons d'action dans le tableau
+    function initBoutonsAction() {
+        // Gérer les boutons de suppression
+        document.querySelectorAll('.btn-supprimer').forEach(button => {
+            button.addEventListener('click', function() {
+                const egliseId = this.getAttribute('data-id');
+                const nomEglise = this.getAttribute('data-nom');
+                confirmerSuppression(egliseId, nomEglise);
+            });
+        });
+        
+        // Gérer les boutons de visualisation
+        document.querySelectorAll('.btn-voir').forEach(button => {
+            button.addEventListener('click', function() {
+                const egliseId = this.getAttribute('data-id');
+                const nomEglise = this.getAttribute('data-nom');
+                voirDetailsEglise(egliseId, nomEglise);
+            });
+        });
+        
+        // Gérer les boutons de modification
+        document.querySelectorAll('.btn-modifier').forEach(button => {
+            button.addEventListener('click', function() {
+                const egliseId = this.getAttribute('data-id');
+                const nomEglise = this.getAttribute('data-nom');
+                modifierEglise(egliseId, nomEglise);
+            });
+        });
+    }
+    
+    // Fonction pour voir les détails d'une église
+    function voirDetailsEglise(egliseId, nomEglise) {
+        // Charger les détails de l'église via AJAX
+        fetch(`/get_eglise_details/${egliseId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erreur lors du chargement des détails de l'église");
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Afficher les détails dans un modal
+                afficherModalDetailsEglise(data);
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                // En attendant l'implémentation complète de l'API, rediriger vers la page de modification
+                // qui contient déjà tous les détails de l'église
+                const url = `{% url 'main:modifier_eglise' 999 %}`.replace('999', egliseId);
+                window.location.href = url;
+            });
+    }
+    
+    // Fonction pour afficher les détails de l'église dans un modal
+    function afficherModalDetailsEglise(eglise) {
+        // Cette fonction sera utilisée lorsque l'API de détails sera implémentée
+    }
+    
+    // Fonction pour modifier une église
+    function modifierEglise(egliseId, nomEglise) {
+        // Rediriger vers la page de modification de l'église
+        const url = `{% url 'main:modifier_eglise' 999 %}`.replace('999', egliseId);
+        window.location.href = url;
+    }
+    
+    // Fonction pour confirmer la suppression d'une église
+    function confirmerSuppression(egliseId, nomEglise) {
+        // Mettre à jour le nom de l'église dans le toast
+        document.getElementById('nomEgliseASupprimer').textContent = nomEglise;
+        
+        // Mettre à jour l'action du formulaire de suppression
+        const formSuppression = document.getElementById('formSupprimerEglise');
+        formSuppression.action = `{% url 'main:supprimer_eglise' 999 %}`.replace('999', egliseId);
+        
+        // Stocker l'ID de l'église dans un attribut data pour le bouton de confirmation
+        document.getElementById('btnConfirmerSuppression').setAttribute('data-id', egliseId);
+        
+        // Afficher le toast de confirmation sur la barre de tâche
+        const toastElement = document.getElementById('toastConfirmationSuppression');
+        const toast = new bootstrap.Toast(toastElement, { autohide: false });
+        toast.show();
+    }
+    
+    // Initialiser les boutons du toast de confirmation
+    function initModalConfirmation() {
+        // Gérer le bouton Annuler
+        const btnAnnuler = document.getElementById('btnAnnulerSuppression');
+        if (btnAnnuler) {
+            btnAnnuler.addEventListener('click', function() {
+                // Fermer le toast (déjà géré par data-bs-dismiss="toast")
+                console.log('Suppression annulée');
+            });
+        }
+        
+        // Gérer le bouton Confirmer la suppression
+        const btnConfirmer = document.getElementById('btnConfirmerSuppression');
+        if (btnConfirmer) {
+            btnConfirmer.addEventListener('click', function(event) {
+                // Ne pas empêcher la soumission par défaut
+                // event.preventDefault();
+                
+                // Laisser le formulaire se soumettre normalement
+                // Le serveur traitera la requête et supprimera l'église
+                
+                // Note: Si vous préférez voir un message avant la soumission, vous pouvez utiliser:
+                // const egliseId = this.getAttribute('data-id');
+                // const nomEglise = document.getElementById('nomEgliseASupprimer').textContent;
+                // if(confirm(`Confirmer la suppression de l'église "${nomEglise}" ?`)) {
+                //     document.getElementById('formSupprimerEglise').submit();
+                // } else {
+                //     event.preventDefault();
+                // }
+            });
+        }
+    }
+    
+    // Gérer le clic sur le bouton "Voir les Églises Entrées"
+    const btnVoirEglises = document.getElementById('btnVoirEglises');
+    if (btnVoirEglises) {
+        btnVoirEglises.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Récupérer toutes les églises du tableau
+            const eglisesTable = document.querySelector('table.table-eglises');
+            const eglisesRows = eglisesTable.querySelectorAll('tbody tr:not(.d-none)');
+            
+            // Vider le corps du tableau dans le modal
+            const modalTableBody = document.getElementById('eglisesEntreesTableBody');
+            if (modalTableBody) {
+                modalTableBody.innerHTML = '';
+                
+                // Remplir le tableau du modal avec les données des églises visibles
+                eglisesRows.forEach(function(row) {
+                    const egliseId = row.getAttribute('data-id') || '';
+                    const nom = row.cells[0].textContent.trim();
+                    const pasteur = row.cells[1].textContent.trim();
+                    const membres = row.cells[2].textContent.trim();
+                    const telephone = row.cells[3].textContent.trim();
+                    const email = row.cells[4].textContent.trim();
+                    const date = row.cells[5].textContent.trim();
+                    const pays = row.cells[6].textContent.trim();
+                    const ville = row.cells[7].textContent.trim();
+                    const quartier = row.cells[8].textContent.trim();
+                    const adresse = row.cells[9].textContent.trim();
+                    const association = row.cells[10].textContent.trim();
+                    const numero = row.cells[11].textContent.trim();
+                    const dateEnreg = row.cells[12].textContent.trim();
+                    const activites = row.cells[13].textContent.trim();
+                    const autresActivites = row.cells[14].textContent.trim();
+                    const fondateurs = row.cells[15].textContent.trim();
+                    const statuts = row.cells[16].textContent.trim();
+                    const identite = row.cells[17].textContent.trim();
+                    const preuve = row.cells[18].textContent.trim();
+                    const declaration = row.cells[19].textContent.trim();
+                    const dateDecl = row.cells[20].textContent.trim();
+                    const signature = row.cells[21].textContent.trim();
+                    
+                    // Initialiser la variable actionsHtml
+                    let actionsHtml = '';
+                    
+                    // Vérifier que l'ID est valide (ni 0, ni vide, ni undefined)
+                    if (egliseId && egliseId !== '0' && egliseId !== 0) {
+                        actionsHtml = `
+                            <div class="d-flex justify-content-center gap-2">
+                                <button type="button" class="btn btn-sm btn-info btn-voir rounded-circle shadow-sm" data-id="${egliseId}" data-nom="${nom}" title="Voir les détails">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-warning btn-modifier rounded-circle shadow-sm" data-id="${egliseId}" data-nom="${nom}" title="Modifier">
+                                    <i class="fas fa-pen-fancy"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger btn-supprimer rounded-circle shadow-sm" data-id="${egliseId}" data-nom="${nom}" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                    
+                    // Créer une nouvelle ligne pour le tableau modal
+                    const newRow = document.createElement('tr');
+                    newRow.setAttribute('data-id', egliseId);
+                    newRow.innerHTML = `
+                        <td title="${nom}">${nom}</td>
+                        <td title="${pasteur}">${pasteur}</td>
+                        <td title="${membres}">${membres}</td>
+                        <td title="${telephone}">${telephone}</td>
+                        <td title="${email}">${email}</td>
+                        <td title="${date}">${date}</td>
+                        <td title="${pays}">${pays}</td>
+                        <td title="${ville}">${ville}</td>
+                        <td title="${quartier}">${quartier}</td>
+                        <td title="${adresse}">${adresse}</td>
+                        <td title="${association}">${association}</td>
+                        <td title="${numero}">${numero}</td>
+                        <td title="${dateEnreg}">${dateEnreg}</td>
+                        <td title="${activites}">${activites}</td>
+                        <td title="${autresActivites}">${autresActivites}</td>
+                        <td title="${fondateurs}">${fondateurs}</td>
+                        <td title="${statuts}">${statuts}</td>
+                        <td title="${identite}">${identite}</td>
+                        <td title="${preuve}">${preuve}</td>
+                        <td title="${declaration}">${declaration}</td>
+                        <td title="${dateDecl}">${dateDecl}</td>
+                        <td title="${signature}">${signature}</td>
+                        <td>${actionsHtml}</td>
+                    `;
+                    
+                    modalTableBody.appendChild(newRow);
+                });
+                
+                // Afficher le modal
+                const eglisesEntreesModal = new bootstrap.Modal(document.getElementById('eglisesEntreesModal'));
+                eglisesEntreesModal.show();
+                
+                // Initialiser les boutons d'action dans le modal
+                setTimeout(() => {
+                    // Réinitialiser les écouteurs d'événements pour les boutons d'action
+                    document.querySelectorAll('#eglisesEntreesTableBody .btn-supprimer').forEach(button => {
+                        // Supprimer les anciens écouteurs d'événements
+                        const newButton = button.cloneNode(true);
+                        button.parentNode.replaceChild(newButton, button);
+                        
+                        // Ajouter le nouvel écouteur d'événement
+                        newButton.addEventListener('click', function() {
+                            const egliseId = this.getAttribute('data-id');
+                            const nomEglise = this.getAttribute('data-nom');
+                            confirmerSuppression(egliseId, nomEglise);
+                        });
+                    });
+                    
+                    // Initialiser les boutons de visualisation
+                    document.querySelectorAll('#eglisesEntreesTableBody .btn-voir').forEach(button => {
+                        const newButton = button.cloneNode(true);
+                        button.parentNode.replaceChild(newButton, button);
+                        newButton.addEventListener('click', function() {
+                            const egliseId = this.getAttribute('data-id');
+                            const nomEglise = this.getAttribute('data-nom');
+                            voirDetailsEglise(egliseId, nomEglise);
+                        });
+                    });
+                    
+                    // Initialiser les boutons de modification
+                    document.querySelectorAll('#eglisesEntreesTableBody .btn-modifier').forEach(button => {
+                        const newButton = button.cloneNode(true);
+                        button.parentNode.replaceChild(newButton, button);
+                        newButton.addEventListener('click', function() {
+                            const egliseId = this.getAttribute('data-id');
+                            const nomEglise = this.getAttribute('data-nom');
+                            modifierEglise(egliseId, nomEglise);
+                        });
+                    });
+                }, 300);
+            }
+        });
+        }
+    });
+    
+    // Fonction pour fermer tous les modals ouverts
+    function fermerTousLesModals() {
+    // Cette fonction est appelée lors de la soumission du formulaire de suppression
+    // Elle s'assure que tous les modals sont fermés pour éviter les conflits
+    const eglisesEntreesModalEl = document.getElementById('eglisesEntreesModal');
+    if (eglisesEntreesModalEl) {
+        const eglisesEntreesModal = bootstrap.Modal.getInstance(eglisesEntreesModalEl);
+        if (eglisesEntreesModal) {
+            eglisesEntreesModal.hide();
+        }
+    }
+    
+    const confirmationModalEl = document.getElementById('modalConfirmationSuppression');
+    if (confirmationModalEl) {
+        const confirmationModal = bootstrap.Modal.getInstance(confirmationModalEl);
+        if (confirmationModal) {
+            confirmationModal.hide();
+        }
+    }
+    
+    // Masquer l'overlay
+    const overlay = document.getElementById('confirmationOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+    
+    // Laisser le formulaire se soumettre normalement
+    return true;
+}
+
+// Fonction pour charger la liste des pasteurs depuis la base de données
+function chargerListePasteurs() {
+    const datalistPasteurs = document.getElementById('liste-pasteurs');
+    if (!datalistPasteurs) return;
+    
+    // Essayer de récupérer les pasteurs via l'API
+    fetch('/api/pasteurs/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur lors de la récupération des pasteurs');
+            }
+            return response.json();
+        })
+        .then(pasteurs => {
+            // Ajouter les pasteurs à la liste d'autocomplétion
+            pasteurs.forEach(pasteur => {
+                const option = document.createElement('option');
+                option.value = `${pasteur.prenom} ${pasteur.nom}`;
+                datalistPasteurs.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            // En cas d'erreur, ajouter quelques pasteurs d'exemple
+            datalistPasteurs.innerHTML = `
+                <option value="Jean Dupont">
+                <option value="Marie Martin">
+                <option value="Pierre Durand">
+                <option value="Sophie Lefebvre">
+                <option value="Paul Bernard">
+            `;
+        });
+}
+</script>
+
+<!-- Overlay pour le modal de confirmation -->
+<div id="confirmationOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9998;"></div>
+
+<!-- Modal d'information -->
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="infoModalLabel"><i class="fas fa-info-circle"></i> Information</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="infoModalBody">
+                <!-- Le contenu sera inséré dynamiquement -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour voir les églises entrées -->
+<div class="modal fade" id="eglisesEntreesModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="eglisesEntreesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="eglisesEntreesModalLabel"><i class="fas fa-church"></i> Liste des Églises Entrées</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto; overflow-x: auto; scrollbar-width: thin; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table class="table table-striped table-bordered table-hover table-eglises" style="width: 100%;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="col-nom">Nom de l'Église</th>
+                                <th class="col-pasteur">Pasteur en charge</th>
+                                <th class="col-membres">Membres</th>
+                                <th class="col-telephone">Téléphone</th>
+                                <th class="col-email">Email</th>
+                                <th class="col-date">Date de fondation</th>
+                                <th class="col-pays">Pays</th>
+                                <th class="col-ville">Ville</th>
+                                <th class="col-quartier">Quartier</th>
+                                <th class="col-adresse">Adresse</th>
+                                <th class="col-association">A. but non lucratif</th>
+                                <th class="col-numero">N° d'enregistrement</th>
+                                <th class="col-date-enreg">Date d'enregistrement</th>
+                                <th class="col-activites">Principales activités</th>
+                                <th class="col-autres-activites">Autres activités</th>
+                                <th class="col-fondateurs">Liste des membres fondateurs</th>
+                                <th class="col-statuts">Statuts et règlements intérieurs</th>
+                                <th class="col-identite">Pièce d'identité</th>
+                                <th class="col-preuve">Preuve d'adresse</th>
+                                <th class="col-declaration">Déclaration</th>
+                                <th class="col-date-decl">Date</th>
+                                <th class="col-signature">Signature</th>
+                                <th class="col-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eglisesEntreesTableBody">
+                            <!-- Le contenu sera inséré dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'information original -->
+<div class="modal fade" id="infoModalOriginal" tabindex="-1" aria-labelledby="infoModalOriginalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="infoModalOriginalLabel">Gestion des Églises</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h4 class="text-primary">ðŸ“ Églises Affiliées</h4>
+                <p>Cette section permet de gérer toutes les églises affiliées à l'Église Pentecôte Alléluia de Guinée.</p>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">ðŸ›ï¸ Église Principale</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Siège principal de l'Église Pentecôte Alléluia</p>
+                        <ul>
+                            <li>Adresse complète</li>
+                            <li>Capacité d'accueil</li>
+                            <li>Responsables</li>
+                            <li>Horaires des services</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">ðŸŒ¿ Églises Filiales</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Réseau des églises filiales dans différentes régions</p>
+                        <ul>
+                            <li>Localisation géographique</li>
+                            <li>Nombre de membres</li>
+                            <li>Pasteurs responsables</li>
+                            <li>Activités spécifiques</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">ðŸ“Š Statistiques</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Données et analyses des églises</p>
+                        <ul>
+                            <li>Fréquentation moyenne</li>
+                            <li>Croissance annuelle</li>
+                            <li>Événements organisés</li>
+                            <li>Projets en cours</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">âš™ï¸ Fonctionnalités de Gestion</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Enregistrement des Églises :</strong> Ajout et modification des informations des églises</li>
+                            <li><strong>Suivi des Activités :</strong> Planification et suivi des événements par église</li>
+                            <li><strong>Rapports :</strong> Génération de rapports d'activité et de fréquentation</li>
+                            <li><strong>Communication :</strong> Coordination entre les différentes églises</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">ðŸ‘¨â€ðŸ’¼ Personnel Pastoral</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Équipe Pastorale - Gestion complète du personnel pastoral de l'Église Pentecôte Alléluia de Guinée.</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">ðŸ™ Pasteurs Principaux</h6>
+                                <p>Direction spirituelle et administrative</p>
+                                <ul>
+                                    <li>Pasteur Principal</li>
+                                    <li>Pasteurs Associés</li>
+                                    <li>Responsabilités spécifiques</li>
+                                    <li>Formations et qualifications</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">â›ª Ministères Spécialisés</h6>
+                                <p>Personnel dédié aux différents ministères</p>
+                                <ul>
+                                    <li>Ministère de la Jeunesse</li>
+                                    <li>Ministère des Femmes</li>
+                                    <li>Ministère de la Musique</li>
+                                    <li>Ministère d'Évangélisation</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h6 class="text-primary">ðŸ“š Formation Continue</h6>
+                                <p>Développement et formation du personnel</p>
+                                <ul>
+                                    <li>Programmes de formation</li>
+                                    <li>Séminaires et conférences</li>
+                                    <li>Certifications</li>
+                                    <li>Mentorat</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">ðŸ“‹ Gestion Administrative</h6>
+                                <ul>
+                                    <li><strong>Dossiers Personnel :</strong> Informations complètes de chaque membre du personnel</li>
+                                    <li><strong>Planification :</strong> Horaires de service et responsabilités</li>
+                                    <li><strong>Évaluation :</strong> Suivi des performances et développement</li>
+                                    <li><strong>Coordination :</strong> Communication et collaboration entre équipes</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+

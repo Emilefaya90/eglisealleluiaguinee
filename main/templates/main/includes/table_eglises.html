@@ -1,0 +1,244 @@
+{% if eglises %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover" id="eglisesTable">
+        <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <tr>
+                <th class="text-center py-3" style="border: none; font-weight: 600; font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                    <i class="fas fa-church me-2" style="color: #ffd700;"></i>
+                    Nom de l'Église
+                </th>
+                <th class="text-center py-3" style="border: none; font-weight: 600; font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                    <i class="fas fa-map-marker-alt me-2" style="color: #ff6b6b;"></i>
+                    Ville
+                </th>
+                <th class="text-center py-3" style="border: none; font-weight: 600; font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                    <i class="fas fa-home me-2" style="color: #4ecdc4;"></i>
+                    Adresse
+                </th>
+                <th class="text-center py-3" style="border: none; font-weight: 600; font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                    <i class="fas fa-user-tie me-2" style="color: #45b7d1;"></i>
+                    Responsable
+                </th>
+                <th class="text-center py-3" style="border: none; font-weight: 600; font-size: 0.95rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                    <i class="fas fa-users me-2" style="color: #96ceb4;"></i>
+                    Membres
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for eglise in eglises %}
+                <tr>
+                    <td>{{ eglise.nom }}</td>
+                    <td>{{ eglise.ville }}</td>
+                    <td>{{ eglise.adresse }}</td>
+                    <td>{{ eglise.responsable }}</td>
+                    <td>{{ eglise.nombre_membres }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Barre d'outils améliorée avec boutons d'actions -->
+<div class="bg-white border-top px-3 py-3" style="background: linear-gradient(135deg, #ffffff, #f8f9fa) !important; box-shadow: 0 -2px 4px rgba(0,0,0,0.05);">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center me-4">
+                <div class="bg-primary rounded-circle p-2 me-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-church text-white" style="font-size: 0.8rem;"></i>
+                </div>
+                <div>
+                    <span class="badge bg-gradient" style="background: linear-gradient(45deg, #667eea, #764ba2); font-size: 0.9rem; padding: 6px 12px;" id="eglisesCount">{{ eglises|length }} église(s)</span>
+                </div>
+            </div>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-clock text-muted me-2"></i>
+                <small class="text-muted" style="font-size: 0.85rem;">Dernière mise à jour : <span id="eglisesLastUpdate" class="fw-bold"></span></small>
+            </div>
+        </div>
+        <div class="btn-group shadow-sm">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEglisesColumns()" style="border-radius: 6px 0 0 0; padding: 8px 16px;" title="Gérer l'affichage des colonnes">
+                <i class="fas fa-columns me-2"></i>Colonnes
+            </button>
+        </div>
+    </div>
+</div>
+{% else %}
+<p class="alert alert-info">Aucune église n'est encore enregistrée.</p>
+{% endif %}
+
+<!-- (Supprimé) Scripts pour les fonctionnalités d'exportation XLSX/jsPDF/autoTable -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // === INITIALISATION ===
+    
+    // Mettre à jour la date de dernière mise à jour
+    const lastUpdateElement = document.getElementById('eglisesLastUpdate');
+    if (lastUpdateElement) {
+        lastUpdateElement.textContent = new Date().toLocaleDateString('fr-FR') + ' à ' + new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+    }
+    
+    // Fonction pour afficher les notifications améliorées
+    function showNotification(message, type = 'info') {
+        // Créer l'élément de notification
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+        notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} fa-lg me-3"></i>
+                <div>
+                    <strong>${type === 'success' ? 'Succès !' : type === 'error' ? 'Erreur' : 'Information'}</strong><br>
+                    ${message}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Ajouter au body avec animation
+        document.body.appendChild(notification);
+        
+        // Animation d'entrée
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+            notification.style.opacity = '1';
+        }, 100);
+        
+        // Supprimer automatiquement après 5 secondes
+        setTimeout(() => {
+            if (notification && notification.parentNode) {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification && notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+    
+    // === FONCTION POUR GÉRER LES COLONNES ===
+    window.toggleEglisesColumns = function() {
+        console.log(' Gestion des colonnes du tableau églises...');
+        
+        try {
+            const table = document.getElementById('eglisesTable');
+            if (!table) {
+                showNotification('Erreur : Tableau non trouvé', 'error');
+                return;
+            }
+            
+            // Créer un modal de gestion des colonnes
+            const columnsModal = document.createElement('div');
+            columnsModal.innerHTML = `
+                <div class="modal fade" id="eglisesColumnsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-columns me-2"></i>Gestion des Colonnes - Églises
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-muted mb-3">Sélectionnez les colonnes à afficher dans le tableau des églises :</p>
+                                <div id="eglisesColumnsList" class="row">
+                                    <!-- Les colonnes seront ajoutées ici -->
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-success" onclick="applyEglisesColumnChanges()">
+                                    <i class="fas fa-check me-2"></i>Appliquer
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-2"></i>Annuler
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(columnsModal.firstElementChild);
+            
+            // Récupérer les en-têtes de colonnes
+            const headers = table.querySelectorAll('thead th');
+            const columnsList = document.getElementById('eglisesColumnsList');
+            
+            headers.forEach((header, index) => {
+                const columnText = header.textContent.trim();
+                if (columnText) {
+                    const isVisible = header.style.display !== 'none';
+                    
+                    const columnItem = document.createElement('div');
+                    columnItem.className = 'col-md-6 mb-2';
+                    columnItem.innerHTML = `
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="eglises_col_${index}" data-column="${index}" 
+                                   ${isVisible ? 'checked' : ''}>
+                            <label class="form-check-label" for="eglises_col_${index}">
+                                ${columnText.replace(/[\u{1F300}-\u{1F9FF}]/gu, '').trim()}
+                            </label>
+                        </div>
+                    `;
+                    columnsList.appendChild(columnItem);
+                }
+            });
+            
+            // Afficher le modal
+            const columnsModalInstance = new bootstrap.Modal(document.getElementById('eglisesColumnsModal'));
+            columnsModalInstance.show();
+            
+            // Supprimer le modal après fermeture
+            document.getElementById('eglisesColumnsModal').addEventListener('hidden.bs.modal', function() {
+                this.remove();
+            });
+            
+        } catch (error) {
+            console.error(' Erreur gestion colonnes églises:', error);
+            showNotification('Erreur lors de la gestion des colonnes : ' + error.message, 'error');
+        }
+    };
+    
+    // Fonction pour appliquer les changements de colonnes
+    window.applyEglisesColumnChanges = function() {
+        try {
+            const checkboxes = document.querySelectorAll('#eglisesColumnsModal input[type="checkbox"]');
+            const table = document.getElementById('eglisesTable');
+            
+            checkboxes.forEach(checkbox => {
+                const columnIndex = parseInt(checkbox.dataset.column);
+                const isChecked = checkbox.checked;
+                
+                // Masquer/afficher les en-têtes
+                const headers = table.querySelectorAll('thead th');
+                if (headers[columnIndex]) {
+                    headers[columnIndex].style.display = isChecked ? '' : 'none';
+                }
+                
+                // Masquer/afficher les cellules de données
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells[columnIndex]) {
+                        cells[columnIndex].style.display = isChecked ? '' : 'none';
+                    }
+                });
+            });
+            
+            // Fermer le modal
+            const columnsModal = bootstrap.Modal.getInstance(document.getElementById('eglisesColumnsModal'));
+            columnsModal.hide();
+            
+            showNotification('Configuration des colonnes appliquée avec succès!', 'success');
+            
+        } catch (error) {
+            console.error(' Erreur application colonnes églises:', error);
+            showNotification('Erreur lors de l\'application des changements : ' + error.message, 'error');
+        }
+    };
+});
+</script>

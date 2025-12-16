@@ -1,0 +1,953 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Archivage des rapports - {{ block.super }}{% endblock %}
+
+{% block content %}
+<!div class="container py-3">
+  <!-- En-tête magnifique -->
+  <div class="archive-header-section mb-5">
+    <div class="archive-title-box">
+      <i class="fas fa-archive archive-icon-left"></i>
+      <h1 class="archive-main-title">ARCHIVAGE DES RAPPORTS</h1>
+      <i class="fas fa-archive archive-icon-right"></i>
+    </div>
+    <div class="archive-underline"></div>
+  </div>
+
+  <!-- Carte d'introduction élégante -->
+  <div class="mission-card mb-4">
+    <div class="mission-header">
+      <div class="mission-icon-wrapper">
+        <i class="bi bi-lightning-charge-fill mission-icon"></i>
+      </div>
+      <div class="mission-title-wrapper">
+        <h3 class="mission-title">La Puissance pour Témoigner et Évangéliser</h3>
+        <span class="mission-badge">La mission principale</span>
+      </div>
+    </div>
+    
+    <div class="mission-content">
+      <p class="mission-intro">✝ C'est la promesse fondamentale que Jésus a faite à ses disciples avant son ascension.</p>
+      
+      <div class="mission-explanation">
+        <p class="mb-3 single-line-text">La <strong>puissance du Saint-Esprit</strong> n'est pas une force impersonnelle, mais la <span class="highlight-spirit">présence dynamique de Dieu</span> lui-même en nous. Elle nous est donnée pour :</p>
+        
+        <div class="power-grid">
+          <div class="power-card">
+            <i class="bi bi-megaphone-fill power-icon"></i>
+            <span>Témoigner avec audace</span>
+          </div>
+          <div class="power-card">
+            <i class="bi bi-heart-fill power-icon"></i>
+            <span>Vivre une vie sainte</span>
+          </div>
+          <div class="power-card">
+            <i class="bi bi-chat-heart-fill power-icon"></i>
+            <span>Prier selon la volonté de Dieu</span>
+          </div>
+          <div class="power-card">
+            <i class="bi bi-star-fill power-icon"></i>
+            <span>Servir avec des dons surnaturels</span>
+          </div>
+          <div class="power-card">
+            <i class="bi bi-arrow-repeat power-icon"></i>
+            <span>Être transformés de l'intérieur</span>
+          </div>
+        </div>
+        
+        <p class="mission-conclusion">💫 C'est une puissance disponible pour <strong>tout croyant</strong> qui place sa foi en Jésus-Christ.</p>
+      </div>
+      
+      <div class="verse-box">
+        <div class="verse-reference">
+          <i class="bi bi-book-fill me-2"></i>
+          Actes 1:8
+        </div>
+        <blockquote class="verse-text">
+          « Mais vous recevrez une puissance, celle du Saint-Esprit qui viendra sur vous, et vous serez mes témoins à Jérusalem, dans toute la Judée, en Samarie et jusqu'aux extrémités de la terre. »
+        </blockquote>
+        <div class="verse-meaning">
+          <i class="bi bi-lightbulb-fill me-2"></i>
+          <strong>Signification :</strong> La puissance du Saint-Esprit nous est donnée pour être des témoins efficaces de Jésus-Christ, en surmontant la peur et en ayant des paroles inspirées.
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Vidéo d'introduction -->
+  <div class="mb-4">
+    <div class="ratio ratio-16x9 video-card">
+      <video class="video-card-media" controls autoplay muted loop playsinline preload="metadata" poster="{% static 'main/images/hero/Archivef.jpg' %}">
+        <source src="{% static 'main/images/hero/Video1.mp4' %}" type="video/mp4">
+        Votre navigateur ne supporte pas la lecture de vidéos HTML5.
+      </video>
+    </div>
+    <div class="small text-muted mt-2 text-center">Présentation de l’archivage des rapports</div>
+  </div>
+
+  <style>
+    /* En-tête ARCHIVAGE DES RAPPORTS */
+    .archive-header-section {
+      text-align: center;
+      padding: 2rem 0;
+    }
+    
+    .archive-title-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .archive-main-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #e67e22, #d35400);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .archive-icon-left, .archive-icon-right {
+      font-size: 2rem;
+      color: #e67e22;
+      animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .archive-underline {
+      height: 4px;
+      width: 0;
+      max-width: 300px;
+      margin: 0 auto;
+      background: linear-gradient(90deg, transparent, #e67e22, #d35400, #e67e22, transparent);
+      border-radius: 2px;
+      animation: expandLine 2s ease-out forwards;
+    }
+    
+    @keyframes expandLine {
+      to { width: 100%; }
+    }
+    
+    /* Carte Mission */
+    .mission-card {
+      background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+      border: 2px solid #e67e22;
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(230, 126, 34, 0.2);
+    }
+    
+    .mission-header {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 3px solid #e67e22;
+    }
+    
+    .mission-icon-wrapper {
+      background: linear-gradient(135deg, #ffd54f, #ffb300);
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(255, 179, 0, 0.4);
+    }
+    
+    .mission-icon {
+      font-size: 2.5rem;
+      color: #e65100;
+    }
+    
+    .mission-title-wrapper {
+      flex: 1;
+    }
+    
+    .mission-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #e65100;
+      margin: 0 0 0.5rem 0;
+    }
+    
+    .mission-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #e67e22, #d35400);
+      color: white;
+      padding: 0.3rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
+    .mission-content {
+      color: #4a4a4a;
+    }
+    
+    .single-line-text {
+      white-space: nowrap;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      overflow-x: auto;
+    }
+    
+    .mission-intro {
+      font-size: 1.15rem;
+      font-style: italic;
+      color: #e65100;
+      background: white;
+      padding: 1rem;
+      border-left: 4px solid #e67e22;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .highlight-spirit {
+      background: linear-gradient(120deg, #ffd54f, #ffb300);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      color: #e65100;
+    }
+    
+    .power-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    
+    .power-card {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      border-left: 4px solid #e67e22;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      transition: all 0.3s ease;
+    }
+    
+    .power-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
+      border-left-color: #d35400;
+    }
+    
+    .power-icon {
+      font-size: 1.5rem;
+      color: #e67e22;
+    }
+    
+    .mission-conclusion {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #e65100;
+      text-align: center;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+    }
+    
+    .verse-box {
+      background: white;
+      border: 2px dashed #e67e22;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .verse-reference {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e67e22;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .verse-text {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: #4a4a4a;
+      line-height: 1.8;
+      padding: 1rem;
+      background: #fff3e0;
+      border-left: 4px solid #e67e22;
+      border-radius: 8px;
+      margin: 0 0 1rem 0;
+    }
+    
+    .verse-meaning {
+      font-size: 0.95rem;
+      color: #6c757d;
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .verse-meaning i {
+      color: #ffc107;
+      margin-top: 0.2rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .power-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (max-width: 992px) {
+      .power-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .archive-main-title {
+        font-size: 1.8rem;
+      }
+      
+      .mission-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .mission-title {
+        font-size: 1.4rem;
+      }
+      
+      .power-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .section-card{border:1px solid #e9ecef;border-radius:.5rem;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+    /* Style spécifique à la vidéo d’introduction */
+    .video-card{border:2px solid rgba(230,126,34,.55); border-radius:.75rem; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,.08)}
+    .video-card-media{width:100%; height:100%; object-fit:cover}
+    /* Bloc texte au-dessus de la vidéo */
+    .video-intro{background:linear-gradient(135deg, rgba(230,126,34,.12), rgba(213,84,0,.10)); border:1px solid rgba(230,126,34,.35); border-radius:.75rem}
+    .video-intro-title{font-weight:700; color:#4a4a4a}
+    .video-intro-verse{background:#ffffff; border:1px dashed rgba(230,126,34,.55); border-radius:.5rem}
+    .video-intro-explain{color:#4a4a4a}
+    .section-header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border-radius:.5rem .5rem 0 0}
+    .section-code{font-family:"Courier New",monospace;letter-spacing:.5px}
+    .legend-input{border:none;border-bottom:2px solid #dee2e6;background:transparent}
+    .legend-input:focus{border-bottom-color:#0d6efd;box-shadow:none}
+    .image-preview{border-radius:.5rem;overflow:hidden}
+    .image-preview img{width:100%;height:200px;object-fit:cover}
+    /* Marquee CONSECRATION */
+    .marquee{overflow:hidden;border-radius:.5rem;background:#f8f9fa}
+    .marquee-track{display:flex;gap:12px;align-items:center;animation:marquee-left 25s linear infinite}
+    .marquee:hover .marquee-track{animation-play-state:paused}
+    .marquee-item img{height:320px;width:auto;border-radius:.5rem;object-fit:cover}
+    .marquee-caption{font-size:.85rem;color:#6c757d}
+    @keyframes marquee-left{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+    /* Slideshow JP & JP0 (JP1) */
+    #slideshow-JP1 img{width:100%;height:500px;object-fit:cover;border-radius:.5rem}
+    /* Slideshow JEUNESSE CAMP (Jeuness3) */
+    #slideshow-Jeuness3 img{width:100%;height:500px;object-fit:cover;border-radius:.5rem}
+    /* Slideshow DETENTE (Detente9) */
+    #slideshow-Detente9 img{width:100%;height:500px;object-fit:cover;border-radius:.5rem}
+    /* Fond pleine page pour Archivage des rapports */
+    .archivage-bg{
+      background-image:url("{% static 'main/images/hero/Archivef.jpg' %}");
+      background-size:cover; background-position:center; background-repeat:no-repeat; background-attachment:fixed;
+    }
+    /* Agrandir les images pour toutes les sections */
+    #gallery-Archicnse1 img,
+    #gallery-Croisad1 img,
+    #gallery-Chorale2 img,
+    #gallery-JP1 img,
+    #gallery-Camp3 img,
+    #gallery-Jeuness3 img,
+    #gallery-Femmes1 img,
+    #gallery-Emission1 img,
+    #gallery-Detente9 img{height:320px}
+    /* Affichage entier (sans recadrage) pour EMISSION */
+    #gallery-Emission1 .image-preview img{
+      height:auto;
+      max-height:600px;
+      object-fit:contain;
+      background:#f8f9fa;
+    }
+    /* Affichage entier (sans recadrage) pour JEUNESSE */
+    #gallery-Camp3 .image-preview img{
+      height:auto;
+      max-height:600px;
+      object-fit:contain;
+      background:#f8f9fa;
+    }
+    /* Affichage entier (sans recadrage) pour CONSECRATION */
+    #gallery-Archicnse1 .image-preview img{
+      height:auto;
+      max-height:600px;
+      object-fit:contain;
+      background:#f8f9fa;
+    }
+    /* Affichage entier (sans recadrage) pour CROISADE */
+    #gallery-Croisad1 .image-preview img{
+      height:auto;
+      max-height:600px;
+      object-fit:contain;
+      background:#f8f9fa;
+    }
+    /* Affichage entier (sans recadrage) pour LA CHORALE */
+    #gallery-Chorale2 .image-preview img{
+      height:auto;
+      max-height:600px;
+      object-fit:contain;
+      background:#f8f9fa;
+    }
+    /* Affichage entier (sans recadrage) pour LES MAMANS */
+    #gallery-Femmes1 .image-preview img{
+      height:auto;
+      max-height:600px;
+      object-fit:contain;
+      background:#f8f9fa;
+    }
+    /* Override spécifique JP1 (au cas où la galerie serait utilisée) */
+    #gallery-JP1 img{height:500px}
+    /* Sur écrans md+ : 2 images par ligne pour toutes les sections (au lieu de 3) */
+    @media (min-width: 768px){
+      #gallery-Archicnse1 .col-md-4,
+      #gallery-Croisad1 .col-md-4,
+      #gallery-Chorale2 .col-md-4,
+      #gallery-JP1 .col-md-4,
+      #gallery-Camp3 .col-md-4,
+      #gallery-Jeuness3 .col-md-4,
+      #gallery-Femmes1 .col-md-4,
+      #gallery-Emission1 .col-md-4,
+      #gallery-Detente9 .col-md-4{flex:0 0 50%;max-width:50%}
+    }
+  </style>
+
+  <div id="archiveSections">
+    <!-- CONSECRATION (Archicnsé1) -->
+    <div class="card section-card mb-4" data-images-Archicnse1="
+      {% static 'main/images/hero/Archicnsé.jpg' %}|  – Cérémonie de consécration,
+      {% static 'main/images/hero/Archicnsé1.jpg' %}| – Cérémonie de consécration,
+      {% static 'main/images/hero/Archicnsé2.jpg' %}| – Temps de prière de consécration,
+      {% static 'main/images/hero/Archicnsé3.jpg' %}| – Temps de prière de consécration,
+      {% static 'main/images/hero/Archicnsé4.jpg' %}| – Message principal,
+      {% static 'main/images/hero/Archicnsé6.jpg' %}| – Imposition des mains,
+      {% static 'main/images/hero/Archicnsé7.jpg' %}| – Cérémonie de consécration,,
+      {% static 'main/images/hero/Archicnsé8.jpg' %}| – Cérémonie de consécration,,
+      {% static 'main/images/hero/Archicnsé9.jpg' %}| – Cérémonie de consécration,,
+      {% static 'main/images/hero/Archicnsé10.jpg' %}|– Photo de famille
+    ">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>CONSECRATION</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">Archicnsé1</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-Archicnse1">0 ima</span>
+      </div>
+      <div class="card-body p-4">
+        <!-- Défilement horizontal des images de consécration -->
+        <div class="marquee mb-3" id="marquee-Archicnse1">
+          <div class="marquee-track" id="marquee-track-Archicnse1"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="Archicnse1" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-Archicnse1"></div>
+      </div>
+    </div>
+
+    <!-- CROISADE (Croisad1) -->
+    <div class="card section-card mb-4" data-images-Croisad1=" {% static 'main/images/hero/Croisad1.jpg' %}">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>CROISADE</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">Croisad1</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-Croisad1">0 images</span>
+      </div>
+      <div class="card-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="Croisad1" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-Croisad1"></div>
+      </div>
+    </div>
+
+    <!-- LA CHORALE (Chorale2) -->
+    <div class="card section-card mb-4" data-images-Chorale2="
+      {% static 'main/images/hero/Chorale1.jpg' %}| – Répétition générale,
+      {% static 'main/images/hero/Chorale2.jpg' %}| – Prestation du culte,
+      {% static 'main/images/hero/Chorale3.jpg' %}| – Chant spécial,
+      {% static 'main/images/hero/Chorale4.jpg' %}| – Culte spécial,
+      {% static 'main/images/hero/Chorale5.jpg' %}| – Choral prestation,
+      {% static 'main/images/hero/Chorale6.jpg' %}| – Premier dimanche,
+      {% static 'main/images/hero/Chorale7.jpg' %}| – Chorale,
+      {% static 'main/images/hero/Chorale8.jpg' %}| – La grande chorale,
+      ">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>LA CHORALE</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">Chorale2</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-Chorale2">0 images</span>
+      </div>
+      <div class="card-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="Chorale2" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-Chorale2"></div>
+      </div>
+    </div>
+
+    <!-- JEUNE & PRIERE (JP1) -->
+    <div class="card section-card mb-4" data-images-JP1="
+      {% static 'main/images/hero/JP.jpg' %}| – Moment de jeûne et prière,
+      {% static 'main/images/hero/JP0.jpg' %}|– 12 jours d'intercession,
+      {% static 'main/images/hero/JP1.jpg' %}| – Jour 1,
+      {% static 'main/images/hero/JP2.jpg' %}| – Jour 2,
+      {% static 'main/images/hero/JP3.jpg' %}| – Jour 3,
+      {% static 'main/images/hero/JP4.jpg' %}| – Jour 4,
+      {% static 'main/images/hero/JP5.jpg' %}| – Jour 5,
+      {% static 'main/images/hero/JP6.jpg' %}| – Jour 6,
+      {% static 'main/images/hero/JP7.jpg' %}| – Jour 7,
+      {% static 'main/images/hero/JP8.jpg' %}| – Jour 8,
+      {% static 'main/images/hero/JP9.jpg' %}| – Jour 9,
+      {% static 'main/images/hero/JP10.jpg' %}| – Jour 10,
+      {% static 'main/images/hero/JP11.jpg' %}| – Jour 11,
+      {% static 'main/images/hero/JP12.jpg' %}| – Jour 12
+      {% static 'main/images/hero/JP12.jpg' %}| – Jour 13
+    ">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>JEUNE &amp; PRIERE</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">JP1</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-JP1">0 images</span>
+      </div>
+      <div class="card-body p-4">
+        <!-- Diaporama JP / JP0 -->
+        <div id="slideshow-JP1" class="mb-3"></div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="JP1" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-JP1"></div>
+      </div>
+    </div>
+
+    <!-- JEUNESSE (Camp3) -->
+    <div class="card section-card mb-4" data-images-Camp3="
+      {% static 'main/images/hero/Jeunesse.jpg' %}| – Programme de la jeunesse,
+      {% static 'main/images/hero/Jeuness1.jpg' %}| – Activité 1,
+      {% static 'main/images/hero/Jeuness2.jpg' %}| – Activité 2,
+      {% static 'main/images/hero/Jeuness3.jpg' %}| – Activité 3,
+      {% static 'main/images/hero/Jeuness4.jpg' %}| – Activité 4,
+      {% static 'main/images/hero/Jeuness5.jpg' %}| – Activité 5,
+      {% static 'main/images/hero/Jeuness6.jpg' %}| – Activité 6,
+      {% static 'main/images/hero/Jeuness7.jpg' %}| – Activité 7,
+      {% static 'main/images/hero/Jeuness8.jpg' %}| – Activité 8,
+      {% static 'main/images/hero/Jeuness9.jpg' %}| – Activité 9,
+      {% static 'main/images/hero/Jeuness10.jpg' %}| – Activité 10,
+      {% static 'main/images/hero/Jeuness11.jpg' %}| – Activité 11,
+      {% static 'main/images/hero/Jeuness12.jpg' %}| – Activité 12,
+      {% static 'main/images/hero/Jeuness13.jpg' %}| – Activité 13,
+    ">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>JEUNESSE</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">Camp3</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-Camp3">0 images</span>
+      </div>
+      <div class="card-body p-4">
+        <!-- Défilement horizontal des images de la jeunesse -->
+        <div class="marquee mb-3" id="marquee-Camp3">
+          <div class="marquee-track" id="marquee-track-Camp3"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="Camp3" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-Camp3"></div>
+      </div>
+    </div>
+
+    <!-- JEUNESSE CAMP (Jeuness3) -->
+    <div class="card section-card mb-4" data-images-Jeuness3="
+      {% static 'main/images/hero/Camp1.jpg' %}| – Séance 1,
+      {% static 'main/images/hero/Camp2.jpg' %}| – Séance 2,
+      {% static 'main/images/hero/Camp3.jpg' %}| – Séance 3,
+      {% static 'main/images/hero/Camp4.jpg' %}| – Séance 4,
+      {% static 'main/images/hero/Camp5.jpg' %}| – Séance 5,
+      {% static 'main/images/hero/Camp6.jpg' %}| – Séance 6,
+      {% static 'main/images/hero/Camp7.jpg' %}| – Séance 7,
+      {% static 'main/images/hero/Camp8.jpg' %}| – Séance 8,
+      {% static 'main/images/hero/Camp9.jpg' %}| – Séance 9,
+      {% static 'main/images/hero/Camp10.jpg' %}| – Séance 10,
+      {% static 'main/images/hero/Camp11.jpg' %}| – Séance 11,
+      {% static 'main/images/hero/Camp12.jpg' %}| – Séance 12,
+      {% static 'main/images/hero/Camp13.jpg' %}| – Séance 13,
+      {% static 'main/images/hero/Camp14.jpg' %}| – Séance 14,
+      {% static 'main/images/hero/Camp15.jpg' %}| – Séance 15,
+      {% static 'main/images/hero/Camp16.jpg' %}| – Séance 16,
+      {% static 'main/images/hero/Camp17.jpg' %}| – Séance 17,
+      {% static 'main/images/hero/Camp18.jpg' %}| – Séance 18
+    ">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>JEUNESSE CAMP</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">Jeuness3</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-Jeuness3">0 images</span>
+      </div>
+      <div class="card-body p-4">
+        <!-- Diaporama Jeunesse Camp -->
+        <div id="slideshow-Jeuness3" class="mb-3"></div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="Jeuness3" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-Jeuness3"></div>
+      </div>
+    </div>
+
+    <!-- LES MAMANS (Femmes1) -->
+    <div class="card section-card mb-4" data-images-Femmes1="
+      {% static 'main/images/hero/Femmes1.jpg' %}| – Rencontre 1,
+      {% static 'main/images/hero/Femmes2.jpg' %}| – Rencontre 2,
+      {% static 'main/images/hero/Femmes3.jpg' %}| – Rencontre 3,
+      {% static 'main/images/hero/Femmes4.jpg' %}| – Rencontre 4,
+      {% static 'main/images/hero/Femmes5.jpg' %}| – Rencontre 5
+    ">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>LES MAMANS</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">Femmes1</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-Femmes1">0 images</span>
+      </div>
+      <div class="card-body p-4">
+        <!-- Défilement horizontal des images des mamans -->
+        <div class="marquee mb-3" id="marquee-Femmes1">
+          <div class="marquee-track" id="marquee-track-Femmes1"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="Femmes1" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-Femmes1"></div>
+      </div>
+    </div>
+
+    <!-- EMISSION (Emission1) -->
+    <div class="card section-card mb-4" data-images-Emission1="
+      {% static 'main/images/hero/Emission2.jpg' %}| – Enregistrement 2,
+      {% static 'main/images/hero/Emission1.jpg' %}| – Enregistrement 1,
+      {% static 'main/images/hero/Emission3.jpg' %}| – Enregistrement 3,
+      {% static 'main/images/hero/Emission4.jpg' %}| – Enregistrement 4,
+      {% static 'main/images/hero/Emission5.jpg' %}| – Enregistrement 5,
+      {% static 'main/images/hero/Emission6.jpg' %}| – Enregistrement 6
+    ">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>EMISSION</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">Emission1</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-Emission1">0 images</span>
+      </div>
+      <div class="card-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="Emission1" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-Emission1"></div>
+      </div>
+    </div>
+
+    <!-- DETENTE (Detente9) -->
+    <div class="card section-card mb-4" data-images-Detente9="
+      {% static 'main/images/hero/Detente1.jpg' %}| – Moment 1,
+      {% static 'main/images/hero/Detente2.jpg' %}| – Moment 2,
+      {% static 'main/images/hero/Detente3.jpg' %}| – Moment 3,
+      {% static 'main/images/hero/Detente4.jpg' %}| – Moment 4,
+      {% static 'main/images/hero/Detente5.jpg' %}| – Moment 5,
+      {% static 'main/images/hero/Detente6.jpg' %}| – Moment 6,
+      {% static 'main/images/hero/Detente7.jpg' %}| – Moment 7,
+      {% static 'main/images/hero/Detente8.jpg' %}| – Moment 8,
+      {% static 'main/images/hero/Detente9.jpg' %}| – Moment 9,
+      {% static 'main/images/hero/Detente10.jpg' %}| – Moment 10,
+      {% static 'main/images/hero/Detente11.jpg' %}| – Moment 11
+    ">
+      <div class="card-header section-header p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>DETENTE</strong>
+          <span class="badge bg-light text-dark ms-2 section-code">Detente9</span>
+        </div>
+        <span class="badge bg-light text-dark" id="count-Detente9">0 images</span>
+      </div>
+      <div class="card-body p-4">
+        <!-- Diaporama Détente -->
+        <div id="slideshow-Detente9" class="mb-3"></div>
+        <div class="mb-3">
+          <label class="form-label fw-bold">Légende de la section</label>
+          <textarea class="form-control legend-input" rows="2" data-legend="Detente9" placeholder="Décrivez cette section..." readonly aria-readonly="true" title="Lecture seule"></textarea>
+        </div>
+        <div class="row g-3" id="gallery-Detente9"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      // Appliquer le fond spécifique à cette page
+      document.body.classList.add('archivage-bg');
+      const sections = ['Archicnse1','Croisad1','Chorale2','JP1','Camp3','Jeuness3','Femmes1','Emission1','Detente9'];
+      const sectionData = {};
+      sections.forEach(s=> sectionData[s] = { images: [], legend: '' });
+
+      function updateCounter(section){
+        const el = document.getElementById('count-' + section);
+        if(!el) return;
+        const n = sectionData[section].images.length;
+        el.textContent = n + (n>1?' images':' image');
+        if (n === 0) { el.classList.add('d-none'); } else { el.classList.remove('d-none'); }
+      }
+
+      // Diaporama DETENTE (Detente9)
+      let detenteIntervalId = null;
+      let detenteSlideIndex = 0;
+
+      function updateSlideshowDetente9(){
+        const slideHost = document.getElementById('slideshow-Detente9');
+        const imgs = sectionData['Detente9']?.images || [];
+        if (!slideHost || imgs.length === 0) return;
+        const it = imgs[detenteSlideIndex % imgs.length];
+        slideHost.innerHTML = `
+          <img src="${it.url}" alt="${it.name||'Diaporama Détente'}"/>
+          ${it.desc ? `<div class=\"small text-muted mt-1\">${it.desc}</div>` : ''}
+        `;
+        detenteSlideIndex = (detenteSlideIndex + 1) % imgs.length;
+      }
+
+      function startSlideshowDetente9(){
+        const slideHost = document.getElementById('slideshow-Detente9');
+        const imgs = sectionData['Detente9']?.images || [];
+        if (!slideHost || imgs.length === 0) return;
+        if (detenteIntervalId){ clearInterval(detenteIntervalId); detenteIntervalId = null; }
+        detenteSlideIndex = 0;
+        updateSlideshowDetente9();
+        detenteIntervalId = setInterval(updateSlideshowDetente9, 5000);
+      }
+
+      // Diaporama JEUNESSE CAMP (Jeuness3)
+      let jeuness3IntervalId = null;
+      let jeuness3SlideIndex = 0;
+
+      function updateSlideshowJeuness3(){
+        const slideHost = document.getElementById('slideshow-Jeuness3');
+        const imgs = sectionData['Jeuness3']?.images || [];
+        if (!slideHost || imgs.length === 0) return;
+        const it = imgs[jeuness3SlideIndex % imgs.length];
+        slideHost.innerHTML = `
+          <img src="${it.url}" alt="${it.name||'Diaporama Jeunesse Camp'}"/>
+          ${it.desc ? `<div class=\"small text-muted mt-1\">${it.desc}</div>` : ''}
+        `;
+        jeuness3SlideIndex = (jeuness3SlideIndex + 1) % imgs.length;
+      }
+
+      function startSlideshowJeuness3(){
+        const slideHost = document.getElementById('slideshow-Jeuness3');
+        const imgs = sectionData['Jeuness3']?.images || [];
+        if (!slideHost || imgs.length === 0) return;
+        if (jeuness3IntervalId){ clearInterval(jeuness3IntervalId); jeuness3IntervalId = null; }
+        jeuness3SlideIndex = 0;
+        updateSlideshowJeuness3();
+        jeuness3IntervalId = setInterval(updateSlideshowJeuness3, 5000);
+      }
+
+      // Diaporama JP1 (fait défiler JP, JP0, puis JP1..JP12)
+      let jp1IntervalId = null;
+      let jp1SlideIndex = 0;
+
+      function updateSlideshowJP1(){
+        const slideHost = document.getElementById('slideshow-JP1');
+        const imgs = sectionData['JP1']?.images || [];
+        if (!slideHost || imgs.length === 0) return;
+        const it = imgs[jp1SlideIndex % imgs.length];
+        slideHost.innerHTML = `
+          <img src="${it.url}" alt="${it.name||'Diaporama JP'}"/>
+          ${it.desc ? `<div class="small text-muted mt-1">${it.desc}</div>` : ''}
+        `;
+        jp1SlideIndex = (jp1SlideIndex + 1) % imgs.length;
+      }
+
+      function startSlideshowJP1(){
+        // Démarre/Redémarre le diaporama si l’élément et les images existent
+        const slideHost = document.getElementById('slideshow-JP1');
+        const imgs = sectionData['JP1']?.images || [];
+        if (!slideHost || imgs.length === 0) return;
+        if (jp1IntervalId){ clearInterval(jp1IntervalId); jp1IntervalId = null; }
+        jp1SlideIndex = 0;
+        updateSlideshowJP1();
+        jp1IntervalId = setInterval(updateSlideshowJP1, 5000);
+      }
+
+      function renderGallery(section){
+        const wrap = document.getElementById('gallery-' + section);
+        if(!wrap) return; wrap.innerHTML = '';
+        // Pour JP1, Jeuness3 et Detente9: ne rien afficher dans la galerie (les images défilent en haut)
+        const list = (sectionData[section].images||[]);
+        let items = (section === 'JP1' || section === 'Jeuness3' || section === 'Detente9') ? [] : list;
+        items.forEach((it, idx)=>{
+          const col = document.createElement('div');
+          if (section === 'Emission1') {
+            // Emission1 et Emission2 en pleine largeur, le reste en grille
+            if (idx === 0 || idx === 1) {
+              col.className = 'col-12';
+            } else {
+              col.className = 'col-12 col-sm-6 col-md-4';
+            }
+          } else {
+            col.className = 'col-12 col-sm-6 col-md-4';
+          }
+          col.innerHTML = `
+            <div class=\"image-preview\">
+              <img src=\"${it.url}\" alt=\"${it.name||('Image '+(idx+1))}\">
+            </div>
+            ${it.desc ? `<div class=\"small text-muted mt-1\">${it.desc}</div>` : ''}
+          `;
+          wrap.appendChild(col);
+        });
+        updateCounter(section);
+        if (section === 'JP1') {
+          const el = document.getElementById('count-JP1');
+          if (el) el.classList.add('d-none');
+        }
+        if (section === 'Jeuness3') {
+          const el = document.getElementById('count-Jeuness3');
+          if (el) el.classList.add('d-none');
+        }
+        if (section === 'Detente9') {
+          const el = document.getElementById('count-Detente9');
+          if (el) el.classList.add('d-none');
+        }
+        // Démarrer le diaporama si on rend JP1
+        if (section === 'JP1') startSlideshowJP1();
+        if (section === 'Jeuness3') startSlideshowJeuness3();
+        if (section === 'Detente9') startSlideshowDetente9();
+        // Construire/Mettre à jour les bandes défilantes
+        if (section === 'Archicnse1') buildMarqueeArchicnse1();
+        if (section === 'Camp3') buildMarqueeCamp3();
+        if (section === 'Femmes1') buildMarqueeFemmes1();
+      }
+
+      // Légendes
+      sections.forEach(s=>{
+        const inp = document.querySelector(`[data-legend="${s}"]`);
+        if (inp){ inp.addEventListener('input', ()=>{ sectionData[s].legend = inp.value; }); }
+      });
+
+      // Précharger les images à partir des attributs data-images-<code> pour chaque section
+      sections.forEach(code => {
+        const wrap = document.querySelector(`[data-images-${code}]`);
+        if (wrap){
+          const entries = (wrap.getAttribute(`data-images-${code}`)||'').split(',').map(s=>s.trim()).filter(Boolean);
+          entries.forEach(e=>{
+            let url = e, desc = '';
+            // Support "url|description"
+            if (e.includes('|')){
+              const parts = e.split('|');
+              url = (parts[0]||'').trim();
+              desc = parts.slice(1).join('|').trim();
+            }
+            const name = url.split('/').pop();
+            sectionData[code].images.push({url, name, desc});
+          });
+        }
+      });
+
+      // Rendu initial
+      sections.forEach(s=> renderGallery(s));
+      // Assurer le démarrage des diaporamas après chargement
+      startSlideshowJP1();
+      startSlideshowJeuness3();
+      startSlideshowDetente9();
+      // Construire les bandes défilantes après chargement
+      function buildMarqueeArchicnse1(){
+        const track = document.getElementById('marquee-track-Archicnse1');
+        if (!track) return;
+        track.innerHTML = '';
+        const imgs = sectionData['Archicnse1']?.images || [];
+        if (imgs.length === 0) return;
+        // Dupliquer la liste pour un défilement continu
+        const flow = imgs.concat(imgs);
+        flow.forEach(it=>{
+          const item = document.createElement('div');
+          item.className = 'marquee-item text-center';
+          item.innerHTML = `
+            <img src="${it.url}" alt="${it.name||''}">
+            ${it.desc ? `<div class="marquee-caption">${it.desc}</div>` : ''}
+          `;
+          track.appendChild(item);
+        });
+      }
+      function buildMarqueeCamp3(){
+        const track = document.getElementById('marquee-track-Camp3');
+        if (!track) return;
+        track.innerHTML = '';
+        const imgs = sectionData['Camp3']?.images || [];
+        if (imgs.length === 0) return;
+        const flow = imgs.concat(imgs);
+        flow.forEach(it=>{
+          const item = document.createElement('div');
+          item.className = 'marquee-item text-center';
+          item.innerHTML = `
+            <img src="${it.url}" alt="${it.name||''}">
+            ${it.desc ? `<div class=\"marquee-caption\">${it.desc}</div>` : ''}
+          `;
+          track.appendChild(item);
+        });
+      }
+      buildMarqueeArchicnse1();
+      buildMarqueeCamp3();
+      function buildMarqueeFemmes1(){
+        const track = document.getElementById('marquee-track-Femmes1');
+        if (!track) return;
+        track.innerHTML = '';
+        const imgs = sectionData['Femmes1']?.images || [];
+        if (imgs.length === 0) return;
+        const flow = imgs.concat(imgs);
+        flow.forEach(it=>{
+          const item = document.createElement('div');
+          item.className = 'marquee-item text-center';
+          item.innerHTML = `
+            <img src="${it.url}" alt="${it.name||''}">
+            ${it.desc ? `<div class=\"marquee-caption\">${it.desc}</div>` : ''}
+          `;
+          track.appendChild(item);
+        });
+      }
+      buildMarqueeFemmes1();
+    });
+  </script>
+</div>
+{% endblock %}

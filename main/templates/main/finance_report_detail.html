@@ -1,0 +1,178 @@
+{% extends 'main/base.html' %}
+{% load i18n static %}
+
+{% block title %}Détail Rapport Financier | Gestion Église{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="bi bi-receipt-cutoff me-2"></i>Détail du rapport #{{ report.id }}</h3>
+    <div class="d-flex gap-2">
+      <a href="{% url 'main:banque' %}" class="btn btn-light"><i class="bi bi-arrow-left"></i> Retour Banque</a>
+      <a href="{% url 'main:banque_records_all' %}" class="btn btn-outline-primary">Voir tous les rapports</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="small text-muted">Église</div>
+          <div class="fw-semibold">{{ report.eglise.nom }}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-muted">Période</div>
+          <div>{{ report.periode_du|default:'—' }} → {{ report.periode_au|default:'—' }}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-muted">Date du rapport</div>
+          <div>{{ report.date_rapport|default:'—' }}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-muted">Responsable</div>
+          <div>{{ report.responsable|default:'—' }}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-muted">Contact</div>
+          <div>{{ report.contact|default:'—' }}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="small text-muted">Email</div>
+          <div>{{ report.email|default:'—' }}</div>
+        </div>
+      </div>
+      <hr/>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="small text-muted">Solde initial</div>
+          <div class="fw-semibold">{{ report.solde_initial|default:0|floatformat:0 }}</div>
+        </div>
+        <div class="col-md-3">
+          <div class="small text-muted">Total revenus</div>
+          <div class="fw-semibold text-success">{{ report.total_recettes|default:0|floatformat:0 }}</div>
+        </div>
+        <div class="col-md-3">
+          <div class="small text-muted">Total dépenses</div>
+          <div class="fw-semibold text-danger">{{ report.total_depenses|default:0|floatformat:0 }}</div>
+        </div>
+        <div class="col-md-3">
+          <div class="small text-muted">Solde final</div>
+          <div class="fw-bold">{{ report.solde_final|default:0|floatformat:0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header bg-light fw-semibold d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-list-ul me-1"></i>Lignes du rapport</span>
+      <span class="badge bg-primary">{{ lignes|length }} enregistrement{{ lignes|length|pluralize:"s" }}</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 100px;"><i class="bi bi-calendar3 me-1"></i>Date</th>
+              <th><i class="bi bi-tag me-1"></i>Nature / Source</th>
+              <th><i class="bi bi-person me-1"></i>Bénéficiaire</th>
+              <th><i class="bi bi-folder me-1"></i>Catégorie</th>
+              <th class="text-end" style="width: 140px;"><i class="bi bi-currency-exchange me-1"></i>Montant (GNF)</th>
+              <th style="width: 100px;"><i class="bi bi-paperclip me-1"></i>Pièces jointes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if lignes %}
+              {% for l in lignes %}
+              <tr>
+                <td>
+                  {% if l.date_operation %}
+                    <span class="badge bg-light text-dark">{{ l.date_operation|date:"d/m/Y" }}</span>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if l.type_operation == 'depense' %}
+                    <span class="badge bg-danger me-1">Dépense</span>
+                    {{ l.nature_depense|default:l.libelle|default:'—' }}
+                  {% else %}
+                    <span class="badge bg-success me-1">Recette</span>
+                    {{ l.source_revenu|default:l.libelle|default:'—' }}
+                  {% endif %}
+                </td>
+                <td>{{ l.beneficiaire|default:'—' }}</td>
+                <td>
+                  {% if l.categorie %}
+                    <span class="badge bg-info text-dark">{{ l.categorie }}</span>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  {% if l.type_operation == 'depense' %}
+                    <span class="text-danger fw-semibold">-{{ l.montant|floatformat:0 }}</span>
+                  {% else %}
+                    <span class="text-success fw-semibold">+{{ l.montant|floatformat:0 }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  {% if l.justificatif_numero %}
+                    <span class="badge bg-secondary" title="Justificatif: {{ l.justificatif_numero }}">
+                      <i class="bi bi-file-earmark-text"></i> {{ l.justificatif_numero }}
+                    </span>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="text-center text-muted py-3">Aucune ligne enregistrée</td></tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="6" class="text-center text-muted py-3">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                Aucune opération financière liée à ce rapport
+              </td></tr>
+            {% endif %}
+          </tbody>
+          {% if lignes %}
+          <tfoot class="table-light">
+            <tr>
+              <td colspan="4" class="text-end fw-bold">Total :</td>
+              <td class="text-end fw-bold">
+                {% with total=0 %}
+                  {{ report.total_recettes|default:0|floatformat:0 }} (R) / {{ report.total_depenses|default:0|floatformat:0 }} (D)
+                {% endwith %}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div id="attachments" class="card-header bg-light fw-semibold"><i class="bi bi-paperclip me-1"></i>Pièces jointes</div>
+    <div class="card-body">
+      {% if attachments %}
+        <ul class="mb-0">
+          {% for att in attachments %}
+            <li>
+              {% if att.fichier %}
+                <a href="{{ att.fichier.url }}" target="_blank">{{ att.fichier.name|default:'Pièce jointe' }}</a>
+              {% else %}
+                Pièce jointe
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="text-muted">Aucune pièce jointe</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

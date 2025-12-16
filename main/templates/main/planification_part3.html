@@ -1,0 +1,389 @@
+            <!-- Troisième section : Activités spéciales & pastorales -->
+            <div class="tab-pane fade" id="special" role="tabpanel" aria-labelledby="special-tab">
+                <div class="planning-section">
+                    <h3><i class="fas fa-star me-2"></i>Activités spéciales & pastorales</h3>
+                    <p class="text-muted mb-4">Planifiez les activités spéciales et pastorales de l'église pour l'année 2025.</p>
+                    
+                    <!-- Formulaire d'ajout d'activité spéciale -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Ajouter une activité spéciale ou pastorale</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="specialActivityForm">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="activityName" class="form-label">Nom de l'activité</label>
+                                        <input type="text" class="form-control" id="activityName" placeholder="Ex: Retraite spirituelle">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="activityCategory" class="form-label">Catégorie</label>
+                                        <select class="form-select" id="activityCategory">
+                                            <option value="">Sélectionner une catégorie</option>
+                                            <option value="Pastorale">Activité pastorale</option>
+                                            <option value="Spéciale">Activité spéciale</option>
+                                            <option value="Formation">Formation</option>
+                                            <option value="Mission">Mission</option>
+                                            <option value="Jeunesse">Jeunesse</option>
+                                            <option value="Autre">Autre</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="activityStartDate" class="form-label">Date de début</label>
+                                        <input type="date" class="form-control" id="activityStartDate">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="activityEndDate" class="form-label">Date de fin</label>
+                                        <input type="date" class="form-control" id="activityEndDate">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="activityLocation" class="form-label">Lieu</label>
+                                        <input type="text" class="form-control" id="activityLocation" placeholder="Ex: Centre de conférence">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="activityBudget" class="form-label">Budget estimé (€)</label>
+                                        <input type="number" class="form-control" id="activityBudget" placeholder="Ex: 1500">
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="activityResponsible" class="form-label">Responsable principal</label>
+                                        <input type="text" class="form-control" id="activityResponsible" placeholder="Ex: Pasteur Michel">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="activityTeam" class="form-label">Équipe organisatrice</label>
+                                        <input type="text" class="form-control" id="activityTeam" placeholder="Ex: Département Jeunesse">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="activityObjectives" class="form-label">Objectifs</label>
+                                    <textarea class="form-control" id="activityObjectives" rows="2" placeholder="Objectifs de l'activité..."></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="activityDescription" class="form-label">Description détaillée</label>
+                                    <textarea class="form-control" id="activityDescription" rows="3" placeholder="Description détaillée de l'activité..."></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Ressources nécessaires</label>
+                                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="resourceSound">
+                                                <label class="form-check-label" for="resourceSound">Équipement sonore</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="resourceProjection">
+                                                <label class="form-check-label" for="resourceProjection">Projecteur/Écran</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="resourceChairs">
+                                                <label class="form-check-label" for="resourceChairs">Chaises supplémentaires</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="resourceTables">
+                                                <label class="form-check-label" for="resourceTables">Tables</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="resourceFood">
+                                                <label class="form-check-label" for="resourceFood">Restauration</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="resourceTransport">
+                                                <label class="form-check-label" for="resourceTransport">Transport</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus-circle me-2"></i>Ajouter l'activité
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Liste des activités spéciales planifiées -->
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Activités spéciales & pastorales planifiées</h5>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-secondary me-2">
+                                        <i class="fas fa-print me-1"></i>Imprimer
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download me-1"></i>Exporter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Activité</th>
+                                            <th>Catégorie</th>
+                                            <th>Date</th>
+                                            <th>Lieu</th>
+                                            <th>Responsable</th>
+                                            <th>Budget</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Retraite spirituelle</td>
+                                            <td><span class="badge bg-info">Pastorale</span></td>
+                                            <td>15-17 Mars 2025</td>
+                                            <td>Centre de montagne</td>
+                                            <td>Pasteur Michel</td>
+                                            <td>1500 €</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Camp de jeunes</td>
+                                            <td><span class="badge bg-warning">Jeunesse</span></td>
+                                            <td>10-15 Juillet 2025</td>
+                                            <td>Camping Les Pins</td>
+                                            <td>Équipe Jeunesse</td>
+                                            <td>2800 €</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Mission humanitaire</td>
+                                            <td><span class="badge bg-success">Mission</span></td>
+                                            <td>5-20 Août 2025</td>
+                                            <td>Sénégal</td>
+                                            <td>Diacre Thomas</td>
+                                            <td>5000 €</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Conférence sur la famille</td>
+                                            <td><span class="badge bg-primary">Spéciale</span></td>
+                                            <td>25-26 Octobre 2025</td>
+                                            <td>Grande salle</td>
+                                            <td>Pasteur Jean</td>
+                                            <td>800 €</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Formation des leaders</td>
+                                            <td><span class="badge bg-secondary">Formation</span></td>
+                                            <td>8-9 Novembre 2025</td>
+                                            <td>Salle de conférence</td>
+                                            <td>Pasteur Michel</td>
+                                            <td>600 €</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- JavaScript pour la gestion des onglets et du formulaire -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Gestion des onglets
+                    const tabs = document.querySelectorAll('.nav-link');
+                    tabs.forEach(tab => {
+                        tab.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            // Désactiver tous les onglets
+                            tabs.forEach(t => {
+                                t.classList.remove('active');
+                                const target = document.querySelector(t.getAttribute('href'));
+                                if (target) target.classList.remove('show', 'active');
+                            });
+                            
+                            // Activer l'onglet cliqué
+                            this.classList.add('active');
+                            const target = document.querySelector(this.getAttribute('href'));
+                            if (target) target.classList.add('show', 'active');
+                        });
+                    });
+                    
+                    // Gestion des boutons de mois
+                    const monthButtons = document.querySelectorAll('.month-selector button');
+                    monthButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            // Désactiver tous les boutons
+                            monthButtons.forEach(b => b.classList.remove('btn-primary', 'text-white'));
+                            monthButtons.forEach(b => b.classList.add('btn-outline-primary'));
+                            
+                            // Activer le bouton cliqué
+                            this.classList.remove('btn-outline-primary');
+                            this.classList.add('btn-primary', 'text-white');
+                            
+                            // Mettre à jour le titre du calendrier
+                            const monthNames = [
+                                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+                            ];
+                            const monthIndex = parseInt(this.getAttribute('data-month')) - 1;
+                            document.querySelector('.card-header h5').textContent = `Calendrier - ${monthNames[monthIndex]} 2025`;
+                            
+                            // Ici, on pourrait charger les données du calendrier pour le mois sélectionné
+                        });
+                    });
+                    
+                    // Gestion des formulaires
+                    const weeklyForm = document.getElementById('weeklyActivityForm');
+                    const monthlyForm = document.getElementById('monthlyEventForm');
+                    const specialForm = document.getElementById('specialActivityForm');
+                    
+                    if (weeklyForm) {
+                        weeklyForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            // Logique pour traiter le formulaire d'activité hebdomadaire
+                            alert('Activité hebdomadaire ajoutée avec succès!');
+                            this.reset();
+                        });
+                    }
+                    
+                    if (monthlyForm) {
+                        monthlyForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            // Logique pour traiter le formulaire d'événement mensuel
+                            alert('Événement mensuel ajouté avec succès!');
+                            this.reset();
+                        });
+                    }
+                    
+                    if (specialForm) {
+                        specialForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            // Logique pour traiter le formulaire d'activité spéciale
+                            alert('Activité spéciale ajoutée avec succès!');
+                            this.reset();
+                        });
+                    }
+                    
+                    // Activer le premier onglet par défaut
+                    document.querySelector('.nav-link').click();
+                });
+            </script>
+            
+            <!-- Styles CSS spécifiques à la page de planification -->
+            <style>
+                .planning-section {
+                    padding: 20px 0;
+                }
+                
+                .calendar-day-header {
+                    background-color: #f8f9fa;
+                    text-align: center;
+                    font-weight: bold;
+                    padding: 8px;
+                    border: 1px solid #dee2e6;
+                }
+                
+                .calendar-day {
+                    height: 100px;
+                    border: 1px solid #dee2e6;
+                    padding: 5px;
+                    position: relative;
+                }
+                
+                .calendar-day-number {
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                    font-weight: bold;
+                }
+                
+                .calendar-event {
+                    background-color: #007bff;
+                    color: white;
+                    border-radius: 3px;
+                    padding: 2px 5px;
+                    margin-top: 25px;
+                    margin-bottom: 2px;
+                    font-size: 0.8rem;
+                    cursor: pointer;
+                }
+                
+                .calendar-event.special-activity {
+                    background-color: #dc3545;
+                }
+                
+                .calendar-event.pastoral-activity {
+                    background-color: #28a745;
+                }
+                
+                .activity-day {
+                    border: 1px solid #dee2e6;
+                    padding: 10px;
+                    margin-bottom: 10px;
+                    border-radius: 5px;
+                }
+                
+                .activity-day h6 {
+                    border-bottom: 1px solid #dee2e6;
+                    padding-bottom: 5px;
+                    margin-bottom: 10px;
+                }
+                
+                .activity-item {
+                    padding: 5px 10px;
+                    margin-bottom: 5px;
+                    border-left: 3px solid #007bff;
+                    background-color: #f8f9fa;
+                }
+                
+                .activity-time {
+                    font-weight: bold;
+                    color: #495057;
+                }
+                
+                .nav-pills .nav-link.active {
+                    background-color: #007bff;
+                }
+                
+                .month-selector .btn-outline-primary:hover {
+                    background-color: #007bff;
+                    color: white;
+                }
+            </style>
+        </div>
+    </div>
+</div>
+{% endblock %}

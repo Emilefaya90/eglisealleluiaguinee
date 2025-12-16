@@ -1,0 +1,31 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Gestion - Gestion Église{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container">
+        <h1>Gestion</h1>
+        
+        <div class="content-section">
+            <div class="gestion-nav">
+                <a href="{% url 'main:eglises' %}" class="gestion-link">
+                    <i class="bi bi-building me-2" aria-hidden="true"></i> Églises
+                </a>
+                <a href="{% url 'main:personnel_pastoral' %}" class="gestion-link">
+                    <i class="bi bi-person-badge me-2" aria-hidden="true"></i> Personnel Pastoral
+                </a>
+                <a href="{% url 'main:membres_eglise' %}" class="gestion-link">
+                    <i class="bi bi-people me-2" aria-hidden="true"></i> Membres d'Église
+                </a>
+                <a href="{% url 'main:departements' %}" class="gestion-link">
+                    <i class="bi bi-grid me-2" aria-hidden="true"></i> Départements
+                </a>
+                <a href="{% url 'main:finances' %}" class="gestion-link">
+                    <i class="bi bi-cash-coin me-2" aria-hidden="true"></i> Finances
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

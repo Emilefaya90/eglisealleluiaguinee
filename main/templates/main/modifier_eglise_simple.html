@@ -1,0 +1,160 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Modification d'Église - Gestion Église{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Styles généraux du formulaire */
+    .form-section {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        border: none;
+    }
+    
+    .section-title {
+        color: #333;
+        border-bottom: 2px solid #eaeaea;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    
+    .required-field::after {
+        content: "*";
+        color: #dc3545;
+        margin-left: 4px;
+    }
+    
+    /* Styles pour les inputs inline dans la déclaration */
+    .inline-input {
+        border: none;
+        border-bottom: 1px solid #007bff;
+        background-color: transparent;
+        padding: 2px 5px;
+        margin: 0 5px;
+        min-width: 100px;
+        transition: all 0.3s ease;
+    }
+    
+    .inline-input:focus {
+        outline: none;
+        border-bottom: 2px solid #0056b3;
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    /* Styles pour la déclaration */
+    .declaration-text {
+        line-height: 2;
+    }
+    
+    /* Styles pour les badges */
+    .badge {
+        font-weight: 500;
+        padding: 6px 10px;
+        border-radius: 4px;
+    }
+    
+    /* Couleur spéciale pour la section déclaration */
+    .border-purple {
+        border-color: #6f42c1 !important;
+    }
+    .text-purple {
+        color: #6f42c1;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <!-- En-tête du formulaire avec dégradé bleu -->
+            <div class="card mb-4 shadow">
+                <div class="card-header text-white py-3" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <i class="fas fa-church fa-2x"></i>
+                        </div>
+                        <div class="col">
+                            <h2 class="mb-0 fw-bold">MODIFICATION DE L'ÉGLISE</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body bg-white p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'main:dashboard' %}">Tableau de bord</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'main:eglises' %}">Églises</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Modifier {{ eglise.nom }}</li>
+                        </ol>
+                    </nav>
+                    
+                    <form id="modifierEgliseForm" method="post" action="{% url 'main:modifier_eglise' eglise.id %}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Section 1: Informations sur l'Église -->
+                        <div class="form-section mb-4 bg-white p-4 rounded shadow-sm border-start border-primary border-4">
+                            <h4 class="section-title text-primary mb-3"><i class="fas fa-info-circle me-2"></i> 1. Informations sur l'Église</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nom" class="form-label required-field">Nom de l'église</label>
+                                    <input type="text" class="form-control" id="nom" name="nom" value="{{ eglise.nom }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer le nom de l'église.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="responsable" class="form-label required-field">Responsable principal</label>
+                                    <input type="text" class="form-control" id="responsable" name="responsable" value="{{ eglise.responsable }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer le nom du responsable.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Boutons d'action -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'main:eglises' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Retour à la liste
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialisation de la validation du formulaire
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('modifierEgliseForm');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        }
+    });
+</script>
+{% endblock content %}

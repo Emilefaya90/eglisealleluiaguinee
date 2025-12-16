@@ -1,0 +1,1178 @@
+{% extends 'main/base.html' %}
+{% load static i18n %}
+
+{% block title %}Planning complet{% endblock %}
+
+{% block extra_css %}
+<style>
+  .sp-nowrap th, .sp-nowrap td { white-space: nowrap; }
+  .sp-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: bottom; }
+  .sp-cell.xs { max-width: 80px; }
+  .sp-cell.sm { max-width: 120px; }
+  .sp-cell.md { max-width: 160px; }
+  .sp-cell.lg { max-width: 300px; }
+  /* Styles pour le formulaire de planification */
+  .sp-form .input-group-text,
+  .sp-form .form-control,
+  .sp-form .form-select {
+    border: 1px solid #4e73df !important;
+    box-shadow: none !important;
+  }
+  .sp-form .form-control:focus,
+  .sp-form .form-select:focus {
+    border-color: #224abe !important;
+    box-shadow: 0 0 0 .15rem rgba(34,74,190,.15) !important;
+  }
+  .sp-form .input-group-text { width: 44px; justify-content: center; }
+  .sp-form .form-control, .sp-form .form-select { min-height: 40px; line-height: 1.2; }
+  .sp-form .btn { min-height: 40px; white-space: nowrap; }
+  
+  /* Styles pour la section des versets */
+  .planning-hero {
+    background: linear-gradient(-45deg, #1e3c72, #2a5298, #4a69bd, #1e3c72);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+    padding: 3rem 1.5rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .planning-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+  /* Étoiles scintillantes */
+  .planning-hero .stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+  .planning-hero .star {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 2s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+  }
+  .planning-hero h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    animation: fadeInDown 1s ease;
+  }
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .planning-hero .subtitle {
+    font-size: 1.15rem;
+    opacity: 0.95;
+    margin-bottom: 2rem;
+    position: relative;
+    animation: fadeInUp 1s ease 0.3s both;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .planning-hero .icon-main {
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+  
+  /* Carrousel de versets */
+  .verses-carousel {
+    position: relative;
+    min-height: 140px;
+    overflow: hidden;
+  }
+  .verse-card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 1.5rem 1.5rem 1.5rem 2rem;
+    border-left: 5px solid #ffc107;
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  }
+  .verse-card.active {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .verse-card.prev {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  .verse-card:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateX(0) scale(1.02);
+  }
+  .verse-card .verse-text {
+    font-style: italic;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  }
+  .verse-card .verse-ref {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #ffc107;
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(255,193,7,0.2);
+    border-radius: 20px;
+    animation: glow 2s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(255,193,7,0.3); }
+    50% { box-shadow: 0 0 15px rgba(255,193,7,0.6); }
+  }
+  .verse-card i.fa-quote-left {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 1.5rem;
+    opacity: 0.4;
+    color: #ffc107;
+  }
+  
+  /* Indicateurs du carrousel */
+  .carousel-indicators-custom {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 1.5rem;
+    position: relative;
+  }
+  .carousel-indicators-custom .indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  .carousel-indicators-custom .indicator.active {
+    background: #ffc107;
+    transform: scale(1.3);
+    border-color: white;
+  }
+  .carousel-indicators-custom .indicator:hover {
+    background: rgba(255,255,255,0.7);
+  }
+  
+  /* Boutons de navigation */
+  .carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .carousel-nav:hover {
+    background: rgba(255,193,7,0.8);
+    transform: translateY(-50%) scale(1.1);
+  }
+  .carousel-nav.prev { left: -50px; }
+  .carousel-nav.next { right: -50px; }
+  @media (max-width: 768px) {
+    .carousel-nav.prev { left: 5px; }
+    .carousel-nav.next { right: 5px; }
+    .carousel-nav { width: 35px; height: 35px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  
+  <!-- Section des versets bibliques -->
+  <div class="planning-hero">
+    <!-- Étoiles scintillantes -->
+    <div class="stars" id="starsContainer"></div>
+    
+    <div class="text-center mb-4">
+      <i class="fas fa-calendar-alt fa-3x mb-3 icon-main"></i>
+      <h2><i class="fas fa-cross me-2"></i>PLANIFICATION</h2>
+      <p class="subtitle">Gérez et planifiez les activités et événements de l'église pour une meilleure organisation.</p>
+    </div>
+    
+    <div class="row justify-content-center">
+      <div class="col-lg-10 position-relative">
+        <!-- Boutons de navigation -->
+        <button class="carousel-nav prev" id="versePrev"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-nav next" id="verseNext"><i class="fas fa-chevron-right"></i></button>
+        
+        <!-- Carrousel de versets -->
+        <div class="verses-carousel" id="versesCarousel">
+          <div class="verse-card active" data-index="0">
+            <i class="fa fa-quote-left"></i>
+            <p class="verse-text ps-4">"Tout doit se faire convenablement et dans l'ordre. Car Dieu n'est pas un Dieu de désordre, mais de paix."</p>
+            <span class="verse-ref"><i class="fas fa-bible me-1"></i>1 Corinthiens 14:40</span>
+          </div>
+          <div class="verse-card" data-index="1">
+            <i class="fa fa-quote-left"></i>
+            <p class="verse-text ps-4">"Car je connais les projets que j'ai formés sur vous, dit l'Éternel, projets de paix et non de malheur, afin de vous donner un avenir et de l'espérance."</p>
+            <span class="verse-ref"><i class="fas fa-bible me-1"></i>Jérémie 29:11</span>
+          </div>
+          <div class="verse-card" data-index="2">
+            <i class="fa fa-quote-left"></i>
+            <p class="verse-text ps-4">"Que tout se passe bien parmi vous, et que vous soyez en bonne santé, comme tout va bien pour votre âme."</p>
+            <span class="verse-ref"><i class="fas fa-bible me-1"></i>3 Jean 1:2</span>
+          </div>
+        </div>
+        
+        <!-- Indicateurs -->
+        <div class="carousel-indicators-custom">
+          <span class="indicator active" data-index="0"></span>
+          <span class="indicator" data-index="1"></span>
+          <span class="indicator" data-index="2"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center mb-3">
+    <h3 class="m-0"><i class="fas fa-calendar-alt text-primary me-2"></i>Planning complet</h3>
+  </div>
+
+  <!-- Formulaire d'enregistrement des plannings -->
+  <div class="card shadow-sm mb-4 sp-form">
+    <div class="card-header bg-info text-white">
+      <strong><i class="fas fa-clipboard-list me-2"></i>Le Calendrier des Événements Majeurs</strong>
+    </div>
+    <div class="card-body">
+      <div id="spSuccess" class="alert alert-success d-none" role="alert">
+        <i class="fas fa-check-circle me-1"></i> Enregistrement effectué avec succès.
+      </div>
+      <form id="spForm">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Église</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-church text-primary"></i></span>
+              <select class="form-select" id="spEglise" required>
+                <option value="">— Choisir —</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Département</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-sitemap text-primary"></i></span>
+              <input type="text" class="form-control" id="spDepartement" placeholder="Choisir ou saisir..." required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Type de planification</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-layer-group text-primary"></i></span>
+              <select class="form-select" id="spType" required>
+                <option value="">— Choisir —</option>
+                <option>Annuelle</option>
+                <option>Semestrielle</option>
+                <option>Trimestrielle</option>
+                <option>Mensuelle</option>
+                <option>Hebdomadaire</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-5">
+            <label class="form-label">Activité/Événement</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-bullhorn text-primary"></i></span>
+              <input type="text" class="form-control" id="spActivite" placeholder="Ex: Retraite spirituelle, Convention..." required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Jour</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-calendar-day text-primary"></i></span>
+              <select class="form-select" id="spJour" required>
+                <option value="">— Choisir —</option>
+                <option>Lundi</option>
+                <option>Mardi</option>
+                <option>Mercredi</option>
+                <option>Jeudi</option>
+                <option>Vendredi</option>
+                <option>Samedi</option>
+                <option>Dimanche</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Date Prévisionnelle</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-calendar text-primary"></i></span>
+              <input type="date" class="form-control" id="spDatePrev" required>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <label class="form-label">Heure</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-clock text-primary"></i></span>
+              <input type="time" class="form-control" id="spHeure" required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Lieu</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-map-marker-alt text-primary"></i></span>
+              <input type="text" class="form-control" id="spLieu" placeholder="Ex: Temple central, Annexe...">
+            </div>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Besoins Logistiques</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-tools text-primary"></i></span>
+              <input type="text" class="form-control" id="spBesoins" placeholder="Ex: Sono, chaises, transport, affiches...">
+            </div>
+          </div>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <label class="form-label">Responsable Principal</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user-tie text-primary"></i></span>
+              <input type="text" class="form-control" id="spResponsable" placeholder="Nom du responsable principal">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Objectif</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-bullseye text-primary"></i></span>
+              <input type="text" class="form-control" id="spObjectif" placeholder="Ex: 200 participants, évangélisation...">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Budget alloué (GNF)</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-coins text-primary"></i></span>
+              <input type="number" class="form-control" id="spBudget" step="1" min="0" placeholder="0">
+              <span class="input-group-text" style="min-width:64px; justify-content:center;">GNF</span>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Statut</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-flag text-primary"></i></span>
+              <select class="form-select" id="spStatut" required>
+                <option>À venir</option>
+                <option>Confirmé</option>
+                <option>Passé</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+        <div class="mb-2 fw-semibold">Planification Validée par :</div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-5">
+            <label class="form-label">Nom du responsable</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-id-badge text-primary"></i></span>
+              <input type="text" class="form-control" id="spNomResp" placeholder="Nom et prénom" required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Nom du Pasteur</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-cross text-primary"></i></span>
+              <input type="text" class="form-control" id="spNomPasteur" placeholder="Nom et prénom" required>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Date de Validation</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-calendar-check text-primary"></i></span>
+              <input type="date" class="form-control" id="spDateValid" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+          <button type="reset" class="btn btn-outline-secondary" id="spResetBtn"><i class="fas fa-undo me-1"></i>Réinitialiser</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i>Soumettre l'évènement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast de succès -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+    <div id="spToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="fas fa-check-circle me-1"></i> Enregistrement effectué avec succès.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header bg-primary text-white">
+      <div class="d-flex flex-wrap align-items-end gap-2">
+        <strong><i class="fas fa-filter me-2"></i>Filtres</strong>
+        <div class="ms-auto d-flex flex-wrap gap-2">
+          <a id="spFullExportCsv" class="btn btn-outline-light btn-sm" target="_blank"><i class="bi bi-filetype-csv me-1"></i>CSV</a>
+          <a id="spFullExportXlsx" class="btn btn-outline-light btn-sm" target="_blank"><i class="bi bi-file-earmark-excel me-1"></i>Excel</a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <form class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Église</label>
+          <select class="form-select" id="egFilter">
+            <option value="">— Toutes —</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Du</label>
+          <input type="date" class="form-control" id="dateFrom">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Au</label>
+          <input type="date" class="form-control" id="dateTo">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Recherche</label>
+          <div class="input-group">
+            <input id="qFilter" class="form-control" placeholder="Rechercher...">
+            <button id="applyFilters" class="btn btn-primary" type="button"><i class="fas fa-search"></i></button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+      <strong><i class="fas fa-list-ul me-2"></i>Résultats</strong>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm sp-nowrap">
+          <thead>
+            <tr>
+              <th>Église</th>
+              <th>Département</th>
+              <th>Type</th>
+              <th>Activité/Événement</th>
+              <th>Jour</th>
+              <th>Date</th>
+              <th>Heure</th>
+              <th>Lieu</th>
+              <th>Besoins</th>
+              <th>Responsable</th>
+              <th>Objectif</th>
+              <th>Budget</th>
+              <th>Statut</th>
+              <th>Responsables</th>
+              <th>Date validation</th>
+            </tr>
+          </thead>
+          <tbody id="spFullList"></tbody>
+        </table>
+      </div>
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2">
+        <div class="text-muted small" id="spFullCount">Affichage 0–0 sur 0</div>
+        <div class="d-flex align-items-center gap-2">
+          <label class="small">Par page</label>
+          <select id="spFullPageSize" class="form-select form-select-sm" style="width: auto;">
+            <option>10</option>
+            <option selected>25</option>
+            <option>50</option>
+          </select>
+          <nav>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item"><button class="page-link" id="spFullPrev" type="button">Précédent</button></li>
+              <li class="page-item disabled"><span class="page-link" id="spFullPageInfo">Page 1/1</span></li>
+              <li class="page-item"><button class="page-link" id="spFullNext" type="button">Suivant</button></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+      <span class="text-muted small"><i class="fas fa-database me-1"></i>Total: <strong id="spTotalCount">0</strong> enregistrements</span>
+      <button type="button" class="btn btn-primary btn-sm" id="btnVoirTousPlanning" data-bs-toggle="modal" data-bs-target="#modalTousPlanning">
+        <i class="fas fa-list-alt me-1"></i>Voir tous les plannings
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tous les Plannings -->
+<div class="modal fade" id="modalTousPlanning" tabindex="-1" aria-labelledby="modalTousPlanningLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalTousPlanningLabel">
+          <i class="fas fa-calendar-alt me-2"></i>Tous les Plannings
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body bg-light">
+        <!-- Barre d'actions -->
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+          <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control" id="modalSearchPlanning" placeholder="Rechercher...">
+          </div>
+          <select class="form-select" id="modalFilterEglise" style="max-width: 200px;">
+            <option value="">Toutes les églises</option>
+          </select>
+          <select class="form-select" id="modalFilterStatut" style="max-width: 150px;">
+            <option value="">Tous statuts</option>
+            <option value="À venir">À venir</option>
+            <option value="Confirmé">Confirmé</option>
+            <option value="Passé">Passé</option>
+          </select>
+          <button type="button" class="btn btn-outline-secondary" id="modalResetFilters">
+            <i class="fas fa-undo me-1"></i>Réinitialiser
+          </button>
+          <div class="ms-auto d-flex gap-2">
+            <a id="modalExportCsv" class="btn btn-outline-success" href="#" target="_blank">
+              <i class="bi bi-filetype-csv me-1"></i>CSV
+            </a>
+            <a id="modalExportXlsx" class="btn btn-outline-success" href="#" target="_blank">
+              <i class="bi bi-file-earmark-excel me-1"></i>Excel
+            </a>
+            <a id="modalExportPdf" class="btn btn-outline-danger" href="#" target="_blank">
+              <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+            </a>
+            <button type="button" class="btn btn-outline-secondary" id="modalPrintPlanning">
+              <i class="fas fa-print me-1"></i>Imprimer
+            </button>
+          </div>
+        </div>
+
+        <!-- Tableau -->
+        <div class="card shadow-sm">
+          <div class="card-body p-0">
+            <div class="table-responsive" id="modalTableContainer">
+              <table class="table table-hover table-striped table-sm mb-0" id="modalTablePlanning">
+                <thead class="table-dark">
+                  <tr>
+                    <th>#</th>
+                    <th>Église</th>
+                    <th>Département</th>
+                    <th>Type</th>
+                    <th>Activité/Événement</th>
+                    <th>Jour</th>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Lieu</th>
+                    <th>Besoins</th>
+                    <th>Responsable</th>
+                    <th>Objectif</th>
+                    <th>Budget</th>
+                    <th>Statut</th>
+                    <th>Validé par</th>
+                    <th>Date validation</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="modalListPlanning"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card-footer d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="text-muted small" id="modalCountPlanning">Affichage 0–0 sur 0</div>
+            <div class="d-flex align-items-center gap-2">
+              <label class="small">Par page</label>
+              <select id="modalPageSize" class="form-select form-select-sm" style="width: auto;">
+                <option>25</option>
+                <option>50</option>
+                <option>100</option>
+                <option value="9999">Tous</option>
+              </select>
+              <nav>
+                <ul class="pagination pagination-sm mb-0">
+                  <li class="page-item"><button class="page-link" id="modalPrevPlanning" type="button">Précédent</button></li>
+                  <li class="page-item disabled"><span class="page-link" id="modalPageInfoPlanning">Page 1/1</span></li>
+                  <li class="page-item"><button class="page-link" id="modalNextPlanning" type="button">Suivant</button></li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// =============================================
+// CARROUSEL DE VERSETS ANIMÉ
+// =============================================
+(function() {
+  const carousel = document.getElementById('versesCarousel');
+  const cards = carousel ? carousel.querySelectorAll('.verse-card') : [];
+  const indicators = document.querySelectorAll('.carousel-indicators-custom .indicator');
+  const prevBtn = document.getElementById('versePrev');
+  const nextBtn = document.getElementById('verseNext');
+  const starsContainer = document.getElementById('starsContainer');
+  
+  let currentIndex = 0;
+  let autoPlayInterval;
+  
+  // Créer les étoiles scintillantes
+  function createStars() {
+    if (!starsContainer) return;
+    for (let i = 0; i < 30; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 2 + 's';
+      star.style.animationDuration = (1.5 + Math.random()) + 's';
+      starsContainer.appendChild(star);
+    }
+  }
+  
+  // Afficher un verset spécifique
+  function showVerse(index) {
+    if (cards.length === 0) return;
+    
+    // Retirer les classes actives
+    cards.forEach((card, i) => {
+      card.classList.remove('active', 'prev');
+      if (i < index) {
+        card.classList.add('prev');
+      }
+    });
+    indicators.forEach(ind => ind.classList.remove('active'));
+    
+    // Activer le nouveau verset
+    cards[index].classList.add('active');
+    if (indicators[index]) indicators[index].classList.add('active');
+    
+    currentIndex = index;
+  }
+  
+  // Navigation
+  function nextVerse() {
+    const next = (currentIndex + 1) % cards.length;
+    showVerse(next);
+  }
+  
+  function prevVerse() {
+    const prev = (currentIndex - 1 + cards.length) % cards.length;
+    showVerse(prev);
+  }
+  
+  // Auto-play
+  function startAutoPlay() {
+    autoPlayInterval = setInterval(nextVerse, 5000);
+  }
+  
+  function stopAutoPlay() {
+    clearInterval(autoPlayInterval);
+  }
+  
+  // Event listeners
+  if (nextBtn) nextBtn.addEventListener('click', () => { stopAutoPlay(); nextVerse(); startAutoPlay(); });
+  if (prevBtn) prevBtn.addEventListener('click', () => { stopAutoPlay(); prevVerse(); startAutoPlay(); });
+  
+  indicators.forEach((ind, i) => {
+    ind.addEventListener('click', () => {
+      stopAutoPlay();
+      showVerse(i);
+      startAutoPlay();
+    });
+  });
+  
+  // Pause au survol
+  if (carousel) {
+    carousel.addEventListener('mouseenter', stopAutoPlay);
+    carousel.addEventListener('mouseleave', startAutoPlay);
+  }
+  
+  // Initialisation
+  createStars();
+  startAutoPlay();
+})();
+
+// =============================================
+// GESTION DES PLANNINGS
+// =============================================
+(function(){
+  // Etat
+  let allItems = [];
+  let page = 1;
+  let pageSize = 25;
+
+  // Elements
+  const egFilter = document.getElementById('egFilter');
+  const dateFrom = document.getElementById('dateFrom');
+  const dateTo = document.getElementById('dateTo');
+  const qFilter = document.getElementById('qFilter');
+  const applyFilters = document.getElementById('applyFilters');
+  const listEl = document.getElementById('spFullList');
+  const countEl = document.getElementById('spFullCount');
+  const pageInfo = document.getElementById('spFullPageInfo');
+  const prevBtn = document.getElementById('spFullPrev');
+  const nextBtn = document.getElementById('spFullNext');
+  const pageSizeEl = document.getElementById('spFullPageSize');
+  const exportCsvA = document.getElementById('spFullExportCsv');
+  const exportXlsxA = document.getElementById('spFullExportXlsx');
+
+  // Elements du formulaire
+  const spForm = document.getElementById('spForm');
+  const spEglise = document.getElementById('spEglise');
+
+  // Helpers
+  function escapeHtml(s){ return (s||'').replace(/[&<>\"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+  function getCookie(name){
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+  function getCsrfToken(){ return getCookie('csrftoken') || getCookie('csrf') || ''; }
+
+  function qs(){
+    const u = new URLSearchParams();
+    if (egFilter.value) u.set('eglise_id', egFilter.value);
+    if (dateFrom.value) u.set('date_from', dateFrom.value);
+    if (dateTo.value) u.set('date_to', dateTo.value);
+    if (qFilter.value) u.set('q', qFilter.value.trim());
+    return u.toString();
+  }
+  function setExportLinks(){
+    const query = qs();
+    exportCsvA.href = '/api/sp/export.csv' + (query?('?' + query):'');
+    exportXlsxA.href = '/api/sp/export.xlsx' + (query?('?' + query):'');
+  }
+  async function fetchJSON(url){
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }
+  async function loadEglises(){
+    const data = await fetchJSON('/api/eglises/');
+    const options = (data.items||[]).map(it=>`<option value="${it.id}">${escapeHtml(it.nom)}</option>`).join('');
+    egFilter.innerHTML = '<option value="">— Toutes —</option>' + options;
+    // Charger aussi dans le formulaire
+    spEglise.innerHTML = '<option value="">— Choisir —</option>' + options;
+  }
+
+  // Soumission du formulaire de planification
+  spForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = spForm.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn){
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Envoi...';
+    }
+    const editId = spForm.getAttribute('data-edit-id');
+    const payload = {
+      eglise_id: document.getElementById('spEglise')?.value,
+      departement: document.getElementById('spDepartement')?.value,
+      type: document.getElementById('spType')?.value,
+      activite: document.getElementById('spActivite')?.value?.trim(),
+      jour: document.getElementById('spJour')?.value,
+      date_prev: document.getElementById('spDatePrev')?.value,
+      heure: document.getElementById('spHeure')?.value,
+      lieu: document.getElementById('spLieu')?.value?.trim(),
+      besoins: document.getElementById('spBesoins')?.value?.trim(),
+      responsable: document.getElementById('spResponsable')?.value?.trim(),
+      objectif: document.getElementById('spObjectif')?.value?.trim(),
+      budget: document.getElementById('spBudget')?.value,
+      statut: document.getElementById('spStatut')?.value,
+      nom_resp: document.getElementById('spNomResp')?.value?.trim(),
+      nom_pasteur: document.getElementById('spNomPasteur')?.value?.trim(),
+      date_valid: document.getElementById('spDateValid')?.value,
+    };
+
+    // Validation minimale
+    if (!payload.eglise_id || !payload.type || !payload.activite || !payload.jour || !payload.date_prev || !payload.heure){
+      alert('Veuillez remplir les champs requis (Église, Type, Activité, Jour, Date, Heure).');
+      if (submitBtn){
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+      }
+      return;
+    }
+
+    try{
+      const url = editId ? (`/api/sp/${editId}/update/`) : '/api/sp/create/';
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken()
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok){
+        const t = await r.text();
+        throw new Error(t || ('HTTP ' + r.status));
+      }
+      // Succès: reset et message
+      spForm.reset();
+      spForm.removeAttribute('data-edit-id');
+      // Recharger la liste
+      await loadList();
+      // Afficher le toast de succès
+      const toastEl = document.getElementById('spToast');
+      if (toastEl && window.bootstrap && bootstrap.Toast){
+        const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+        toast.show();
+      }
+      // Faire défiler vers la liste
+      listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }catch(err){
+      alert('Erreur lors de la sauvegarde: ' + (err && err.message ? err.message : ''));
+    } finally {
+      if (submitBtn){
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+      }
+    }
+  });
+  async function loadList(){
+    const data = await fetchJSON('/api/sp/' + (qs()?('?' + qs()):''));
+    allItems = data.items||[];
+    page = 1; render(); setExportLinks();
+  }
+  function render(){
+    pageSize = parseInt(pageSizeEl.value||'25',10)||25;
+    const total = allItems.length;
+    const maxPages = Math.max(1, Math.ceil(total/pageSize));
+    if (page>maxPages) page=maxPages;
+    const start = (page-1)*pageSize;
+    const end = Math.min(total, start+pageSize);
+    const items = allItems.slice(start, end);
+    listEl.innerHTML = '';
+    for (const r of items){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td title="${escapeHtml(r.eglise_nom)}"><span class="sp-cell sm">${escapeHtml(r.eglise_nom)}</span></td>
+        <td title="${escapeHtml(r.departement)}"><span class="sp-cell sm">${escapeHtml(r.departement)}</span></td>
+        <td title="${escapeHtml(r.type)}"><span class="sp-cell xs">${escapeHtml(r.type)}</span></td>
+        <td title="${escapeHtml(r.activite)}"><span class="sp-cell lg">${escapeHtml(r.activite)}</span></td>
+        <td title="${escapeHtml(r.jour)}"><span class="sp-cell xs">${escapeHtml(r.jour)}</span></td>
+        <td title="${escapeHtml(r.date_prev)}"><span class="sp-cell xs">${escapeHtml(r.date_prev)}</span></td>
+        <td title="${escapeHtml(r.heure)}"><span class="sp-cell xs">${escapeHtml(r.heure)}</span></td>
+        <td title="${escapeHtml(r.lieu)}"><span class="sp-cell sm">${escapeHtml(r.lieu)}</span></td>
+        <td title="${escapeHtml(r.besoins)}"><span class="sp-cell md">${escapeHtml(r.besoins)}</span></td>
+        <td title="${escapeHtml(r.responsable)}"><span class="sp-cell sm">${escapeHtml(r.responsable)}</span></td>
+        <td title="${escapeHtml(r.objectif)}"><span class="sp-cell md">${escapeHtml(r.objectif)}</span></td>
+        <td title="${escapeHtml(String(r.budget||''))}"><span class="sp-cell xs">${escapeHtml(String(r.budget||''))}</span></td>
+        <td title="${escapeHtml(r.statut)}"><span class="sp-cell xs">${escapeHtml(r.statut)}</span></td>
+        <td title="${escapeHtml(r.nom_resp)} / ${escapeHtml(r.nom_pasteur)}"><span class="sp-cell sm">${escapeHtml(r.nom_resp)} / ${escapeHtml(r.nom_pasteur)}</span></td>
+        <td title="${escapeHtml(r.date_valid)}"><span class="sp-cell xs">${escapeHtml(r.date_valid)}</span></td>`;
+      listEl.appendChild(tr);
+    }
+    countEl.textContent = total?`Affichage ${start+1}–${end} sur ${total}`:'Affichage 0–0 sur 0';
+    pageInfo.textContent = `Page ${page}/${Math.max(1, Math.ceil(total/pageSize))}`;
+    prevBtn.classList.toggle('disabled', page<=1);
+    nextBtn.classList.toggle('disabled', page>=Math.max(1, Math.ceil(total/pageSize)));
+    // Mettre à jour le compteur total
+    const totalCountEl = document.getElementById('spTotalCount');
+    if (totalCountEl) totalCountEl.textContent = total;
+  }
+
+  // Events
+  applyFilters.addEventListener('click', ()=>{ loadList(); });
+  qFilter.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); loadList(); } });
+  pageSizeEl.addEventListener('change', ()=>{ page=1; render(); });
+  prevBtn.addEventListener('click', ()=>{ if(page>1){ page--; render(); }});
+  nextBtn.addEventListener('click', ()=>{ const total = allItems.length; const maxPages = Math.max(1, Math.ceil(total/pageSize)); if(page<maxPages){ page++; render(); }});
+
+  // =============================================
+  // MODAL - Tous les Plannings
+  // =============================================
+  const modalEl = document.getElementById('modalTousPlanning');
+  const modalListEl = document.getElementById('modalListPlanning');
+  const modalCountEl = document.getElementById('modalCountPlanning');
+  const modalPageInfoEl = document.getElementById('modalPageInfoPlanning');
+  const modalPrevBtn = document.getElementById('modalPrevPlanning');
+  const modalNextBtn = document.getElementById('modalNextPlanning');
+  const modalPageSizeEl = document.getElementById('modalPageSize');
+  const modalSearchEl = document.getElementById('modalSearchPlanning');
+  const modalFilterEgliseEl = document.getElementById('modalFilterEglise');
+  const modalFilterStatutEl = document.getElementById('modalFilterStatut');
+  const modalResetFiltersBtn = document.getElementById('modalResetFilters');
+  const modalExportCsvA = document.getElementById('modalExportCsv');
+  const modalExportXlsxA = document.getElementById('modalExportXlsx');
+  const modalExportPdfA = document.getElementById('modalExportPdf');
+  const modalPrintBtn = document.getElementById('modalPrintPlanning');
+
+  let modalAllItems = [];
+  let modalFilteredItems = [];
+  let modalPage = 1;
+  let modalPageSize = 25;
+
+  // Charger les églises dans le filtre du modal
+  function loadModalEglises(){
+    const options = Array.from(egFilter.options).map(o => `<option value="${o.value}">${escapeHtml(o.text)}</option>`).join('');
+    modalFilterEgliseEl.innerHTML = '<option value="">Toutes les églises</option>' + options.substring(options.indexOf('</option>') + 9);
+  }
+
+  // Filtrer les données du modal
+  function filterModalData(){
+    const search = (modalSearchEl.value || '').toLowerCase().trim();
+    const egliseId = modalFilterEgliseEl.value;
+    const statut = modalFilterStatutEl.value;
+
+    modalFilteredItems = modalAllItems.filter(item => {
+      // Filtre par église
+      if (egliseId && String(item.eglise_id) !== egliseId) return false;
+      // Filtre par statut
+      if (statut && item.statut !== statut) return false;
+      // Filtre par recherche
+      if (search) {
+        const searchFields = [
+          item.eglise_nom, item.departement, item.type, item.activite,
+          item.jour, item.date_prev, item.heure, item.lieu, item.besoins,
+          item.responsable, item.objectif, item.statut, item.nom_resp, item.nom_pasteur
+        ].join(' ').toLowerCase();
+        if (!searchFields.includes(search)) return false;
+      }
+      return true;
+    });
+    modalPage = 1;
+    renderModal();
+  }
+
+  // Rendu du tableau modal
+  function renderModal(){
+    modalPageSize = parseInt(modalPageSizeEl.value || '25', 10) || 25;
+    const total = modalFilteredItems.length;
+    const maxPages = Math.max(1, Math.ceil(total / modalPageSize));
+    if (modalPage > maxPages) modalPage = maxPages;
+    const start = (modalPage - 1) * modalPageSize;
+    const end = Math.min(total, start + modalPageSize);
+    const items = modalFilteredItems.slice(start, end);
+
+    modalListEl.innerHTML = '';
+    let idx = start;
+    for (const r of items){
+      idx++;
+      const tr = document.createElement('tr');
+      const statutClass = r.statut === 'Confirmé' ? 'bg-success text-white' : 
+                          r.statut === 'Passé' ? 'bg-secondary text-white' : 'bg-warning';
+      tr.innerHTML = `
+        <td>${idx}</td>
+        <td>${escapeHtml(r.eglise_nom || '')}</td>
+        <td>${escapeHtml(r.departement || '')}</td>
+        <td>${escapeHtml(r.type || '')}</td>
+        <td><strong>${escapeHtml(r.activite || '')}</strong></td>
+        <td>${escapeHtml(r.jour || '')}</td>
+        <td>${escapeHtml(r.date_prev || '')}</td>
+        <td>${escapeHtml(r.heure || '')}</td>
+        <td>${escapeHtml(r.lieu || '')}</td>
+        <td>${escapeHtml(r.besoins || '')}</td>
+        <td>${escapeHtml(r.responsable || '')}</td>
+        <td>${escapeHtml(r.objectif || '')}</td>
+        <td>${escapeHtml(String(r.budget || ''))}</td>
+        <td><span class="badge ${statutClass}">${escapeHtml(r.statut || '')}</span></td>
+        <td>${escapeHtml(r.nom_resp || '')} / ${escapeHtml(r.nom_pasteur || '')}</td>
+        <td>${escapeHtml(r.date_valid || '')}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary me-1 modal-edit-btn" data-id="${r.id}" title="Modifier">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger modal-del-btn" data-id="${r.id}" title="Supprimer">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>`;
+      modalListEl.appendChild(tr);
+    }
+
+    modalCountEl.textContent = total ? `Affichage ${start + 1}–${end} sur ${total}` : 'Affichage 0–0 sur 0';
+    modalPageInfoEl.textContent = `Page ${modalPage}/${maxPages}`;
+    modalPrevBtn.classList.toggle('disabled', modalPage <= 1);
+    modalNextBtn.classList.toggle('disabled', modalPage >= maxPages);
+
+    // Mettre à jour les liens d'export
+    const query = new URLSearchParams();
+    if (modalFilterEgliseEl.value) query.set('eglise_id', modalFilterEgliseEl.value);
+    if (modalSearchEl.value) query.set('q', modalSearchEl.value);
+    const qs = query.toString();
+    modalExportCsvA.href = '/api/sp/export.csv' + (qs ? '?' + qs : '');
+    modalExportXlsxA.href = '/api/sp/export.xlsx' + (qs ? '?' + qs : '');
+    modalExportPdfA.href = '/api/sp/export.pdf' + (qs ? '?' + qs : '');
+  }
+
+  // Remplir le formulaire depuis un enregistrement (pour édition)
+  function setFormFromRecord(rec){
+    if (!rec) return;
+    spForm.setAttribute('data-edit-id', rec.id);
+    document.getElementById('spEglise').value = rec.eglise_id || '';
+    document.getElementById('spDepartement').value = rec.departement || '';
+    document.getElementById('spType').value = rec.type || '';
+    document.getElementById('spActivite').value = rec.activite || '';
+    document.getElementById('spJour').value = rec.jour || '';
+    document.getElementById('spDatePrev').value = rec.date_prev || '';
+    document.getElementById('spHeure').value = rec.heure || '';
+    document.getElementById('spLieu').value = rec.lieu || '';
+    document.getElementById('spBesoins').value = rec.besoins || '';
+    document.getElementById('spResponsable').value = rec.responsable || '';
+    document.getElementById('spObjectif').value = rec.objectif || '';
+    document.getElementById('spBudget').value = rec.budget || '';
+    document.getElementById('spStatut').value = rec.statut || 'À venir';
+    document.getElementById('spNomResp').value = rec.nom_resp || '';
+    document.getElementById('spNomPasteur').value = rec.nom_pasteur || '';
+    document.getElementById('spDateValid').value = rec.date_valid || '';
+    // Fermer le modal et scroll vers le formulaire
+    bootstrap.Modal.getInstance(modalEl)?.hide();
+    spForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Événements du modal
+  modalEl.addEventListener('shown.bs.modal', async () => {
+    // Charger toutes les données
+    try {
+      const data = await fetchJSON('/api/sp/');
+      modalAllItems = data.items || [];
+      modalFilteredItems = [...modalAllItems];
+      loadModalEglises();
+      renderModal();
+    } catch(err) {
+      modalListEl.innerHTML = '<tr><td colspan="17" class="text-center text-danger">Erreur de chargement</td></tr>';
+    }
+  });
+
+  modalSearchEl.addEventListener('input', filterModalData);
+  modalFilterEgliseEl.addEventListener('change', filterModalData);
+  modalFilterStatutEl.addEventListener('change', filterModalData);
+  modalResetFiltersBtn.addEventListener('click', () => {
+    modalSearchEl.value = '';
+    modalFilterEgliseEl.value = '';
+    modalFilterStatutEl.value = '';
+    filterModalData();
+  });
+  modalPageSizeEl.addEventListener('change', () => { modalPage = 1; renderModal(); });
+  modalPrevBtn.addEventListener('click', () => { if(modalPage > 1){ modalPage--; renderModal(); }});
+  modalNextBtn.addEventListener('click', () => { 
+    const maxPages = Math.max(1, Math.ceil(modalFilteredItems.length / modalPageSize)); 
+    if(modalPage < maxPages){ modalPage++; renderModal(); }
+  });
+
+  // Délégation de clic pour éditer/supprimer
+  modalListEl.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = btn.getAttribute('data-id');
+    
+    if (btn.classList.contains('modal-del-btn')) {
+      if (!confirm('Supprimer cet enregistrement ?')) return;
+      try {
+        const r = await fetch(`/api/sp/${id}/delete/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCsrfToken() },
+          credentials: 'same-origin'
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        // Recharger les données
+        const data = await fetchJSON('/api/sp/');
+        modalAllItems = data.items || [];
+        filterModalData();
+        // Recharger aussi la liste principale
+        await loadList();
+      } catch(err) { 
+        alert('Erreur de suppression.'); 
+      }
+    } else if (btn.classList.contains('modal-edit-btn')) {
+      const rec = modalAllItems.find(x => String(x.id) === String(id));
+      if (rec) setFormFromRecord(rec);
+    }
+  });
+
+  // Impression
+  modalPrintBtn.addEventListener('click', () => {
+    const printContent = document.getElementById('modalTableContainer').innerHTML;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Tous les Plannings</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+          body { padding: 20px; }
+          @media print { 
+            .no-print { display: none !important; }
+            table { font-size: 10px; }
+          }
+        </style>
+      </head>
+      <body>
+        <h3 class="mb-3">Tous les Plannings - ${new Date().toLocaleDateString('fr-FR')}</h3>
+        ${printContent}
+        <script>window.onload = function() { window.print(); window.close(); }<\/script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  });
+
+  // Init
+  (async ()=>{
+    await loadEglises();
+    await loadList();
+  })();
+})();
+</script>
+{% endblock %}
