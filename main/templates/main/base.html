@@ -122,6 +122,21 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Réduire la taille des menus pour tout afficher sur une ligne */
+        .nav-menu .nav-link {
+            font-size: 0.85rem !important;
+            padding: 0.4rem 0.6rem !important;
+        }
+        .nav-menu .dropdown-toggle {
+            font-size: 0.85rem !important;
+        }
+        @media (max-width: 1200px) {
+            .nav-menu .nav-link {
+                font-size: 0.8rem !important;
+                padding: 0.35rem 0.5rem !important;
+            }
+        }
+        
         /* Styles formulaire de don */
         #donationForm .form-control:focus,
         #donationForm .form-select:focus {
