@@ -1,0 +1,172 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Connexion" %} - Gestion Église{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #89253e 100%);
+        padding: 2rem;
+    }
+    
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 450px;
+        width: 100%;
+    }
+    
+    .login-header {
+        background: linear-gradient(135deg, #89253e, #b8860b);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .login-header img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px solid white;
+        margin-bottom: 1rem;
+    }
+    
+    .login-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .login-header p {
+        margin: 0.5rem 0 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+    }
+    
+    .login-body {
+        padding: 2rem;
+    }
+    
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+    
+    .form-floating .form-control {
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+        padding: 1rem 0.75rem;
+    }
+    
+    .form-floating .form-control:focus {
+        border-color: #89253e;
+        box-shadow: 0 0 0 0.2rem rgba(137, 37, 62, 0.25);
+    }
+    
+    .btn-login {
+        background: linear-gradient(135deg, #89253e, #b8860b);
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        width: 100%;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(137, 37, 62, 0.4);
+        color: white;
+    }
+    
+    .login-icon {
+        font-size: 3rem;
+        color: white;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-danger {
+        border-radius: 10px;
+        border: none;
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .back-link {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+    
+    .back-link a {
+        color: #666;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    
+    .back-link a:hover {
+        color: #89253e;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-lock login-icon"></i>
+            <h2>{% trans "Espace Gestion" %}</h2>
+            <p>{% trans "Veuillez vous connecter pour accéder à cette section" %}</p>
+        </div>
+        
+        <div class="login-body">
+            {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {% trans "Nom d'utilisateur ou mot de passe incorrect." %}
+            </div>
+            {% endif %}
+            
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+            
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="{% trans 'Nom d\'utilisateur' %}" required autofocus>
+                    <label for="username"><i class="fas fa-user me-2"></i>{% trans "Nom d'utilisateur" %}</label>
+                </div>
+                
+                <div class="form-floating mb-4">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="{% trans 'Mot de passe' %}" required>
+                    <label for="password"><i class="fas fa-key me-2"></i>{% trans "Mot de passe" %}</label>
+                </div>
+                
+                {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+                
+                <button type="submit" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i>{% trans "Se connecter" %}
+                </button>
+            </form>
+            
+            <div class="back-link">
+                <a href="{% url 'main:accueil' %}">
+                    <i class="fas fa-arrow-left me-1"></i>{% trans "Retour à l'accueil" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -181,10 +182,12 @@ def objectif_general(request):
 def objectif_specifique(request):
     return render(request, 'main/objectif_specifique.html')
 
+@login_required
 def gestion(request):
     """Vue pour la page Gestion"""
     return render(request, 'main/gestion.html')
 
+@login_required
 def eglises(request):
     """Vue pour la page Eglises"""
     # Récupérer toutes les églises pour le tableau
@@ -355,6 +358,7 @@ def projet_local(request):
 
 from django.contrib import messages
 
+@login_required
 def personnel_pastoral(request):
     """Vue pour la gestion du personnel pastoral"""
     # Récupérer tous les pasteurs et églises pour affichage
@@ -719,6 +723,7 @@ def supprimer_pasteur(request, pasteur_id: int):
         messages.error(request, f"Erreur lors de la suppression: {str(e)}")
     return redirect('/personnel-pastoral/')
 
+@login_required
 def les_membres(request):
     """Vue pour la page Les Membres"""
     membres = Membre.objects.all().order_by('nom', 'prenom')
@@ -878,6 +883,7 @@ def modifier_finance_report(request, report_id: int):
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
+@login_required
 def nos_fideles(request):
     """Vue pour la page Nos Fidèles (formulaire d'adhésion + tableau)."""
     eglises = Eglise.objects.all().order_by('nom')
@@ -970,6 +976,7 @@ def supprimer_rapport_comptabilite(request, rapport_id):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Méthode non autorisée'})
 
+@login_required
 def banque(request):
     """Vue pour la page Banque (formulaire d'enregistrement financier de l'église + tableau)."""
     eglises = Eglise.objects.all().order_by('nom')
@@ -1097,6 +1104,7 @@ def banque(request):
     })
 
 
+@login_required
 @ensure_csrf_cookie
 def banque_records_all(request):
     """Affiche une page dédiée avec tous les rapports Banque (recherche, filtres, exports, pagination)."""
@@ -2002,6 +2010,7 @@ def api_sp_export_pdf(request):
     except Exception as e:
         return HttpResponse(f"Erreur export PDF: {e}", status=500)
 
+@login_required
 @ensure_csrf_cookie
 def planification_complet(request):
     """Vue pour la page Planning complet (tous les enregistrements + filtres + exports)."""
@@ -2238,6 +2247,7 @@ def modifier_membre(request, membre_id: int):
         form = MembreForm(instance=membre)
     return render(request, 'main/membre_modifier.html', {'membre': membre, 'form': form})
 
+@login_required
 @ensure_csrf_cookie
 def departements(request):
     """Vue pour la page Nos Départements: formulaire + tableau dynamique."""
@@ -2597,6 +2607,7 @@ def modifier_departement(request, departement_id: int):
         messages.error(request, "Erreur lors de la modification du département.")
         return redirect('main:departements')
 
+@login_required
 @ensure_csrf_cookie
 def finances(request):
     """Vue pour la page Finances
@@ -2872,6 +2883,7 @@ def evenements(request):
         'eglises': eglises,
     })
 
+@login_required
 def effectifs_culte_complet(request):
     """Page complète listant tous les effectifs du culte avec filtres et exports."""
     eglises = Eglise.objects.all().order_by('nom')
@@ -3569,6 +3581,7 @@ def supprimer_toutes_finances(request):
     except Exception as e:
         return JsonResponse({ 'success': False, 'error': str(e) }, status=400)
 
+@login_required
 @ensure_csrf_cookie
 def finances_records_all(request):
     """Affiche un tableau dédié avec tous les enregistrements financiers."""

@@ -175,3 +175,8 @@ CONTACT_RECEIVER = 'eglisealleluiagn@gmail.com'
 # EMAIL_HOST_USER = 'votre_email@gmail.com'
 # EMAIL_HOST_PASSWORD = 'votre_mot_de_passe_ou_app_password'
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# --- Authentication ---
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/gestion/'
+LOGOUT_REDIRECT_URL = '/'
