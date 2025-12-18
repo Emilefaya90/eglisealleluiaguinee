@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,9 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-kn%#7))b4^t+11@7b8(@rjwk&5pnqq7*(-3$0pcjr@3#*q#v06'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Mettre False en production
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+# Ajouter vos domaines de production ici
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app,.railway.app,.render.com,.pythonanywhere.com').split(',')
 
 
 # Application definition
@@ -43,6 +46,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # Décommenter en production après: pip install whitenoise
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -132,7 +136,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+# Dossier où collectstatic rassemble tous les fichiers statiques
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Dossiers supplémentaires de fichiers statiques (en dehors des apps)
+# Note: Les fichiers dans main/static/ sont automatiquement trouvés via APP_DIRS
+# Ajoutez ici uniquement des dossiers statiques globaux si nécessaire
+# STATICFILES_DIRS = [
+#     BASE_DIR / 'static',  # Pour des fichiers statiques globaux
+# ]
+
+# Compression et cache des fichiers statiques avec WhiteNoise (en production)
+# Décommenter après: pip install whitenoise
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Configuration des médias
 MEDIA_URL = '/media/'

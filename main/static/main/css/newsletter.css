@@ -1,0 +1,317 @@
+/* Styles pour le formulaire de newsletter moderne */
+/* Modal de newsletter */
+.newsletter-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 26, 48, 0.9); /* Bleu nuit semi-transparent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    padding: 20px;
+    animation: fadeIn 0.3s ease-in-out;
+    backdrop-filter: blur(5px); /* Effet de flou pour un rendu plus élégant */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.newsletter-container {
+    background-color: #0f1a30; /* Bleu nuit */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 500px;
+    animation: slideIn 0.4s ease-out;
+    color: #fff; /* Texte en blanc pour contraster avec le fond foncé */
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* En-tête du formulaire avec bouton de fermeture */
+.newsletter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.newsletter-header h5 {
+    margin: 0;
+    color: #fff;
+    font-weight: 600;
+}
+
+#close-newsletter-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    color: #fff;
+}
+
+#close-newsletter-btn:hover {
+    transform: scale(1.1);
+}
+
+.newsletter-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, #89253e, #3a1c71);
+}
+
+.newsletter-form {
+    position: relative;
+    z-index: 1;
+}
+
+.newsletter-form .form-floating {
+    margin-bottom: 15px;
+}
+
+.newsletter-form .form-control {
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+    color: #000; /* Texte en noir dans les champs de saisie */
+}
+
+.newsletter-form .form-control:focus {
+    box-shadow: 0 0 0 3px rgba(137, 37, 62, 0.25);
+    border-color: #89253e;
+}
+
+.newsletter-form .form-label {
+    color: #fff;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.newsletter-form .form-label i {
+    margin-right: 5px;
+    color: #fff;
+}
+
+.frequency-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #fff;
+    font-weight: 500;
+}
+
+.frequency-label i {
+    color: #89253e;
+    margin-right: 5px;
+}
+
+.frequency-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.form-check-inline {
+    margin-right: 0;
+}
+
+.form-check-input {
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #89253e;
+    border-color: #89253e;
+}
+
+.form-check-label {
+    cursor: pointer;
+    color: #fff;
+}
+
+.privacy-link {
+    color: #89253e;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.privacy-link:hover {
+    text-decoration: underline;
+}
+
+.btn-subscribe {
+    background-color: #89253e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-compact {
+    width: auto;
+    min-width: 120px;
+    max-width: 150px;
+    padding: 6px 12px;
+}
+
+.newsletter-section {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: -10px;
+}
+
+.blue-night-bg {
+    background-color: #0f1a30;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.grey-bg {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-subscribe::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.6s ease;
+}
+
+.btn-subscribe:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(137, 37, 62, 0.4);
+}
+
+.btn-subscribe:hover::before {
+    left: 100%;
+}
+
+.btn-subscribe:active {
+    transform: translateY(-1px);
+}
+
+.btn-subscribe .btn-text {
+    transition: all 0.3s ease;
+}
+
+.btn-subscribe i {
+    transition: all 0.3s ease;
+}
+
+.btn-subscribe:hover i {
+    transform: translateX(5px);
+}
+
+/* Message de succès */
+.success-message {
+    text-align: center;
+    padding: 20px 10px;
+}
+
+.success-icon {
+    font-size: 3rem;
+    color: #28a745;
+    margin-bottom: 15px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.success-message h5 {
+    color: #fff;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.success-message p {
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+/* Styles pour la validation en temps réel */
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.was-validated .form-control:valid,
+.form-control.is-valid {
+    border-color: #28a745;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .frequency-options {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .form-check-inline {
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+}
+
+/* Styles spécifiques pour le pied de page sombre */
+.footer .newsletter-container {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.footer .form-floating label,
+.footer .form-check-label,
+.footer .frequency-label {
+    color: #fff;
+}
+
+.footer .form-control {
+    background-color: rgba(255, 255, 255, 0.9);
+}

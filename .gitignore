@@ -134,9 +134,11 @@ Thumbs.db
 # Media files (uploaded by users)
 media/
 
-# Static files (collected)
+# Static files (collected by collectstatic)
 staticfiles/
-static/
+
+# Ne pas ignorer les fichiers statiques de l'application main
+# static/  # Commenté pour garder main/static/
 
 # Temporary/debug files
 *.html.bak

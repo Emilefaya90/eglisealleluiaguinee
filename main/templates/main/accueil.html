@@ -194,6 +194,26 @@ document.addEventListener('keydown', function(event) {
         closePhoneModal();
     }
 });
+
+// Diaporama automatique pour Pageaccueil3, theme1, theme2
+function initPageaccueilSlideshow() {
+    const slides = document.querySelectorAll('.pageaccueil-slide');
+    if (slides.length === 0) return;
+    
+    let currentSlideIndex = 0;
+    
+    function showNextSlide() {
+        slides[currentSlideIndex].classList.remove('active');
+        currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+        slides[currentSlideIndex].classList.add('active');
+    }
+    
+    // Changer de slide toutes les 5 secondes
+    setInterval(showNextSlide, 5000);
+}
+
+// Lancer le diaporama au chargement de la page
+document.addEventListener('DOMContentLoaded', initPageaccueilSlideshow);
 </script>
 
 <!-- Section hero avec image de fond -->
@@ -379,9 +399,19 @@ document.addEventListener('keydown', function(event) {
                         <img src="{% static 'main/images/hero/Pageaccueil.jpg' %}" alt="Page d'accueil" class="pageaccueil-image-small">
                     </div>
                     
-                    <!-- Image Pageaccueil2 -->
-                    <div class="pageaccueil-container-small pageaccueil-animated mt-3">
-                        <img src="{% static 'main/images/hero/Pageaccueil3.jpg' %}" alt="Page d'accueil 2" class="pageaccueil-image-small">
+                    <!-- Diaporama Pageaccueil3, theme1, theme2 -->
+                    <div class="pageaccueil-container-small pageaccueil-animated mt-5 mb-5">
+                        <div class="pageaccueil-slideshow">
+                            <div class="pageaccueil-slide active">
+                                <img src="{% static 'main/images/hero/Pageaccueil3.jpg' %}" alt="Page d'accueil 3" class="pageaccueil-image-small">
+                            </div>
+                            <div class="pageaccueil-slide">
+                                <img src="{% static 'main/images/theme1.jpg' %}" alt="Thème 1" class="pageaccueil-image-small">
+                            </div>
+                            <div class="pageaccueil-slide">
+                                <img src="{% static 'main/images/theme2.jpg' %}" alt="Thème 2" class="pageaccueil-image-small">
+                            </div>
+                        </div>
                         <div class="pageaccueil-caption">
                             - Rep. de GUINEE / CONAKRY-DIXINN -
                         </div>
@@ -502,7 +532,92 @@ document.addEventListener('keydown', function(event) {
     </div>
 </div>
 
+<!-- Section Image Alleluia Pied - Au-dessus du pied de page -->
+<!section class="alleluia-pied-section">
+    <!div class="container-fluid px-0">
+        <div class="alleluia-pied-container">
+            <img src="{% static 'main/images/alleluiapied.jpg' %}" alt="Église Pentecôte Alléluia de Guinée" class="alleluia-pied-image">
+        </div>
+    </div>
+</section>
+
 <style>
+/* Section Image Alleluia Pied */
+.alleluia-pied-section {
+    padding: 0;
+    margin: 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.alleluia-pied-container {
+    position: relative;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: none;
+    transition: all 0.4s ease;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.alleluia-pied-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(13, 110, 253, 0.25);
+}
+
+.alleluia-pied-image {
+    width: 100%;
+    max-height: 400px;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.alleluia-pied-container:hover .alleluia-pied-image {
+    transform: scale(1.02);
+}
+
+/* Animation de brillance pour l'image */
+.alleluia-pied-container::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    animation: shinePied 4s infinite;
+    pointer-events: none;
+}
+
+@keyframes shinePied {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .alleluia-pied-image {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 576px) {
+    .alleluia-pied-image {
+        max-height: 200px;
+    }
+}
+
 /* Styles pour les codes QR - Position fixe en angle */
 .qr-fixed-corner {
     position: fixed;
@@ -529,16 +644,44 @@ document.addEventListener('keydown', function(event) {
                 linear-gradient(135deg, #0d6efd, #0dcaf0, #0d6efd) border-box;
 }
 
+/* Diaporama Pageaccueil */
+.pageaccueil-slideshow {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.pageaccueil-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.pageaccueil-slide.active {
+    position: relative;
+    opacity: 1;
+}
+
+.pageaccueil-slide .pageaccueil-image-small {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 .pageaccueil-caption {
     position: absolute;
-    bottom: 0;
+    bottom: -10px;
     left: 0;
     right: 0;
     background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.5));
     color: white;
     text-align: center;
-    padding: 12px 15px;
-    font-size: 0.9rem;
+    padding: 8px 10px;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.5px;
     text-transform: uppercase;
