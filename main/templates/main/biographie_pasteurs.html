@@ -35,6 +35,10 @@
                         <img src="{% static 'main/images/Past antoine.jpg' %}" 
                              alt="Pasteur Antoine" 
                              class="pasteur-photo">
+                        {% elif forloop.counter == 3 %}
+                        <img src="{% static 'main/images/Past Kouacou.jpeg' %}" 
+                             alt="Pasteur Kouacou" 
+                             class="pasteur-photo">
                         {% else %}
                         <img src="{% static 'main/images/pasteurs/pasteur_' %}{{ forloop.counter }}.jpg" 
                              alt="Pasteur {{ forloop.counter }}" 
