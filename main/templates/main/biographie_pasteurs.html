@@ -156,8 +156,10 @@
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    border: 5px solid #f8f9fa;
+    border: 5px solid #764ba2; /* Couleur principale violette */
     transition: all 0.3s ease;
+    padding: 3px; /* Espace pour l'effet de double bordure */
+    background: linear-gradient(45deg, #667eea, #764ba2); /* Dégradé de fond pour la bordure */
 }
 
 .photo-frame:hover {
@@ -170,6 +172,9 @@
     height: 100%;
     object-fit: cover;
     transition: transform 0.5s ease;
+    border-radius: 8px; /* Léger arrondi pour correspondre au cadre intérieur */
+    border: 3px solid white; /* Bordure intérieure blanche */
+    box-sizing: border-box; /* Pour inclure la bordure dans les dimensions */
 }
 
 .photo-frame:hover .special-frame {
