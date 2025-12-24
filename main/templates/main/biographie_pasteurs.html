@@ -60,8 +60,10 @@
                         </p>
                         <div class="pasteur-bio">
                             <p>
+                                {% if forloop.counter != 3 %}
                                 <strong>Date de naissance :</strong> --/--/----<br>
                                 <strong>Lieu de naissance :</strong> ---<br>
+                                {% endif %}
                                 <strong>Date d'ordination :</strong> --/--/----<br>
                                 <strong>Église locale :</strong> ---
                             </p>
