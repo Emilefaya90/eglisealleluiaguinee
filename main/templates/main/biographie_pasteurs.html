@@ -36,9 +36,15 @@
                              alt="Pasteur Antoine" 
                              class="pasteur-photo">
                         {% elif forloop.counter == 3 %}
-                        <img src="{% static 'main/images/Past Kouacou.jpeg' %}" 
-                             alt="Pasteur Kouacou" 
-                             class="pasteur-photo">
+                        <div class="pasteur-photo-container">
+                            <div class="photo-frame">
+                                <img src="{% static 'main/images/Past Kouacou.jpeg' %}" 
+                                     alt="Pasteur Kouacou" 
+                                     class="pasteur-photo special-frame"
+                                     onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgMzAwIDMwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNlMGUwZTAiLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSIxMTAiIHI9IjUwIiBmaWxsPSIjYmRiZGJkIi8+PHBhdGggZD0iTTc1IDI1MGMwLTQxLjQgMzMuNi03NSA3NS03NXM3NSAzMy42IDc1IDc1IiBmaWxsPSIjYmRiZGJkIi8+PHRleHQgeD0iMTUwIiB5PSIyODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5ZTllOWUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCI+UGFzdGV1cjwvdGV4dD48L3N2Zz4=';">
+                                <div class="photo-overlay"></div>
+                            </div>
+                        </div>
                         {% else %}
                         <img src="{% static 'main/images/pasteurs/pasteur_' %}{{ forloop.counter }}.jpg" 
                              alt="Pasteur {{ forloop.counter }}" 
@@ -135,6 +141,56 @@
 </div>
 
 <style>
+/* Styles pour l'encadré de la photo du Pasteur 3 */
+.pasteur-photo-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+}
+
+.photo-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 5px solid #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.photo-frame:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.special-frame {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.photo-frame:hover .special-frame {
+    transform: scale(1.05);
+}
+
+.photo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(118, 75, 162, 0.2), rgba(102, 126, 234, 0.2));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.photo-frame:hover .photo-overlay {
+    opacity: 1;
+}
+
 /* Styles pour la description détaillée du pasteur */
 .pasteur-description h5 {
     color: #4a6baf;
