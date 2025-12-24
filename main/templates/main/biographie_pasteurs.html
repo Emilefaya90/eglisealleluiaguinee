@@ -56,7 +56,7 @@
                         </h3>
                         <p class="pasteur-titre">
                             <i class="bi bi-award me-2"></i>
-                            <span>Titre / Fonction</span>
+                            <span>{% if forloop.counter == 3 %}Pasteur principal{% else %}Titre / Fonction{% endif %}</span>
                         </p>
                         <div class="pasteur-bio">
                             <p>
