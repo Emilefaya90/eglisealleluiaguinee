@@ -67,11 +67,60 @@
                                 <strong>Date d'ordination :</strong> --/--/----<br>
                                 <strong>Église locale :</strong> ---
                             </p>
+                            {% if forloop.counter == 3 %}
+                            <div class="pasteur-description">
+                                <h5>2. Vie personnelle</h5>
+                                <ul>
+                                    <li>Marié à KOUA Adjoua Mireille</li>
+                                    <li>Père de quatre enfants dont deux garçons et deux filles</li>
+                                    <li>Venir en république de Guinée chez ma sœur dans le but de poursuivre mes études ; j'ai intégré l'Église Pentecôte Alléluia de Belle Vue le dimanche 15 septembre 2008 ensuite je me suis donné à Christ en février 2009 l'or d'une croisade organisée par l'apôtre Abou KOROMA de la Sierra Leone et baptisé par immersion par le Pasteur Kézély Béavogui à l'église Pentecôte Alléluia de Belle Vue. Depuis l'or membre actif et ouvrier en tant qu'intercesseur, chargé des annonces, dirigeant du culte, responsable de la liturgie, diacre et pasteur</li>
+                                </ul>
+
+                                <h5>3. Fonction au sein de l'Église</h5>
+                                <ul>
+                                    <li>Pasteur principal de l'église Pentecôte Alléluia de Yattaya</li>
+                                    <li>Années de service : 5 ans</li>
+                                </ul>
+
+                                <h5>4. Appel et ministère</h5>
+                                <ul>
+                                    <li>Année de l'appel : 2018</li>
+                                    <li>Mission : Évangélisation, restauration, guérison et l'éveil des consciences</li>
+                                    <li>Axe principal : Enseignement intercession</li>
+                                </ul>
+
+                                <h5>5. Formation</h5>
+                                <ul>
+                                    <li>Institut Théologique Évangélique de Conakry</li>
+                                    <li>Diplômes de Théologie</li>
+                                </ul>
+
+                                <h5>6. Expériences</h5>
+                                <ul>
+                                    <li>Églises de Belle Vue et Yattaya</li>
+                                    <li>Missions ou conférences dirigées/animées</li>
+                                </ul>
+
+                                <h5>7. Qualités spirituelles</h5>
+                                <ul>
+                                    <li>Engagement dans la prière et l'étude biblique</li>
+                                    <li>Vie de sanctification</li>
+                                    <li>Compassion et soutien des âmes</li>
+                                </ul>
+
+                                <h5>8. Impact</h5>
+                                <ul>
+                                    <li>Témoignages de fidèles</li>
+                                    <li>Réalisations dans l'église ou la communauté</li>
+                                </ul>
+                            </div>
+                            {% else %}
                             <p class="pasteur-description">
                                 Description et parcours du pasteur. Cette section peut contenir des informations sur son ministère, 
                                 ses études théologiques, son parcours spirituel, ses réalisations au sein de l'église, 
                                 et tout autre élément pertinent de sa biographie.
                             </p>
+                            {% endif %}
                         </div>
                         <div class="pasteur-contact mt-3">
                             <span class="badge bg-primary me-2"><i class="bi bi-telephone me-1"></i>Téléphone</span>
@@ -86,6 +135,25 @@
 </div>
 
 <style>
+/* Styles pour la description détaillée du pasteur */
+.pasteur-description h5 {
+    color: #4a6baf;
+    margin-top: 1.2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.pasteur-description ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.pasteur-description li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
 /* En-tête de la page */
 .bio-header {
     padding: 1rem;
