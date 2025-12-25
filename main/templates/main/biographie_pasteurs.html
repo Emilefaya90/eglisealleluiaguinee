@@ -32,9 +32,15 @@
                              alt="Évêque" 
                              class="pasteur-photo">
                         {% elif forloop.counter == 2 %}
-                        <img src="{% static 'main/images/Past antoine.jpg' %}" 
-                             alt="Pasteur Antoine" 
-                             class="pasteur-photo">
+                        <div class="pasteur-photo-container">
+                            <div class="photo-frame">
+                                <img src="{% static 'main/images/Past antoine.jpg' %}" 
+                                     alt="Pasteur Antoine" 
+                                     class="pasteur-photo special-frame"
+                                     onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiB2aWV3Qm94PSIwIDAgMzAwIDMwMCI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIzMDAiIGZpbGw9IiNlMGUwZTAiLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSIxMTAiIHI9IjUwIiBmaWxsPSIjYmRiZGJkIi8+PHBhdGggZD0iTTc1IDI1MGMwLTQxLjQgMzMuNi03NSA3NS03NXM3NSAzMy42IDc1IDc1IiBmaWxsPSIjYmRiZGJkIi8+PHRleHQgeD0iMTUwIiB5PSIyODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5ZTllOWUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCI+UGFzdGV1cjwvdGV4dD48L3N2Zz4=';">
+                                <div class="photo-overlay"></div>
+                            </div>
+                        </div>
                         {% elif forloop.counter == 3 %}
                         <div class="pasteur-photo-container">
                             <div class="photo-frame">
