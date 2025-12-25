@@ -67,7 +67,7 @@
                         <div class="pasteur-bio">
                             <p>
                                 <strong>Date d'ordination :</strong> --/--/----<br>
-                                <strong>Église locale :</strong> ALLELUIA KAGBELEN
+                                <strong>Église locale :</strong> {% if forloop.counter == 2 %}ALLELUIA KAGBELEN{% else %}---{% endif %}
                             </p>
                             {% if forloop.counter == 3 %}
                             <div class="pasteur-description">
