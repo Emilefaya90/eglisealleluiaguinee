@@ -1336,6 +1336,7 @@ def ajouter_membre(request):
                 'success': True,
                 'membre': {
                     'id': membre.id,
+                    'matricule': membre.matricule,
                     'nom': membre.nom,
                     'prenom': membre.prenom,
                     'sexe': membre.sexe,
@@ -2202,6 +2203,7 @@ def api_membres(request):
         for m in qs:
             data.append({
                 'id': m.id,
+                'matricule': m.matricule or '',
                 'nom': m.nom,
                 'prenom': m.prenom,
                 'sexe': m.sexe,

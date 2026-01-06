@@ -332,6 +332,14 @@
               <div class="section-wrap sec-profil">
                 <div class="row g-3">
                 <div class="col-md-4">
+                  <label for="matricule" class="form-label">Matricule</label>
+                  <div class="input-group input-icon">
+                    <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                    <input type="text" class="form-control" id="matricule" readonly placeholder="Généré automatiquement">
+                  </div>
+                  <div class="help-hint">Le matricule sera généré automatiquement</div>
+                </div>
+                <div class="col-md-4">
                   <label for="nom" class="form-label">Nom</label>
                   <div class="input-group input-icon">
                     <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
@@ -630,6 +638,7 @@
               <thead class="table-light">
                 <tr>
                   <th class="sticky-col">#</th>
+                  <th>Matricule</th>
                   <th>Nom complet</th>
                   <th>Sexe</th>
                   <th>Naissance</th>
@@ -908,9 +917,9 @@
         ordering: false,
         columnDefs: [
           { targets: '_all', className: 'text-nowrap' },
-          { targets: [6,7], className: 'ellipsis' },
-          { targets: [2,5,10,12,13,14], className: 'text-center' },
-          { targets: [11], className: 'text-end' }
+          { targets: [7,8], className: 'ellipsis' },
+          { targets: [3,6,11,13,14,15], className: 'text-center' },
+          { targets: [12], className: 'text-end' }
         ],
         language: {
           url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
@@ -953,7 +962,7 @@
       document.getElementById('departementFilter')?.addEventListener('change', function(){
         const val = this.value;
         // Use contains search so rows with multiple départements still match
-        dt.column(9).search(val || '').draw();
+        dt.column(10).search(val || '').draw();
       });
 
       // Met à jour le badge du nombre d'adhésions
@@ -1090,6 +1099,7 @@
               depsArr.forEach(d=>uniqueDepartments.add(d));
               dt.row.add([
                 rowCounter,
+                m.matricule || '—',
                 `${m.prenom || ''} ${m.nom || ''}`.trim(),
                 sexeDisp,
                 naissance,
@@ -1256,6 +1266,7 @@
             depsNew.forEach(d=>uniqueDepartments.add(d));
             dt.row.add([
               rowCounter,
+              m.matricule || '—',
               `${m.prenom || ''} ${m.nom || ''}`.trim(),
               sexeDisp,
               naissance,

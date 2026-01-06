@@ -153,6 +153,7 @@ class Membre(models.Model):
     ]
     
     eglise = models.ForeignKey(Eglise, on_delete=models.CASCADE, verbose_name=_('Église'))
+    matricule = models.CharField(_('Matricule'), max_length=20, unique=True, blank=True)
     nom = models.CharField(_('Nom'), max_length=100)
     prenom = models.CharField(_('Prénom'), max_length=100)
     sexe = models.CharField(_('Sexe'), max_length=1, choices=SEXE_CHOICES)
@@ -185,6 +186,20 @@ class Membre(models.Model):
     
     def __str__(self):
         return f"{self.prenom} {self.nom}"
+    
+    def save(self, *args, **kwargs):
+        if not self.matricule:
+            last_membre = Membre.objects.filter(matricule__startswith='EPAG').order_by('-matricule').first()
+            if last_membre and last_membre.matricule:
+                try:
+                    last_num = int(last_membre.matricule.replace('EPAG', ''))
+                    new_num = last_num + 1
+                except ValueError:
+                    new_num = 1
+            else:
+                new_num = 1
+            self.matricule = f'EPAG{new_num:03d}'
+        super().save(*args, **kwargs)
 
 class Departement(models.Model):
     eglise = models.ForeignKey(Eglise, on_delete=models.CASCADE, verbose_name=_('Église'))
