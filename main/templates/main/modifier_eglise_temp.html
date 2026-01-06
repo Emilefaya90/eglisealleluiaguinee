@@ -209,15 +209,33 @@
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="adresse" class="form-label required-field">Adresse</label>
-                                    <input type="text" class="form-control" id="adresse" name="adresse" value="{{ eglise.adresse }}" required>
-                                    <div class="invalid-feedback">Veuillez entrer l'adresse de l'église.</div>
-                                </div>
-                                
-                                <div class="col-md-6 mb-3">
                                     <label for="ville" class="form-label required-field">Ville</label>
                                     <input type="text" class="form-control" id="ville" name="ville" value="{{ eglise.ville }}" required>
                                     <div class="invalid-feedback">Veuillez entrer la ville.</div>
+                                </div>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-lg-3 col-md-6 mb-2">
+                                    <label for="adresse" class="form-label required-field">Adresse</label>
+                                    <input type="text" class="form-control form-control-sm" id="adresse" name="adresse" value="{{ eglise.adresse }}" required>
+                                    <div class="invalid-feedback">Veuillez entrer l'adresse de l'église.</div>
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 mb-2">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control form-control-sm" id="email" name="email" value="{{ eglise.email }}">
+                                    <div class="invalid-feedback">Veuillez entrer une adresse email valide.</div>
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 mb-2">
+                                    <label for="date_creation" class="form-label">Date de fondation de l'église</label>
+                                    <input type="date" class="form-control form-control-sm" id="date_creation" name="date_creation" value="{% if eglise.date_creation %}{{ eglise.date_creation|date:'Y-m-d' }}{% endif %}">
+                                </div>
+
+                                <div class="col-lg-3 col-md-6 mb-2">
+                                    <label for="nombre_membres" class="form-label">Nombre de membres</label>
+                                    <input type="number" class="form-control form-control-sm" id="nombre_membres" name="nombre_membres" value="{{ eglise.nombre_membres }}" min="0">
                                 </div>
                             </div>
                             
@@ -236,27 +254,9 @@
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="date_fondation" class="form-label">Date de fondation</label>
-                                    <input type="date" class="form-control" id="date_fondation" name="date_fondation" value="{% if eglise.date_fondation %}{{ eglise.date_fondation|date:'Y-m-d' }}{% endif %}">
-                                </div>
-                                
-                                <div class="col-md-6 mb-3">
                                     <label for="telephone" class="form-label required-field">Téléphone</label>
                                     <input type="tel" class="form-control" id="telephone" name="telephone" value="{{ eglise.telephone }}" required>
                                     <div class="invalid-feedback">Veuillez entrer un numéro de téléphone valide.</div>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" value="{{ eglise.email }}">
-                                    <div class="invalid-feedback">Veuillez entrer une adresse email valide.</div>
-                                </div>
-                                
-                                <div class="col-md-6 mb-3">
-                                    <label for="nombre_membres" class="form-label">Nombre de membres</label>
-                                    <input type="number" class="form-control" id="nombre_membres" name="nombre_membres" value="{{ eglise.nombre_membres }}" min="0">
                                 </div>
                             </div>
                         </div>

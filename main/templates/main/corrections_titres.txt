@@ -1,0 +1,57 @@
+CORRECTIONS À APPORTER DANS LE FICHIER eglises.html
+
+Ligne 1673 - Remplacer :
+<h4 class="text-primary">ðŸ" Églises Affiliées</h4>
+Par :
+<h4 class="text-primary"><i class="fas fa-church me-2"></i>Églises Affiliées</h4>
+
+Ligne 1678 - Remplacer :
+<h5 class="mb-0">ðŸ›ï¸ Église Principale</h5>
+Par :
+<h5 class="mb-0"><i class="fas fa-place-of-worship me-2"></i>Église Principale</h5>
+
+Ligne 1693 - Remplacer :
+<h5 class="mb-0">ðŸŒ¿ Églises Filiales</h5>
+Par :
+<h5 class="mb-0"><i class="fas fa-seedling me-2"></i>Églises Filiales</h5>
+
+Ligne 1708 - Remplacer :
+<h5 class="mb-0">ðŸ"Š Statistiques</h5>
+Par :
+<h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistiques</h5>
+
+Ligne 1723 - Remplacer :
+<h5 class="mb-0">âš™ï¸ Fonctionnalités de Gestion</h5>
+Par :
+<h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Fonctionnalités de Gestion</h5>
+
+Ligne 1737 - Remplacer :
+<h5 class="mb-0">ðŸ'¨â€ðŸ'¼ Personnel Pastoral</h5>
+Par :
+<h5 class="mb-0"><i class="fas fa-user-tie me-2"></i>Personnel Pastoral</h5>
+
+Ligne 1744 - Remplacer :
+<h6 class="text-primary">ðŸ™ Pasteurs Principaux</h6>
+Par :
+<h6 class="text-primary"><i class="fas fa-praying-hands me-2"></i>Pasteurs Principaux</h6>
+
+Ligne 1754 - Remplacer :
+<h6 class="text-primary">â›ª Ministères Spécialisés</h6>
+Par :
+<h6 class="text-primary"><i class="fas fa-star me-2"></i>Ministères Spécialisés</h6>
+
+Ligne 1767 - Remplacer :
+<h6 class="text-primary">ðŸ"š Formation Continue</h6>
+Par :
+<h6 class="text-primary"><i class="fas fa-book me-2"></i>Formation Continue</h6>
+
+Ligne 1777 - Remplacer :
+<h6 class="text-primary">ðŸ"‹ Gestion Administrative</h6>
+Par :
+<h6 class="text-primary"><i class="fas fa-clipboard-list me-2"></i>Gestion Administrative</h6>
+
+INSTRUCTIONS :
+1. Ouvrez le fichier eglises.html dans un éditeur de texte
+2. Utilisez Ctrl+F pour rechercher chaque ligne à remplacer
+3. Remplacez-la par la version corrigée avec l'icône FontAwesome
+4. Enregistrez le fichier avec l'encodage UTF-8
