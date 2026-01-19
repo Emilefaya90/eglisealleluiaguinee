@@ -8,7 +8,7 @@
         document.addEventListener('click', function(e) {
             const target = e.target.closest('button');
             if (!target) return;
-            const isActionBtn = target.classList.contains('edit-pasteur') || target.classList.contains('view-pasteur') || target.classList.contains('delete-pasteur');
+            const isActionBtn = target.classList.contains('edit-pasteur') || target.classList.contains('view-pasteur') || target.classList.contains('delete-pasteur') || target.classList.contains('details-pasteur');
             if (!isActionBtn) return;
             // Empêcher toute action par défaut (ex.: focus/submit parasite)
             e.preventDefault();
@@ -25,7 +25,8 @@
                 type:
                     target.classList.contains('edit-pasteur') ? 'edit' :
                     target.classList.contains('view-pasteur') ? 'view' :
-                    target.classList.contains('delete-pasteur') ? 'delete' : 'unknown',
+                    target.classList.contains('delete-pasteur') ? 'delete' :
+                    target.classList.contains('details-pasteur') ? 'details' : 'unknown',
                 pasteurId
             });
 
@@ -40,6 +41,8 @@
                 if (pasteurId) openViewPasteurModal(pasteurId);
             } else if (target.classList.contains('delete-pasteur')) {
                 if (pasteurId) deletePasteur(pasteurId, target);
+            } else if (target.classList.contains('details-pasteur')) {
+                if (pasteurId) openDetailsPasteurModal(pasteurId);
             }
         });
 
@@ -140,77 +143,277 @@ function openEditPasteurModal(pasteurId) {
 
 function openViewPasteurModal(pasteurId) {
     console.debug('[PP Actions] openViewPasteurModal', { pasteurId });
+
+    // Créer/ouvrir le modal immédiatement (meilleure UX + debug si fetch KO)
+    let modalEl = document.getElementById('viewPasteurModal');
+    if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.id = 'viewPasteurModal';
+        modalEl.className = 'modal fade';
+        modalEl.tabIndex = -1;
+        modalEl.innerHTML = `
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Détails du pasteur</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="viewPasteurBody"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="btnPrintPasteur" disabled>
+                <i class="fas fa-print me-2"></i>Imprimer
+              </button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+          </div>
+        </div>`;
+        document.body.appendChild(modalEl);
+    }
+
+    const body = modalEl.querySelector('#viewPasteurBody');
+    const printBtn = modalEl.querySelector('#btnPrintPasteur');
+    if (printBtn) {
+        printBtn.disabled = true;
+        printBtn.onclick = null;
+    }
+    if (body) {
+        body.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status"></div>
+                <div class="mt-2 text-muted">Chargement des informations…</div>
+            </div>
+        `;
+    }
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
     fetch(`/get_pasteur_details/${pasteurId}/`)
         .then(r => r.json())
         .then(result => {
-            if (!result.success || !result.data) {
-                alert('Impossible de charger les détails.');
-                return;
+            if (!result || result.success !== true || !result.data) {
+                throw new Error((result && result.error) ? result.error : 'Impossible de charger les détails.');
             }
             const d = result.data;
-            // Créer le modal si non présent
-            let modalEl = document.getElementById('viewPasteurModal');
-            if (!modalEl) {
-                modalEl = document.createElement('div');
-                modalEl.id = 'viewPasteurModal';
-                modalEl.className = 'modal fade';
-                modalEl.tabIndex = -1;
-                modalEl.innerHTML = `
-                <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">Détails du pasteur</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div id="viewPasteurBody"></div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    </div>
-                  </div>
-                </div>`;
-                document.body.appendChild(modalEl);
-            }
-            const body = modalEl.querySelector('#viewPasteurBody');
-            const photo = d.photo_url ? `<img src="${d.photo_url}" class="rounded mb-3" style="width:100px;height:100px;object-fit:cover;">` : '';
             const safe = (v) => (v === null || v === undefined || v === '' ? '-' : v);
+            const fullName = `${safe(d.nom)} ${safe(d.prenom)}`.replace(/\s+/g, ' ').trim();
+            const roleLabel = safe(d.statut_actuel || d.fonction);
+            const photo = d.photo_url
+                ? `<img src="${d.photo_url}" alt="Photo" class="rounded-circle shadow-sm" style="width:96px;height:96px;object-fit:cover;">`
+                : `<div class="bg-secondary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:96px;height:96px;">
+                        <i class="fas fa-user text-secondary" style="font-size: 2rem;"></i>
+                   </div>`;
+
+            const egliseLogo = d.eglise_logo_url
+                ? `<img src="${d.eglise_logo_url}" alt="Logo église" class="rounded shadow-sm" style="width:64px;height:64px;object-fit:cover;">`
+                : '';
+
+            const field = (label, value) => `
+                <div class="col-md-6">
+                    <div class="small text-muted">${label}</div>
+                    <div class="fw-semibold">${safe(value)}</div>
+                </div>
+            `;
+
             body.innerHTML = `
-                <div class="row g-3">
-                  <div class="col-12">${photo}</div>
-                  <div class="col-md-6"><strong>Prénoms:</strong> ${safe(d.prenom)}</div>
-                  <div class="col-md-6"><strong>Nom:</strong> ${safe(d.nom)}</div>
-                  <div class="col-md-6"><strong>Fonction / Statut actuel:</strong> ${safe(d.statut_actuel || d.fonction)}</div>
-                  <div class="col-md-6"><strong>Sexe:</strong> ${safe(d.sexe)}</div>
-                  <div class="col-md-6"><strong>Date de naissance:</strong> ${safe(d.date_naissance)}</div>
-                  <div class="col-md-6"><strong>Lieu de naissance:</strong> ${safe(d.lieu_naissance)}</div>
-                  <div class="col-md-6"><strong>Nationalité:</strong> ${safe(d.nationalite)}</div>
-                  <div class="col-md-6"><strong>Domicile:</strong> ${safe(d.domicile)}</div>
-                  <div class="col-md-6"><strong>État civil:</strong> ${safe(d.etat_civil)}</div>
-                  <div class="col-md-6"><strong>Nombre d'enfants:</strong> ${safe(d.nombre_enfants)}</div>
-                  <div class="col-md-6"><strong>Profession:</strong> ${safe(d.profession)}</div>
-                  <div class="col-md-6"><strong>Téléphone:</strong> ${safe(d.telephone)}</div>
-                  <div class="col-md-6"><strong>Email:</strong> ${safe(d.email)}</div>
-                  <div class="col-md-6"><strong>Date de consécration:</strong> ${safe(d.date_consecration)}</div>
-                  <div class="col-md-6"><strong>Lieu de consécration:</strong> ${safe(d.lieu_consecration)}</div>
-                  <div class="col-md-6"><strong>Consacré par:</strong> ${safe(d.consacre_par)}</div>
-                  <div class="col-md-6"><strong>Prénoms du Père:</strong> ${safe(d.prenoms_pere)}</div>
-                  <div class="col-md-6"><strong>Prénoms & Nom de la Mère:</strong> ${safe(d.prenoms_nom_mere)}</div>
-                  <div class="col-md-6"><strong>Église affectée:</strong> ${safe(d.eglise_nom)}</div>
-                  <div class="col-md-6"><strong>Lieu d'affectation:</strong> ${safe(d.lieu_affectation)}</div>
-                  <div class="col-md-6"><strong>Date d'affectation:</strong> ${safe(d.date_affectation)}</div>
-                  <div class="col-md-6"><strong>Région:</strong> ${safe(d.region)}</div>
-                  <div class="col-md-6"><strong>Zone:</strong> ${safe(d.zone)}</div>
-                  <div class="col-md-12"><strong>Types de formations:</strong> ${safe(d.types_formations)}</div>
-                  ${d.diplomes_obtenus !== undefined ? `<div class="col-md-12"><strong>Diplômes obtenus:</strong> ${safe(d.diplomes_obtenus)}</div>` : ''}
-                </div>`;
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div>${photo}</div>
+                    <div class="flex-grow-1">
+                        <div class="h5 mb-1">${escapeHtml(fullName)}</div>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <span class="badge bg-primary">${escapeHtml(roleLabel)}</span>
+                            <span class="badge bg-light text-dark border">Église: ${escapeHtml(safe(d.eglise_nom))}</span>
+                        </div>
+                    </div>
+                    ${egliseLogo ? `<div class="ms-auto">${egliseLogo}</div>` : ''}
+                </div>
+
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-primary bg-opacity-10 border-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-id-card text-primary"></i>
+                            <strong>1. Identité & Contact</strong>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            ${field('Nom', d.nom)}
+                            ${field('Prénoms', d.prenom)}
+                            ${field('Sexe', d.sexe)}
+                            ${field('Téléphone', d.telephone)}
+                            ${field('Email', d.email)}
+                            ${field('Profession', d.profession)}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-info bg-opacity-10 border-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-user-circle text-info"></i>
+                            <strong class="text-info">Informations Personnelles</strong>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            ${field('Date de naissance', d.date_naissance)}
+                            ${field('Lieu de naissance', d.lieu_naissance)}
+                            ${field('Nationalité', d.nationalite)}
+                            ${field('Domicile', d.domicile)}
+                            ${field('État civil', d.etat_civil)}
+                            ${field("Nombre d'enfants", d.nombre_enfants)}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-success bg-opacity-10 border-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-church text-success"></i>
+                            <strong class="text-success">Affectation du Pasteur</strong>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            ${field('Fonction', d.fonction)}
+                            ${field('Statut actuel du Pasteur', d.statut_actuel)}
+                            ${field('Date de consécration', d.date_consecration)}
+                            ${field('Lieu de consécration', d.lieu_consecration)}
+                            ${field('Consacré par', d.consacre_par)}
+                            ${field("Lieu d'affectation", d.lieu_affectation)}
+                            ${field("Date d'affectation", d.date_affectation)}
+                            ${field('Région', d.region)}
+                            ${field('Zone', d.zone)}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-warning bg-opacity-10 border-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-users text-warning"></i>
+                            <strong class="text-warning">Filiation</strong>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            ${field('Prénoms du Père', d.prenoms_pere)}
+                            ${field('Prénoms & Nom de la Mère', d.prenoms_nom_mere)}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-secondary bg-opacity-10 border-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-graduation-cap text-secondary"></i>
+                            <strong class="text-secondary">Formations Suivies du Pasteur</strong>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="small text-muted">Types de formations</div>
+                                <div class="fw-semibold">${escapeHtml(safe(d.types_formations))}</div>
+                            </div>
+                            ${d.diplomes_obtenus !== undefined ? `
+                                <div class="col-12">
+                                    <div class="small text-muted">Diplômes obtenus</div>
+                                    <div class="fw-semibold">${escapeHtml(safe(d.diplomes_obtenus))}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mt-3">
+                    <div class="card-header bg-primary bg-opacity-10 border-0">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-file-download text-primary"></i>
+                            <strong class="text-primary">Téléchargement de la Pièce d'Enregistrement</strong>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        ${d.document_url ? `
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="text-muted small">
+                                    ${escapeHtml(d.document_name || 'Pièce d\'enregistrement')}
+                                </div>
+                                <a href="${d.document_url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-download me-1"></i> Télécharger
+                                </a>
+                            </div>
+                        ` : `
+                            <div class="text-muted">Aucune pièce jointe.</div>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            if (printBtn) {
+                printBtn.disabled = false;
+                printBtn.onclick = function() {
+                    printPasteurDetails(modalEl);
+                };
+            }
         })
         .catch((err) => {
             console.error('[PP Actions] openViewPasteurModal fetch error', err);
-            alert('Erreur lors du chargement des détails.');
+            if (body) {
+                body.innerHTML = `
+                    <div class="alert alert-danger">
+                        <div class="fw-semibold mb-1">Erreur lors du chargement des détails</div>
+                        <div class="small">${escapeHtml(err && err.message ? err.message : 'Veuillez réessayer.')}</div>
+                    </div>
+                `;
+            } else {
+                alert('Erreur lors du chargement des détails.');
+            }
         });
+}
+
+function printPasteurDetails(modalEl) {
+    try {
+        const body = modalEl.querySelector('#viewPasteurBody');
+        if (!body) return;
+        const w = window.open('', '_blank');
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8" />
+                <title>Impression - Détails du pasteur</title>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+                <style>
+                    body { padding: 18px; }
+                    .card { break-inside: avoid; page-break-inside: avoid; }
+                    img { max-width: 100%; }
+                    @media print {
+                        .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${body.innerHTML}
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        window.close();
+                    };
+                <\/script>
+            </body>
+            </html>
+        `;
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+    } catch (e) {
+        console.error('[PP Actions] printPasteurDetails error', e);
+        alert('Impossible de lancer l\'impression.');
+    }
 }
 
 
@@ -315,4 +518,272 @@ function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function openDetailsPasteurModal(pasteurId) {
+    console.debug('[PP Actions] openDetailsPasteurModal', { pasteurId });
+
+    // Créer le modal si non présent
+    let modalEl = document.getElementById('detailsPasteurModal');
+    if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.id = 'detailsPasteurModal';
+        modalEl.className = 'modal fade';
+        modalEl.tabIndex = -1;
+        modalEl.innerHTML = `
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+              <h5 class="modal-title"><i class="fas fa-id-card me-2"></i>Détails du Pasteur</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="detailsPasteurBody"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="btnPrintDetailsPasteur" disabled>
+                <i class="fas fa-print me-2"></i>Imprimer
+              </button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+          </div>
+        </div>`;
+        document.body.appendChild(modalEl);
+    }
+
+    const body = modalEl.querySelector('#detailsPasteurBody');
+    const printBtn = modalEl.querySelector('#btnPrintDetailsPasteur');
+    if (printBtn) {
+        printBtn.disabled = true;
+        printBtn.onclick = null;
+    }
+    if (body) {
+        body.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-success" role="status"></div>
+                <div class="mt-3 text-muted">Chargement des informations du pasteur...</div>
+            </div>
+        `;
+    }
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    fetch(`/get_pasteur_details/${pasteurId}/`)
+        .then(r => r.json())
+        .then(result => {
+            if (!result || result.success !== true || !result.data) {
+                throw new Error((result && result.error) ? result.error : 'Impossible de charger les détails.');
+            }
+            const d = result.data;
+            const safe = (v) => (v === null || v === undefined || v === '' ? '-' : v);
+            const fullName = `${safe(d.prenom)} ${safe(d.nom)}`.replace(/\s+/g, ' ').trim();
+
+            const photo = d.photo_url
+                ? `<img src="${d.photo_url}" alt="Photo" class="rounded-circle shadow" style="width:120px;height:120px;object-fit:cover;">`
+                : `<div class="bg-secondary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:120px;height:120px;">
+                        <i class="fas fa-user text-secondary" style="font-size: 3rem;"></i>
+                   </div>`;
+
+            const field = (label, value) => `
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="small text-muted">${label}</div>
+                    <div class="fw-semibold">${escapeHtml(safe(value))}</div>
+                </div>
+            `;
+
+            if (body) {
+                body.innerHTML = `
+                    <!-- En-tête avec photo et nom -->
+                    <div class="text-center mb-4 pb-3 border-bottom">
+                        <div class="mb-3">${photo}</div>
+                        <h4 class="mb-1">${escapeHtml(fullName)}</h4>
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            <span class="badge bg-success fs-6">${escapeHtml(safe(d.fonction))}</span>
+                            <span class="badge bg-primary fs-6">${escapeHtml(safe(d.statut_actuel))}</span>
+                            <span class="badge bg-info text-dark">${escapeHtml(safe(d.eglise_nom))}</span>
+                        </div>
+                    </div>
+
+                    <!-- Section 1: Informations Personnelles -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, #4CAF50, #45a049);">
+                            <h5 class="mb-0 text-white"><i class="fas fa-user me-2"></i>1. Informations Personnelles</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                ${field('Prénoms', d.prenom)}
+                                ${field('Nom', d.nom)}
+                                ${field('Sexe', d.sexe === 'M' ? 'Masculin' : d.sexe === 'F' ? 'Féminin' : d.sexe)}
+                                ${field('Date de naissance', d.date_naissance)}
+                                ${field('Lieu de naissance', d.lieu_naissance)}
+                                ${field('Nationalité', d.nationalite)}
+                                ${field('Domicile', d.domicile)}
+                                ${field('État civil', d.etat_civil)}
+                                ${field("Nombre d'enfants", d.nombre_enfants)}
+                                ${field('Profession', d.profession)}
+                                ${field('Téléphone', d.telephone)}
+                                ${field('Email', d.email)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Filiation -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, #FF9800, #F57C00);">
+                            <h5 class="mb-0 text-white"><i class="fas fa-users me-2"></i>2. Filiation</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                ${field('Prénoms du Père', d.prenoms_pere)}
+                                ${field('Prénoms & Nom de la Mère', d.prenoms_nom_mere)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Affectation du Pasteur -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, #2196F3, #1976D2);">
+                            <h5 class="mb-0 text-white"><i class="fas fa-church me-2"></i>3. Affectation du Pasteur</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                ${field('Fonction', d.fonction)}
+                                ${field('Statut actuel', d.statut_actuel)}
+                                ${field('Église affectée', d.eglise_nom)}
+                                ${field("Lieu d'affectation", d.lieu_affectation)}
+                                ${field("Date d'affectation", d.date_affectation)}
+                                ${field('Région', d.region)}
+                                ${field('Zone', d.zone)}
+                                ${field('Date de consécration', d.date_consecration)}
+                                ${field('Lieu de consécration', d.lieu_consecration)}
+                                ${field('Consacré par', d.consacre_par)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Formations Suivies du Pasteur -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2);">
+                            <h5 class="mb-0 text-white"><i class="fas fa-graduation-cap me-2"></i>4. Formations Suivies du Pasteur</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <div class="small text-muted">Types de formations</div>
+                                    <div class="fw-semibold" style="white-space: pre-wrap;">${escapeHtml(safe(d.types_formations))}</div>
+                                </div>
+                                ${d.diplomes_obtenus !== undefined ? `
+                                    <div class="col-12">
+                                        <div class="small text-muted">Diplômes obtenus</div>
+                                        <div class="fw-semibold" style="white-space: pre-wrap;">${escapeHtml(safe(d.diplomes_obtenus))}</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Téléchargement de la Pièce d'Enregistrement -->
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, #607D8B, #455A64);">
+                            <h5 class="mb-0 text-white"><i class="fas fa-file-download me-2"></i>5. Téléchargement de la Pièce d'Enregistrement</h5>
+                        </div>
+                        <div class="card-body">
+                            ${d.document_url ? `
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                    <div>
+                                        <i class="fas fa-file-pdf text-danger me-2 fs-4"></i>
+                                        <span class="text-muted">${escapeHtml(d.document_name || "Pièce d'enregistrement")}</span>
+                                    </div>
+                                    <a href="${d.document_url}" target="_blank" class="btn btn-outline-primary">
+                                        <i class="fas fa-download me-2"></i>Télécharger le document
+                                    </a>
+                                </div>
+                            ` : `
+                                <div class="text-muted text-center py-3">
+                                    <i class="fas fa-folder-open me-2"></i>Aucune pièce d'enregistrement disponible.
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+
+                if (printBtn) {
+                    printBtn.disabled = false;
+                    printBtn.onclick = function() {
+                        printDetailsPasteur(modalEl);
+                    };
+                }
+            }
+        })
+        .catch((err) => {
+            console.error('[PP Actions] openDetailsPasteurModal fetch error', err);
+            if (body) {
+                body.innerHTML = `
+                    <div class="alert alert-danger">
+                        <div class="fw-semibold mb-1"><i class="fas fa-exclamation-triangle me-2"></i>Erreur lors du chargement des détails</div>
+                        <div class="small">${escapeHtml(err && err.message ? err.message : 'Veuillez réessayer.')}</div>
+                    </div>
+                `;
+            }
+        });
+}
+
+function printDetailsPasteur(modalEl) {
+    try {
+        const body = modalEl.querySelector('#detailsPasteurBody');
+        if (!body) return;
+        const w = window.open('', '_blank');
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8" />
+                <title>Impression - Détails du Pasteur</title>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+                <style>
+                    body { padding: 20px; font-size: 12pt; }
+                    .card { break-inside: avoid; page-break-inside: avoid; margin-bottom: 15px; }
+                    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    img { max-width: 100px !important; height: auto !important; }
+                    @media print {
+                        .btn { display: none !important; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="text-center mb-4">
+                    <h3>Fiche du Personnel Pastoral</h3>
+                    <hr>
+                </div>
+                ${body.innerHTML}
+                <script>
+                    window.onload = function() {
+                        setTimeout(function() {
+                            window.print();
+                            window.close();
+                        }, 500);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `;
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+    } catch (e) {
+        console.error('[PP Actions] printDetailsPasteur error', e);
+        alert("Impossible de lancer l'impression.");
+    }
 }

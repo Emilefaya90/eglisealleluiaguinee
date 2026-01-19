@@ -69,15 +69,31 @@
       opacity: 0.85;
     }
   </style>
-  <div class="row justify-content-center">
-    <div class="col-lg-11">
+  <div class="row justify-content-center mx-0">
+    <div class="col-12" style="max-width: 98%;">
       <!-- Header -->
       <div class="card shadow-sm mb-3">
         <div class="card-header table-header form-header adhesion-header position-relative py-4">
           <div class="d-flex justify-content-center align-items-center text-center">
-            <div class="form-header-title d-flex align-items-center gap-2 flex-wrap">
-              <span class="icon-badge"><i class="bi bi-people-fill fs-5 text-white opacity-100"></i></span>
-              <h5 class="mb-0 text-white fw-bold lh-sm adhesion-title fs-3">FORMULAIRE D'ADHÉSION À L'ÉGLISE</h5>
+            <div class="form-header-title d-flex align-items-center gap-3 flex-wrap">
+              <div class="logo-tilt" style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 10px; backdrop-filter: blur(10px);">
+                <img src="{% static 'main/images/LogoEg.png' %}" alt="Logo Église" style="height: 45px; width: 45px; object-fit: contain; border-radius: 8px;">
+              </div>
+              <style>
+                @keyframes tilt {
+                  0%, 100% { transform: rotate(-5deg); }
+                  50% { transform: rotate(5deg); }
+                }
+                .logo-tilt {
+                  animation: tilt 2s ease-in-out infinite;
+                }
+              </style>
+              <h5 class="mb-0 text-white fw-bold lh-sm adhesion-title title-tilt" style="font-size: 2.2rem;">FORMULAIRE D'ADHÉSION À L'ÉGLISE</h5>
+              <style>
+                .title-tilt {
+                  animation: tilt 2s ease-in-out infinite;
+                }
+              </style>
             </div>
           </div>
           <div class="w-100 d-flex justify-content-center mt-2">
@@ -121,7 +137,11 @@
         .nos-fideles-page .form-control, .nos-fideles-page .form-select { border-radius: 10px; }
         /* Par défaut, pas de focus coloré global: il sera défini par section */
         .nos-fideles-page .form-control:focus, .nos-fideles-page .form-select:focus { box-shadow: none; border-color: #ced4da; }
-        .nos-fideles-page .badge-chip { padding: .35rem .55rem; border-radius: 999px; font-weight: 600; }
+        .nos-fideles-page .badge-chip { padding: .35rem .55rem; border-radius: 999px; font-weight: 600; animation: fadeInOut 3s ease-in-out infinite; }
+        @keyframes fadeInOut {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
         .nos-fideles-page .gradient-btn { background: linear-gradient(135deg,#ff8c00,#cc6600); border-color:#cc6600; }
         .nos-fideles-page .gradient-btn:hover { filter: brightness(.95); }
         .nos-fideles-page .help-hint { font-size: .85rem; color: #7a7a7a; }
@@ -322,8 +342,8 @@
       .nos-fideles-page .table-modern td, .nos-fideles-page .table-modern th { white-space: nowrap; }
       .nos-fideles-page .text-wrap { white-space: normal !important; }
       </style>
-      <div class="card card-beauty shadow-sm mb-4">
-        <div class="card-body">
+      <div class="card card-beauty shadow-sm mb-4" style="margin-left: -40px; margin-right: -40px;">
+        <div class="card-body" style="padding: 25px 50px;">
           <div id="adhesionForm" class="collapse show">
             <form id="formAdhesion" novalidate>
               {% csrf_token %}
@@ -1084,11 +1104,11 @@
               const date = m.date_adhesion || '';
               const actions = `
                 <div class="btn-group" role="group" aria-label="Actions">
+                  <button class="btn btn-sm btn-success" data-action="details" data-row="${rowCounter}" data-id="${m.id}" title="Détails">
+                    <i class="bi bi-person-badge"></i>
+                  </button>
                   <button class="btn btn-sm btn-outline-primary" data-action="edit" data-row="${rowCounter}" data-id="${m.id}" title="Modifier">
                     <i class="bi bi-pencil-square"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-info" data-action="details" data-row="${rowCounter}" data-id="${m.id}" title="Voir les détails">
-                    <i class="bi bi-eye"></i>
                   </button>
                   <button class="btn btn-sm btn-outline-danger" data-action="delete" data-row="${rowCounter}" data-id="${m.id}" title="Supprimer">
                     <i class="bi bi-trash"></i>
@@ -1251,11 +1271,11 @@
             const date = m.date_adhesion || '';
             const actions = `
               <div class="btn-group" role="group" aria-label="Actions">
+                <button class="btn btn-sm btn-success" data-action="details" data-row="${rowCounter}" data-id="${m.id}" title="Détails">
+                  <i class="bi bi-person-badge"></i>
+                </button>
                 <button class="btn btn-sm btn-outline-primary" data-action="edit" data-row="${rowCounter}" data-id="${m.id}" title="Modifier">
                   <i class="bi bi-pencil-square"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-info" data-action="details" data-row="${rowCounter}" data-id="${m.id}" title="Voir les détails">
-                  <i class="bi bi-eye"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger" data-action="delete" data-row="${rowCounter}" data-id="${m.id}" title="Supprimer">
                   <i class="bi bi-trash"></i>
@@ -1316,7 +1336,7 @@
         }
         if(action === 'details'){
           if(!id){ alert('Identifiant manquant pour les détails.'); return; }
-          window.location.href = `/membres-eglise/details/${id}/`;
+          showMembreDetailsModal(id);
           return;
         }
         if(action === 'delete'){
@@ -1343,6 +1363,190 @@
           }
         }
       });
+
+      // Fonction pour afficher le modal des détails du membre
+      async function showMembreDetailsModal(membreId) {
+        // Créer le modal s'il n'existe pas
+        let modalEl = document.getElementById('membreDetailsModal');
+        if (!modalEl) {
+          modalEl = document.createElement('div');
+          modalEl.id = 'membreDetailsModal';
+          modalEl.className = 'modal fade';
+          modalEl.tabIndex = -1;
+          modalEl.innerHTML = `
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+              <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #ff8c00, #cc6600);">
+                  <div class="d-flex align-items-center">
+                    <img src="/static/main/images/logo_eglise.png" alt="Logo" style="width: 60px; height: 60px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.8); margin-right: 15px;">
+                    <div>
+                      <h5 class="modal-title mb-0"><i class="bi bi-person-badge me-2"></i>FICHE DU MEMBRE</h5>
+                      <p class="mb-0 small" id="membreNomComplet" style="color: rgba(255,255,255,0.9);"></p>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="membreDetailsBody">
+                  <div class="text-center py-5">
+                    <div class="spinner-border text-warning" role="status"></div>
+                    <div class="mt-3 text-muted">Chargement des informations...</div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" id="btnPrintMembre"><i class="bi bi-printer me-2"></i>Imprimer</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+              </div>
+            </div>`;
+          document.body.appendChild(modalEl);
+        }
+
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        // Charger les données
+        try {
+          const resp = await fetch(`/get_membre_details/${membreId}/`);
+          const json = await resp.json();
+          if (json.success) {
+            const m = json.data;
+            document.getElementById('membreNomComplet').textContent = `${m.prenom} ${m.nom}`;
+            
+            const safe = v => (v === null || v === undefined || v === '') ? '-' : v;
+            const field = (label, value) => `<div class="col-md-4 mb-2"><div class="small text-muted">${label}</div><div class="fw-semibold">${safe(value)}</div></div>`;
+            const field6 = (label, value) => `<div class="col-md-6 mb-2"><div class="small text-muted">${label}</div><div class="fw-semibold">${safe(value)}</div></div>`;
+            const docLink = (url, label) => url ? `<a href="${url}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-file-earmark me-1"></i>${label}</a>` : '<span class="text-muted">-</span>';
+
+            const html = `
+              <!-- 1. Informations Personnelles -->
+              <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header py-2" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); color: white;">
+                  <i class="bi bi-person me-2"></i>1. Informations Personnelles
+                </div>
+                <div class="card-body"><div class="row">
+                  ${field('Nom', m.nom)}
+                  ${field('Prénom', m.prenom)}
+                  ${field('Sexe', m.sexe)}
+                  ${field('Date de naissance', m.date_naissance)}
+                  ${field('Lieu de naissance', m.lieu_naissance)}
+                  ${field('Adresse', m.adresse)}
+                  ${field('Téléphone', m.telephone)}
+                  ${field('Email', m.email)}
+                  ${field('Profession', m.profession)}
+                </div></div>
+              </div>
+
+              <!-- 2. Situation Familiale -->
+              <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header py-2" style="background: linear-gradient(135deg, #198754, #146c43); color: white;">
+                  <i class="bi bi-people me-2"></i>2. Situation Familiale
+                </div>
+                <div class="card-body"><div class="row">
+                  ${field('État civil', m.etat_civil)}
+                  ${field('Nom du conjoint', m.nom_conjoint)}
+                  ${field("Nombre d'enfants", m.nombre_enfants)}
+                </div></div>
+              </div>
+
+              <!-- 3. Informations Spirituelles -->
+              <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header py-2" style="background: linear-gradient(135deg, #6f42c1, #59359a); color: white;">
+                  <i class="bi bi-book me-2"></i>3. Informations Spirituelles
+                </div>
+                <div class="card-body"><div class="row">
+                  ${field('Date de baptême', m.date_bapteme)}
+                  ${field('Lieu de baptême', m.lieu_bapteme)}
+                  ${field("Date d'adhésion", m.date_adhesion)}
+                  ${field('Église', m.eglise_nom)}
+                </div></div>
+              </div>
+
+              <!-- 4. Engagement et Service -->
+              <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header py-2" style="background: linear-gradient(135deg, #0dcaf0, #0aa2c0); color: white;">
+                  <i class="bi bi-hand-thumbs-up me-2"></i>4. Engagement et Service
+                </div>
+                <div class="card-body"><div class="row">
+                  ${field6('Motivation', m.motivation)}
+                  ${field6('Services', m.services)}
+                  ${field6('Départements', m.departement)}
+                </div></div>
+              </div>
+
+              <!-- 5. Soutien Financier -->
+              <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header py-2" style="background: linear-gradient(135deg, #ffc107, #cc9a06); color: #212529;">
+                  <i class="bi bi-cash-coin me-2"></i>5. Soutien Financier
+                </div>
+                <div class="card-body"><div class="row">
+                  ${field('Soutien financier', m.soutien_financier)}
+                  ${field('Montant souhaité', m.montant_souhaite)}
+                </div></div>
+              </div>
+
+              <!-- 6. Pièces Jointes -->
+              <div class="card border-0 shadow-sm">
+                <div class="card-header py-2" style="background: linear-gradient(135deg, #6c757d, #565e64); color: white;">
+                  <i class="bi bi-paperclip me-2"></i>6. Pièces Jointes
+                </div>
+                <div class="card-body"><div class="row">
+                  ${field6("Pièce d'identité", docLink(m.piece_identite_url, 'Voir'))}
+                  ${field6('Certificat de baptême', docLink(m.certificat_bapteme_url, 'Voir'))}
+                </div></div>
+              </div>
+            `;
+            
+            document.getElementById('membreDetailsBody').innerHTML = html;
+
+            // Bouton Imprimer
+            document.getElementById('btnPrintMembre').onclick = function() {
+              const w = window.open('', '_blank');
+              const logoUrl = '/static/main/images/logo_eglise.png';
+              const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:2px 4px;vertical-align:top;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:600;">${safe(val)}</span></div>`;
+              const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:6px;border-radius:4px;"><div style="background:${color};color:#fff;padding:4px 10px;font-size:10pt;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${icon} ${title}</div><div style="padding:6px 10px;">${content}</div></div>`;
+              
+              const s1 = pf('Nom',m.nom)+pf('Prénom',m.prenom)+pf('Sexe',m.sexe)+pf('Date de naissance',m.date_naissance)+pf('Lieu de naissance',m.lieu_naissance)+pf('Adresse',m.adresse)+pf('Téléphone',m.telephone)+pf('Email',m.email)+pf('Profession',m.profession);
+              const s2 = pf('État civil',m.etat_civil)+pf('Nom du conjoint',m.nom_conjoint)+pf("Nombre d'enfants",m.nombre_enfants);
+              const s3 = pf('Date de baptême',m.date_bapteme)+pf('Lieu de baptême',m.lieu_bapteme)+pf("Date d'adhésion",m.date_adhesion)+pf('Église',m.eglise_nom);
+              const s4 = pf('Motivation',m.motivation)+pf('Services',m.services)+pf('Départements',m.departement);
+              const s5 = pf('Soutien financier',m.soutien_financier)+pf('Montant souhaité',m.montant_souhaite);
+              
+              const printHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fiche du Membre</title>
+<style>@page{size:A4;margin:8mm;}body{font-family:Arial,sans-serif;padding:5px 10px;margin:0;}</style></head><body>
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:2px solid #ff8c00;padding-bottom:8px;margin-bottom:8px;">
+<img src="${logoUrl}" style="height:50px;">
+<div style="text-align:center;flex:1;padding:0 15px;"><div style="font-size:14pt;font-weight:bold;color:#ff8c00;">Fiche du Membre</div><div style="font-size:9pt;color:#666;">${safe(m.prenom)} ${safe(m.nom)}</div></div>
+<img src="${logoUrl}" style="height:50px;">
+</div>
+${section('#0d6efd','&#128100;','1. Informations Personnelles',s1)}
+${section('#198754','&#128101;','2. Situation Familiale',s2)}
+${section('#6f42c1','&#128214;','3. Informations Spirituelles',s3)}
+${section('#0dcaf0','&#128077;','4. Engagement et Service',s4)}
+${section('#ffc107','&#128176;','5. Soutien Financier',s5)}
+<div style="position:fixed;bottom:10px;left:0;right:0;text-align:center;">
+<hr style="border:none;border-top:1px solid #ff8c00;margin:5px 20px;">
+<div style="font-size:8pt;font-style:italic;color:#ff8c00;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();window.close();},800);};<\/script></body></html>`;
+              w.document.write(printHtml);
+              w.document.close();
+            };
+          } else {
+            document.getElementById('membreDetailsBody').innerHTML = `
+              <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                ${json.error || 'Impossible de charger les détails du membre.'}
+              </div>`;
+          }
+        } catch (err) {
+          console.error('Erreur:', err);
+          document.getElementById('membreDetailsBody').innerHTML = `
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              Erreur lors du chargement des données.
+            </div>`;
+        }
+      }
     })();
   </script>
   {% endblock %}

@@ -7,6 +7,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.conf import settings
 from .models import CulteEffectif
 import json
+import os
 from datetime import datetime
 from .models import Eglise, PersonnelPastoral, Membre, Departement, DepartementAttachment, Finance, FinanceReport, ComptabiliteReport, FinanceAttachment, StrategicPlan
 from django.core.validators import validate_email
@@ -14,10 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 import re
 from .forms import MembreForm
-from datetime import datetime
 from decimal import Decimal, InvalidOperation
-import os
-import json
 from django.core.serializers.json import DjangoJSONEncoder
 import unicodedata as _ud
 from django.forms.models import model_to_dict
@@ -573,6 +571,15 @@ def get_pasteur_details(request, pasteur_id):
     """Vue pour récupérer les détails d'un pasteur en format JSON"""
     try:
         pasteur = get_object_or_404(PersonnelPastoral, id=pasteur_id)
+
+        eglise_logo_url = ''
+        if pasteur.eglise:
+            logo_candidate = _get_first_attr(pasteur.eglise, ['image', 'logo', 'photo', 'logo_eglise'], default=None)
+            try:
+                if logo_candidate and hasattr(logo_candidate, 'url'):
+                    eglise_logo_url = logo_candidate.url
+            except Exception:
+                eglise_logo_url = ''
         
         data = {
             'id': pasteur.id,
@@ -603,6 +610,9 @@ def get_pasteur_details(request, pasteur_id):
             'types_formations': pasteur.types_formations,
             'statut_actuel': pasteur.statut_actuel,
             'photo_url': pasteur.photo.url if pasteur.photo else '',
+            'document_url': pasteur.document_fichier.url if getattr(pasteur, 'document_fichier', None) else '',
+            'document_name': os.path.basename(pasteur.document_fichier.name) if getattr(pasteur, 'document_fichier', None) else '',
+            'eglise_logo_url': eglise_logo_url,
         }
         
         return JsonResponse({'success': True, 'data': data})
@@ -1439,6 +1449,40 @@ def details_membre(request, membre_id: int):
     """Affiche les détails d'un membre."""
     membre = get_object_or_404(Membre, id=membre_id)
     return render(request, 'main/membre_details.html', {'membre': membre})
+
+def get_membre_details(request, membre_id: int):
+    """Retourne les détails d'un membre en JSON pour le modal."""
+    try:
+        membre = get_object_or_404(Membre, id=membre_id)
+        data = {
+            'id': membre.id,
+            'nom': membre.nom,
+            'prenom': membre.prenom,
+            'sexe': membre.get_sexe_display() if membre.sexe else '-',
+            'date_naissance': membre.date_naissance.strftime('%d/%m/%Y') if membre.date_naissance else '-',
+            'lieu_naissance': membre.lieu_naissance or '-',
+            'adresse': membre.adresse or '-',
+            'telephone': membre.telephone or '-',
+            'email': membre.email or '-',
+            'profession': membre.profession or '-',
+            'date_bapteme': membre.date_bapteme.strftime('%d/%m/%Y') if membre.date_bapteme else '-',
+            'lieu_bapteme': membre.lieu_bapteme or '-',
+            'date_adhesion': membre.date_adhesion.strftime('%d/%m/%Y') if membre.date_adhesion else '-',
+            'etat_civil': membre.get_etat_civil_display() if membre.etat_civil else '-',
+            'nom_conjoint': membre.nom_conjoint or '-',
+            'nombre_enfants': membre.nombre_enfants or 0,
+            'motivation': membre.motivation or '-',
+            'services': membre.services or '-',
+            'departement': membre.departement or '-',
+            'soutien_financier': 'Oui' if membre.soutien_financier else 'Non',
+            'montant_souhaite': str(membre.montant_souhaite) if membre.montant_souhaite else '-',
+            'eglise_nom': membre.eglise.nom if membre.eglise else '-',
+            'piece_identite_url': membre.piece_identite.url if membre.piece_identite else None,
+            'certificat_bapteme_url': membre.certificat_bapteme.url if membre.certificat_bapteme else None,
+        }
+        return JsonResponse({'success': True, 'data': data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # Enregistrement des effectifs du culte (API JSON)
 @require_POST
@@ -3028,6 +3072,47 @@ def get_eglise_by_name(request):
                 return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
+
+
+@require_GET
+def get_eglise_details(request, eglise_id):
+    """Vue pour récupérer les détails d'une église en format JSON (pour le bouton Voir)."""
+    try:
+        eglise = get_object_or_404(Eglise, id=eglise_id)
+
+        data = {
+            'id': eglise.id,
+            'nom': eglise.nom,
+            'adresse': eglise.adresse or '',
+            'ville': eglise.ville or '',
+            'quartier': eglise.quartier or '',
+            'pays': eglise.pays or '',
+            'date_creation': eglise.date_creation.strftime('%Y-%m-%d') if eglise.date_creation else '',
+            'email': eglise.email or '',
+            'telephone': eglise.telephone or '',
+            'responsable': eglise.responsable or '',
+            'nombre_membres': eglise.nombre_membres or 0,
+            # Statut juridique
+            'est_association': bool(eglise.est_association),
+            'numero_autorisation': eglise.numero_autorisation or '',
+            'date_enregistrement': eglise.date_enregistrement.strftime('%Y-%m-%d') if eglise.date_enregistrement else '',
+            # Activités
+            'activites': eglise.activites or '',
+            'autres_activites_detail': eglise.autres_activites_detail or '',
+            # Pièces jointes
+            'membres_fondateurs_doc_url': _file_url_from_any(getattr(eglise, 'membres_fondateurs_doc', None)),
+            'statuts_doc_url': _file_url_from_any(getattr(eglise, 'statuts_doc', None)),
+            'pieces_identite_doc_url': _file_url_from_any(getattr(eglise, 'pieces_identite_doc', None)),
+            'preuve_adresse_doc_url': _file_url_from_any(getattr(eglise, 'preuve_adresse_doc', None)),
+            # Déclaration
+            'nom_declarant': eglise.nom_declarant or '',
+            'qualite_declarant': eglise.qualite_declarant or '',
+            'date_declaration': eglise.date_declaration.strftime('%Y-%m-%d') if eglise.date_declaration else '',
+        }
+
+        return JsonResponse({'success': True, 'data': data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 # ============================
 # API Activités hebdomadaires

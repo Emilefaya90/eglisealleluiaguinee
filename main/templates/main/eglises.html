@@ -99,6 +99,46 @@
         display: inline-block;
     }
     
+    /* Couleur de fond des sections du formulaire */
+    .form-section {
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    /* Encadrement des zones de saisie */
+    .form-control {
+        border: 1px solid rgba(102, 126, 234, 0.4);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background-color: #fff;
+    }
+    
+    .form-control:focus {
+        border-color: rgba(118, 75, 162, 0.6);
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+        background-color: #fff;
+    }
+    
+    .input-group-text {
+        border: 1px solid rgba(102, 126, 234, 0.4);
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+    }
+    
+    .input-group .form-control {
+        border-left: none;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .input-group .form-control:focus {
+        border-color: rgba(102, 126, 234, 0.5);
+    }
+    
     /* Styles pour le tableau des églises */
     .table-eglises {
         table-layout: fixed;
@@ -123,6 +163,41 @@
     .table-eglises .d-flex {
         flex-wrap: nowrap;
         justify-content: center;
+    }
+
+    .table-eglises .col-actions {
+        min-width: 140px;
+        width: 140px;
+    }
+
+    .table-eglises td:last-child {
+        white-space: nowrap;
+    }
+
+    .table-eglises .btn-voir,
+    .table-eglises .btn-modifier,
+    .table-eglises .btn-supprimer {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50% !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    .table-eglises .btn-voir {
+        background: linear-gradient(135deg, #17a2b8, #138496) !important;
+        border: none !important;
+        color: #fff !important;
+    }
+
+    .table-eglises .btn-voir:hover,
+    .table-eglises .btn-modifier:hover,
+    .table-eglises .btn-supprimer:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.18);
     }
     
     /* Animation pour le modal de confirmation */
@@ -191,6 +266,58 @@
         background-color: rgba(0, 0, 0, 0.8);
         z-index: 9998; /* Juste en dessous du modal */
         display: none;
+        pointer-events: none;
+    }
+
+    #modalVoirEglise .modal-content {
+        background: #ffffff;
+    }
+
+    #modalVoirEglise .modal-body {
+        background: #ffffff !important;
+        padding-bottom: 110px;
+    }
+
+    #modalVoirEglise .modal-footer {
+        background: #ffffff;
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+    }
+
+    .eglise-view-field {
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 12px;
+        padding: 14px 16px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        height: 100%;
+    }
+
+    .eglise-view-field small {
+        letter-spacing: 0.2px;
+    }
+
+    /* Mise en page Aperçu/Impression: 1 et 2 sur la même ligne */
+    .eglise-top-sections {
+        align-items: stretch;
+    }
+
+    @media print {
+        /* Garder les 2 premières sections sur la même page */
+        .eglise-top-sections {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            gap: 16px !important;
+        }
+        .eglise-top-sections > .eglise-top-col {
+            flex: 1 1 50% !important;
+            max-width: 50% !important;
+        }
+        #modalVoirEglise .card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
     }
     
     /* Largeurs spécifiques pour chaque colonne */
@@ -285,35 +412,43 @@
 
 {% block content %}
 <!-- Overlay pour le modal de confirmation -->
-<!div id="confirmationOverlay"></div>
 
 <div class="page-content" style="position: relative; min-height: 100vh;">
     <div style="position: fixed; left: 0; bottom: 0; width: 100vw; height: auto; min-height: 40vh; z-index: 0; pointer-events: none;">
         <img src="{% static 'main/images/hero/fond1.jpg' %}" alt="Fond bas" style="width: 100vw; height: auto; display: block; object-fit: cover; object-position: bottom;">
     </div>
-    <div class="container" style="position: relative; z-index: 2;">
+    <div class="container" style="position: relative; z-index: 2; max-width: 98%;">
         <!-- En-tête compact du formulaire d'enregistrement d'église -->
         <div class="header-container mb-3">
             <!-- Carte principale de l'en-tête -->
             <div class="card shadow border-0 hero-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; overflow: hidden;">
                 <div class="card-body p-3">
-                    <div class="row align-items-center">
+                    <div class="row align-items-center justify-content-center">
                         <!-- Section titre et description -->
-                        <div class="col-lg-8">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="icon-container me-3" style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: px; backdrop-filter: blur(10px);">
-                                    <img src="{% static 'main/images/LogoEg.png' %}" alt="Église" class="header-eglise-img">
-                                </div>
-                                <div class="text-end ms-auto">
-                                    <h1 class="text-white mb-1 text-end" style="font-size: 2.2rem; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">
+                        <div class="col-lg-12">
+                            <div class="d-flex flex-column align-items-center text-center mb-2">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <div class="icon-container me-3 logo-fade" style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; backdrop-filter: blur(10px);">
+                                        <img src="{% static 'main/images/LogoEg.png' %}" alt="Église" class="header-eglise-img">
+                                    </div>
+                                    <style>
+                                        @keyframes logoFadeInOut {
+                                            0%, 100% { opacity: 1; }
+                                            50% { opacity: 0; }
+                                        }
+                                        .logo-fade {
+                                            animation: logoFadeInOut 3s ease-in-out infinite;
+                                        }
+                                    </style>
+                                    <h1 class="text-white mb-0 logo-fade" style="font-size: 2.2rem; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); text-transform: uppercase;">
                                         Formulaire d'Enregistrement d'Église
                                     </h1>
-                                    <div class="subtitle-badge" style="background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; backdrop-filter: blur(10px); display: inline-block;">
-                                        <p class="mb-0" style="color: white;">
-                                            <i class="fas fa-star me-1" style="color: #ffd700; font-size: 0.8rem;"></i>
-                                            <span style="font-size: 0.8rem; white-space: nowrap; font-style: italic; color: white;">Enregistrez une nouvelle église dans le réseau de l'église Pentecôte Alléluia de Guinée</span>
-                                        </p>
-                                    </div>
+                                </div>
+                                <div class="subtitle-badge" style="background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px; backdrop-filter: blur(10px); display: inline-block;">
+                                    <p class="mb-0" style="color: white;">
+                                        <i class="fas fa-star me-1" style="color: #ffd700; font-size: 0.8rem;"></i>
+                                        <span style="font-size: 0.8rem; font-style: italic; color: white;">Enregistrez une nouvelle église dans le réseau de l'église Pentecôte Alléluia de Guinée</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -349,7 +484,7 @@
             {% endfor %}
         {% endif %}
         
-        <div class="content-section shadow-sm rounded p-4 border border-light" style="background-color: transparent;">
+        <div class="content-section shadow-sm rounded p-4 border border-light" style="background: transparent !important;">
             <!-- Message d'erreur pour les champs obligatoires -->
             <div id="validationErrorMessage" class="alert alert-danger d-none" role="alert">
                 <i class="fas fa-exclamation-triangle me-2"></i>
@@ -360,7 +495,7 @@
                 {% csrf_token %}
                 
                 <!-- Section 1: Informations sur l'église -->
-                <div class="form-section mb-4">
+                <div class="form-section mb-4" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.08) 0%, rgba(13, 110, 253, 0.15) 100%); border-left: 4px solid #0d6efd;">
                     <div class="d-flex align-items-center mb-4">
                         <div class="section-icon bg-primary bg-opacity-10 p-3 rounded-circle me-3">
                             <i class="fas fa-info-circle text-primary fa-2x"></i>
@@ -475,7 +610,7 @@
                 </div>
                 
                 <!-- Section 2: Statut Juridique -->
-                <div class="form-section mb-4">
+                <div class="form-section mb-4" style="background: linear-gradient(135deg, rgba(25, 135, 84, 0.08) 0%, rgba(25, 135, 84, 0.15) 100%); border-left: 4px solid #198754;">
                     <div class="d-flex align-items-center mb-4">
                         <div class="section-icon bg-success bg-opacity-10 p-3 rounded-circle me-3">
                             <i class="fas fa-gavel text-success fa-2x"></i>
@@ -527,7 +662,7 @@
                 </div>
                 
                 <!-- Section 3: Activités et Services -->
-                <div class="form-section mb-4">
+                <div class="form-section mb-4" style="background: linear-gradient(135deg, rgba(13, 202, 240, 0.08) 0%, rgba(13, 202, 240, 0.15) 100%); border-left: 4px solid #0dcaf0;">
                     <div class="d-flex align-items-center mb-4">
                         <div class="section-icon bg-info bg-opacity-10 p-3 rounded-circle me-3">
                             <i class="fas fa-tasks text-info fa-2x"></i>
@@ -580,7 +715,7 @@
                 </div>
                 
                 <!-- Section 4: Pièces Jointes Requises -->
-                <div class="form-section mb-4">
+                <div class="form-section mb-4" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.08) 0%, rgba(255, 193, 7, 0.15) 100%); border-left: 4px solid #ffc107;">
                     <div class="d-flex align-items-center mb-4">
                         <div class="section-icon bg-warning bg-opacity-10 p-3 rounded-circle me-3">
                             <i class="fas fa-paperclip text-warning fa-2x"></i>
@@ -609,7 +744,7 @@
                 </div>
                 
                 <!-- Section 5: Déclaration -->
-                <div class="form-section mb-4">
+                <div class="form-section mb-4" style="background: linear-gradient(135deg, rgba(111, 66, 193, 0.08) 0%, rgba(111, 66, 193, 0.15) 100%); border-left: 4px solid #6f42c1;">
                     <div class="d-flex align-items-center mb-4">
                         <div class="section-icon bg-purple bg-opacity-10 p-3 rounded-circle me-3">
                             <i class="fas fa-signature text-purple fa-2x"></i>
@@ -1420,6 +1555,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-center gap-2">
+                                             <button type="button" class="btn btn-sm btn-success btn-details-eglise rounded-circle shadow-sm" data-id="{{ eglise.id }}" data-nom="{{ eglise.nom }}" title="Détails">
+                                                 <i class="fas fa-id-card"></i>
+                                             </button>
                                              <button type="button" class="btn btn-sm btn-warning btn-modifier rounded-circle shadow-sm" data-id="{{ eglise.id }}" data-nom="{{ eglise.nom }}" title="Modifier">
                                                  <i class="fas fa-pen-fancy"></i>
                                              </button>
@@ -1464,6 +1602,38 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 </div>
+
+                <!-- Modal pour voir les détails de l'église -->
+                <div class="modal fade" id="modalVoirEglise" tabindex="-1" aria-labelledby="modalVoirEgliseLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content" style="border-radius: 20px; overflow: hidden; border: none;" id="modalContentToPrint">
+                            <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 25px 30px;">
+                                <div class="d-flex align-items-center">
+                                    <img src="{% static 'main/images/LogoEg.png' %}" alt="Logo Église" id="logoEgliseModal" style="width: 70px; height: 70px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-right: 20px;">
+                                    <div>
+                                        <h4 class="modal-title mb-1" id="modalVoirEgliseLabel" style="font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+                                            <i class="fas fa-church me-2"></i>FICHE DE L'ÉGLISE
+                                        </h4>
+                                        <p class="mb-0" style="font-size: 1rem; color: rgba(255,255,255,0.9);" id="nomEgliseModal"></p>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4" id="detailsEgliseBody" style="background: #ffffff;">
+                                <!-- Contenu dynamique -->
+                            </div>
+                            <div class="modal-footer d-flex justify-content-between" style="border-top: 1px solid #eee; padding: 15px 30px;">
+                                <button type="button" class="btn btn-success" onclick="imprimerFicheEglise()">
+                                    <i class="fas fa-print me-2"></i> Imprimer
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i> Fermer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             {% else %}
                 <div class="alert alert-info">
                     Aucune église n'est encore enregistrée.
@@ -2089,6 +2259,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const overlay = document.getElementById('confirmationOverlay');
         if (overlay) {
             overlay.style.display = 'block';
+            overlay.style.pointerEvents = 'auto';
         }
         
         // Afficher le modal de confirmation
@@ -2101,6 +2272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const overlay = document.getElementById('confirmationOverlay');
             if (overlay) {
                 overlay.style.display = 'none';
+                overlay.style.pointerEvents = 'none';
             }
         });
         
@@ -2122,62 +2294,291 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 600);
     }
     
-    // Initialiser les boutons d'action dans le tableau
+    // Initialiser les boutons d'action dans le tableau avec délégation d'événements
     function initBoutonsAction() {
-        // Gérer les boutons de suppression
-        document.querySelectorAll('.btn-supprimer').forEach(button => {
-            button.addEventListener('click', function() {
-                const egliseId = this.getAttribute('data-id');
-                const nomEglise = this.getAttribute('data-nom');
-                confirmerSuppression(egliseId, nomEglise);
-            });
-        });
-        
-        // Gérer les boutons de visualisation
-        document.querySelectorAll('.btn-voir').forEach(button => {
-            button.addEventListener('click', function() {
-                const egliseId = this.getAttribute('data-id');
-                const nomEglise = this.getAttribute('data-nom');
+        // Utiliser la délégation d'événements pour gérer tous les boutons même après re-rendu DataTables
+        document.addEventListener('click', function(e) {
+            // Bouton Détails
+            const btnDetails = e.target.closest('.btn-details-eglise');
+            if (btnDetails) {
+                e.preventDefault();
+                const egliseId = btnDetails.getAttribute('data-id');
+                const nomEglise = btnDetails.getAttribute('data-nom');
                 voirDetailsEglise(egliseId, nomEglise);
-            });
-        });
-        
-        // Gérer les boutons de modification
-        document.querySelectorAll('.btn-modifier').forEach(button => {
-            button.addEventListener('click', function() {
-                const egliseId = this.getAttribute('data-id');
-                const nomEglise = this.getAttribute('data-nom');
+                return;
+            }
+            
+            // Bouton Supprimer
+            const btnSupprimer = e.target.closest('.btn-supprimer');
+            if (btnSupprimer) {
+                e.preventDefault();
+                const egliseId = btnSupprimer.getAttribute('data-id');
+                const nomEglise = btnSupprimer.getAttribute('data-nom');
+                confirmerSuppression(egliseId, nomEglise);
+                return;
+            }
+            
+            // Bouton Modifier
+            const btnModifier = e.target.closest('.btn-modifier');
+            if (btnModifier) {
+                e.preventDefault();
+                const egliseId = btnModifier.getAttribute('data-id');
+                const nomEglise = btnModifier.getAttribute('data-nom');
                 modifierEglise(egliseId, nomEglise);
-            });
+                return;
+            }
         });
     }
     
     // Fonction pour voir les détails d'une église
     function voirDetailsEglise(egliseId, nomEglise) {
-        // Charger les détails de l'église via AJAX
-        fetch(`/get_eglise_details/${egliseId}/`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Erreur lors du chargement des détails de l'église");
+        const modalEl = document.getElementById('modalVoirEglise');
+        const modal = new bootstrap.Modal(modalEl);
+        
+        // Afficher le modal immédiatement avec un chargement
+        document.getElementById('nomEgliseModal').textContent = nomEglise || '';
+        document.getElementById('detailsEgliseBody').innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <div class="mt-3 text-muted">Chargement des informations...</div>
+            </div>
+        `;
+        modal.show();
+
+        return fetch(`/get_eglise_details/${egliseId}/`)
+            .then(r => r.json())
+            .then(payload => {
+                if (!payload || payload.success !== true) {
+                    throw new Error((payload && payload.error) ? payload.error : 'Erreur inconnue');
                 }
-                return response.json();
+                const eglise = payload.data || {};
+                afficherDetailsEgliseDansModal(eglise);
+                return eglise;
             })
-            .then(data => {
-                // Afficher les détails dans un modal
-                afficherModalDetailsEglise(data);
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                // En attendant l'implémentation complète de l'API, rediriger vers la page de modification
-                // qui contient déjà tous les détails de l'église
-                const url = `{% url 'main:modifier_eglise' 999 %}`.replace('999', egliseId);
-                window.location.href = url;
+            .catch(err => {
+                console.error(err);
+                document.getElementById('detailsEgliseBody').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Impossible de charger les détails de l'église.
+                    </div>
+                `;
+                throw err;
             });
     }
+
+    function apercuImpressionEglise(egliseId, nomEglise) {
+        voirDetailsEglise(egliseId, nomEglise)
+            .then(() => {
+                setTimeout(() => {
+                    imprimerFicheEglise();
+                }, 300);
+            })
+            .catch(() => {
+            });
+    }
+
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function formatDateFr(iso) {
+        if (!iso) return '-';
+        // iso attendu: YYYY-MM-DD
+        const parts = String(iso).split('-');
+        if (parts.length !== 3) return escapeHtml(iso);
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function boolFr(v) {
+        return v ? 'Oui' : 'Non';
+    }
+
+    function docLink(url, label) {
+        if (!url) {
+            return `<span class="text-muted">-</span>`;
+        }
+        return `<a href="${escapeHtml(url)}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-file-alt me-1"></i>${escapeHtml(label)}
+                </a>`;
+    }
+
+    function afficherDetailsEgliseDansModal(eglise) {
+        // Titre / nom
+        const nom = eglise.nom || '';
+        document.getElementById('nomEgliseModal').textContent = nom;
+
+        // TODO: si tu as un vrai champ logo dans le modèle, on le branchera ici
+        // Pour l'instant on garde l'image statique déjà mise dans le modal.
+
+        const activites = (eglise.activites || '').trim();
+        const activitesList = activites
+            ? activites.split(',').map(x => x.trim()).filter(Boolean)
+            : [];
+
+        const html = `
+            <div class="row g-4">
+
+                <div class="row g-4 eglise-top-sections">
+                    <!-- 1. Informations sur l'église -->
+                    <div class="col-12 col-lg-6 eglise-top-col">
+                        <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                            <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(13, 110, 253, 0.9) 0%, rgba(13, 110, 253, 0.7) 100%);">
+                                <h5 class="mb-0 text-white"><i class="fas fa-info-circle me-2"></i>1. Informations sur l'église</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Nom</small><div class="fw-semibold">${escapeHtml(eglise.nom || '-')}</div></div></div>
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Pays</small><div class="fw-semibold">${escapeHtml(eglise.pays || '-')}</div></div></div>
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Ville</small><div class="fw-semibold">${escapeHtml(eglise.ville || '-')}</div></div></div>
+
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Quartier</small><div class="fw-semibold">${escapeHtml(eglise.quartier || '-')}</div></div></div>
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Adresse</small><div class="fw-semibold">${escapeHtml(eglise.adresse || '-')}</div></div></div>
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Nombre de membres</small><div class="fw-semibold">${escapeHtml(eglise.nombre_membres ?? '-')}</div></div></div>
+
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Pasteur en charge</small><div class="fw-semibold">${escapeHtml(eglise.responsable || '-')}</div></div></div>
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Téléphone</small><div class="fw-semibold">${escapeHtml(eglise.telephone || '-')}</div></div></div>
+                                    <div class="col-md-4"><div class="eglise-view-field"><small class="text-muted d-block">Email</small><div class="fw-semibold">${escapeHtml(eglise.email || '-')}</div></div></div>
+
+                                    <div class="col-md-6"><div class="eglise-view-field"><small class="text-muted d-block">Date de fondation</small><div class="fw-semibold">${formatDateFr(eglise.date_creation)}</div></div></div>
+                                    <div class="col-md-6"><div class="eglise-view-field"><small class="text-muted d-block">Date d'enregistrement (association)</small><div class="fw-semibold">${formatDateFr(eglise.date_enregistrement)}</div></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Statut Juridique -->
+                    <div class="col-12 col-lg-6 eglise-top-col">
+                        <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                            <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(25, 135, 84, 0.9) 0%, rgba(25, 135, 84, 0.7) 100%);">
+                                <h5 class="mb-0 text-white"><i class="fas fa-gavel me-2"></i>2. Statut Juridique</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6"><div class="eglise-view-field"><small class="text-muted d-block">Association à but non lucratif ?</small><div class="fw-semibold">${boolFr(eglise.est_association)}</div></div></div>
+                                    <div class="col-md-6"><div class="eglise-view-field"><small class="text-muted d-block">Numéro d'enregistrement</small><div class="fw-semibold">${escapeHtml(eglise.numero_autorisation || '-')}</div></div></div>
+                                    <div class="col-md-12"><div class="eglise-view-field"><small class="text-muted d-block">Date d'enregistrement</small><div class="fw-semibold">${formatDateFr(eglise.date_enregistrement)}</div></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Activités et Services -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(13, 202, 240, 0.9) 0%, rgba(13, 202, 240, 0.7) 100%);">
+                            <h5 class="mb-0 text-white"><i class="fas fa-tasks me-2"></i>3. Activités et Services</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <small class="text-muted d-block">Activités</small>
+                                    ${activitesList.length ? `
+                                        <div class="mt-2">${activitesList.map(a => `<span class="badge bg-info text-dark me-1 mb-1">${escapeHtml(a)}</span>`).join('')}</div>
+                                    ` : `<div class="text-muted">-</div>`}
+                                </div>
+                                <div class="col-12">
+                                    <small class="text-muted d-block">Autres activités (détails)</small>
+                                    <div class="eglise-view-field mt-2" style="white-space: pre-wrap;">${escapeHtml(eglise.autres_activites_detail || '-')}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Pièces Jointes Requises -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(255, 193, 7, 0.95) 0%, rgba(255, 193, 7, 0.7) 100%);">
+                            <h5 class="mb-0 text-dark"><i class="fas fa-paperclip me-2"></i>4. Pièces Jointes Requises</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Document des membres fondateurs</small>
+                                    <div class="mt-2">${docLink(eglise.membres_fondateurs_doc_url, 'Voir')}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Statuts & règlements intérieurs</small>
+                                    <div class="mt-2">${docLink(eglise.statuts_doc_url, 'Voir')}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Pièce d'identité du responsable</small>
+                                    <div class="mt-2">${docLink(eglise.pieces_identite_doc_url, 'Voir')}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Preuve d'adresse</small>
+                                    <div class="mt-2">${docLink(eglise.preuve_adresse_doc_url, 'Voir')}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Déclaration -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                        <div class="card-header py-3" style="background: linear-gradient(135deg, rgba(111, 66, 193, 0.9) 0%, rgba(111, 66, 193, 0.7) 100%);">
+                            <h5 class="mb-0 text-white"><i class="fas fa-signature me-2"></i>5. Déclaration</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6"><div class="eglise-view-field"><small class="text-muted d-block">Nom du déclarant</small><div class="fw-semibold">${escapeHtml(eglise.nom_declarant || '-')}</div></div></div>
+                                <div class="col-md-6"><div class="eglise-view-field"><small class="text-muted d-block">Qualité du déclarant</small><div class="fw-semibold">${escapeHtml(eglise.qualite_declarant || '-')}</div></div></div>
+                                <div class="col-md-12"><div class="eglise-view-field"><small class="text-muted d-block">Date de déclaration</small><div class="fw-semibold">${formatDateFr(eglise.date_declaration)}</div></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        `;
+
+        document.getElementById('detailsEgliseBody').innerHTML = html;
+    }
     
-    // Fonction pour afficher les détails de l'église dans un modal
-    function afficherModalDetailsEglise(eglise) {
-        // Cette fonction sera utilisée lorsque l'API de détails sera implémentée
+    // Fonction pour imprimer la fiche de l'église
+    function imprimerFicheEglise() {
+        const printContent = document.getElementById('modalContentToPrint').innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Fiche de l'Église</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+                <style>
+                    body { padding: 20px; }
+                    .modal-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .modal-footer { display: none !important; }
+                    .btn-close { display: none !important; }
+                    @media print {
+                        .modal-footer { display: none !important; }
+                        .btn-close { display: none !important; }
+                    }
+                </style>
+            </head>
+            <body>
+                ${printContent}
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        window.onafterprint = function() { window.close(); };
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
     }
     
     // Fonction pour modifier une église
@@ -2288,8 +2689,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (egliseId && egliseId !== '0' && egliseId !== 0) {
                         actionsHtml = `
                             <div class="d-flex justify-content-center gap-2">
-                                <button type="button" class="btn btn-sm btn-info btn-voir rounded-circle shadow-sm" data-id="${egliseId}" data-nom="${nom}" title="Voir les détails">
-                                    <i class="fas fa-search-plus"></i>
+                                <button type="button" class="btn btn-sm btn-success btn-details-eglise rounded-circle shadow-sm" data-id="${egliseId}" data-nom="${nom}" title="Détails">
+                                    <i class="fas fa-id-card"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-warning btn-modifier rounded-circle shadow-sm" data-id="${egliseId}" data-nom="${nom}" title="Modifier">
                                     <i class="fas fa-pen-fancy"></i>
@@ -2357,8 +2758,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     });
                     
-                    // Initialiser les boutons de visualisation
-                    document.querySelectorAll('#eglisesEntreesTableBody .btn-voir').forEach(button => {
+                    // Initialiser les boutons de détails
+                    document.querySelectorAll('#eglisesEntreesTableBody .btn-details-eglise').forEach(button => {
                         const newButton = button.cloneNode(true);
                         button.parentNode.replaceChild(newButton, button);
                         newButton.addEventListener('click', function() {
@@ -2408,6 +2809,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const overlay = document.getElementById('confirmationOverlay');
     if (overlay) {
         overlay.style.display = 'none';
+        overlay.style.pointerEvents = 'none';
     }
     
     // Laisser le formulaire se soumettre normalement
@@ -2450,12 +2852,12 @@ function chargerListePasteurs() {
 </script>
 
 <!-- Overlay pour le modal de confirmation -->
-<div id="confirmationOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9998;"></div>
+<div id="confirmationOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9998; pointer-events: none;"></div>
 
 <!-- Modal d'information -->
 <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="infoModalLabel"><i class="fas fa-info-circle"></i> Information</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
