@@ -7,7 +7,7 @@
 {% block content %}
 <div class="container-fluid"style="background-image: url('{% static 'main/images/hero/PPst.jpg' %}'); background-size: cover; background-repeat: no-repeat; background-position: center; background-attachment: fixed; min-height: 100vh; width: 100vw; margin: 0; padding: 0; position: fixed; top: 0; left: 0; z-index: -1;">
 </div>
-<div class="container-fluid mt-4" style="position: relative; z-index: 1;">
+<div class="container-fluid mt-4 pe-0" style="position: relative; z-index: 1; padding-right: 0; margin-right: 0;">
     <style>
       /* Couleurs d'icônes par section */
       .icon-green  { color: #2e7d32; }
@@ -42,9 +42,9 @@
       .card .card-body label i { display: none !important; }
     </style>
     <!-- Overlay très léger pour la lisibilité -->
-    <div style="background-color: rgba(255, 255, 255, 0.1); min-height: 100vh; padding: 20px 0; width: 100%;">
-        <div class="row justify-content-center">
-            <div class="col-12 col-xl-10">
+    <div style="background-color: rgba(255, 255, 255, 0.1); min-height: 100vh; padding: 20px 0 20px 5px; width: 100%;">
+        <div class="row justify-content-center mx-0 me-0">
+            <div class="col-12 ps-1 pe-0" style="max-width: 100%;">
             <!-- En-tête du formulaire -->
             <div class="card mb-4 shadow-lg" style="border: none; border-radius: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-center py-4">
@@ -62,8 +62,18 @@
                             }
                         </style>
                         <div>
-                            <h2 class="text-white mb-0 fw-bold">Formulaire d'Enregistrement du Personnel Pastoral</h2>
-                            <p class="text-white-50 mb-0">Gestion complète des informations pastorales</p>
+                            <h2 class="text-white mb-0 fw-bold title-move" style="text-transform: uppercase;">Formulaire d'Enregistrement du Personnel Pastoral</h2>
+                            <style>
+                                @keyframes titleMove {
+                                    0%, 100% { transform: translateX(0) scale(1); }
+                                    25% { transform: translateX(-5px) scale(1.02); }
+                                    75% { transform: translateX(5px) scale(1.02); }
+                                }
+                                .title-move {
+                                    animation: titleMove 3s ease-in-out infinite;
+                                }
+                            </style>
+                            <p class="text-white-50 mb-0">Gestion complète des informations pastorales de l'Eglise Pentecôte Alléluia de Guinée</p>
                         </div>
                     </div>
                 </div>
@@ -691,8 +701,8 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-info view-pasteur" data-id="{{ pasteur.id }}" title="Voir détails">
-                                                <i class="fas fa-eye"></i>
+                                            <button type="button" class="btn btn-sm btn-success details-pasteur" data-id="{{ pasteur.id }}" title="Détails Pasteur">
+                                                <i class="fas fa-id-card"></i>
                                             </button>
                                             <button type="button" class="btn btn-sm btn-primary edit-pasteur" data-id="{{ pasteur.id }}" title="Modifier">
                                                 <i class="fas fa-edit"></i>
@@ -1243,4 +1253,157 @@ function capturePhoto() {
 </div>
 {% include 'main/includes/modal_edit_pasteur.html' %}
 <script src="{% static 'js/personnel_pastoral_edit.js' %}"></script>
+
+<!-- Script inline pour le bouton Détails Pasteur -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.details-pasteur');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const pasteurId = btn.getAttribute('data-id');
+        if (!pasteurId) {
+            alert("ID du pasteur manquant.");
+            return;
+        }
+        openDetailsPasteurModalInline(pasteurId);
+    });
+});
+
+function openDetailsPasteurModalInline(pasteurId) {
+    let modalEl = document.getElementById('detailsPasteurModal');
+    if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.id = 'detailsPasteurModal';
+        modalEl.className = 'modal fade';
+        modalEl.tabIndex = -1;
+        modalEl.innerHTML = `
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+              <h5 class="modal-title"><i class="fas fa-id-card me-2"></i>Détails du Pasteur</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body"><div id="detailsPasteurBody"></div></div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="btnPrintDetails" disabled><i class="fas fa-print me-2"></i>Imprimer</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+          </div>
+        </div>`;
+        document.body.appendChild(modalEl);
+    }
+    const body = modalEl.querySelector('#detailsPasteurBody');
+    const printBtn = modalEl.querySelector('#btnPrintDetails');
+    if (printBtn) { printBtn.disabled = true; }
+    if (body) {
+        body.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-success"></div><div class="mt-3 text-muted">Chargement...</div></div>';
+    }
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    fetch(`/get_pasteur_details/${pasteurId}/`)
+        .then(r => r.json())
+        .then(result => {
+            if (!result || !result.success || !result.data) throw new Error(result?.error || 'Erreur');
+            const d = result.data;
+            const safe = v => (v === null || v === undefined || v === '' ? '-' : v);
+            const esc = s => (s === null || s === undefined) ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const field = (l, v) => `<div class="col-md-6 col-lg-4 mb-3"><div class="small text-muted">${l}</div><div class="fw-semibold">${esc(safe(v))}</div></div>`;
+            const fullName = `${safe(d.prenom)} ${safe(d.nom)}`.trim();
+            const photo = d.photo_url ? `<img src="${d.photo_url}" class="rounded shadow" style="width:160px;height:240px;object-fit:cover;">` : `<div class="bg-secondary bg-opacity-25 rounded d-flex align-items-center justify-content-center" style="width:160px;height:240px;"><i class="fas fa-user text-secondary" style="font-size:4rem;"></i></div>`;
+            
+            body.innerHTML = `
+                <div class="text-center mb-4 pb-3 border-bottom">
+                    <div class="mb-3">${photo}</div>
+                    <h4 class="mb-1">${esc(fullName)}</h4>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <span class="badge bg-success fs-6">${esc(safe(d.fonction))}</span>
+                        <span class="badge bg-primary fs-6">${esc(safe(d.statut_actuel))}</span>
+                        <span class="badge bg-info text-dark">${esc(safe(d.eglise_nom))}</span>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header py-3" style="background:linear-gradient(135deg,#4CAF50,#45a049);"><h5 class="mb-0 text-white"><i class="fas fa-user me-2"></i>1. Informations Personnelles</h5></div>
+                    <div class="card-body"><div class="row">
+                        ${field('Prénoms', d.prenom)}${field('Nom', d.nom)}${field('Sexe', d.sexe==='M'?'Masculin':d.sexe==='F'?'Féminin':d.sexe)}
+                        ${field('Date de naissance', d.date_naissance)}${field('Lieu de naissance', d.lieu_naissance)}${field('Nationalité', d.nationalite)}
+                        ${field('Domicile', d.domicile)}${field('État civil', d.etat_civil)}${field("Nombre d'enfants", d.nombre_enfants)}
+                        ${field('Profession', d.profession)}${field('Téléphone', d.telephone)}${field('Email', d.email)}
+                    </div></div>
+                </div>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header py-3" style="background:linear-gradient(135deg,#FF9800,#F57C00);"><h5 class="mb-0 text-white"><i class="fas fa-users me-2"></i>2. Filiation</h5></div>
+                    <div class="card-body"><div class="row">
+                        ${field('Prénoms du Père', d.prenoms_pere)}${field('Prénoms & Nom de la Mère', d.prenoms_nom_mere)}
+                    </div></div>
+                </div>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header py-3" style="background:linear-gradient(135deg,#2196F3,#1976D2);"><h5 class="mb-0 text-white"><i class="fas fa-church me-2"></i>3. Affectation du Pasteur</h5></div>
+                    <div class="card-body"><div class="row">
+                        ${field('Fonction', d.fonction)}${field('Statut actuel', d.statut_actuel)}${field('Église affectée', d.eglise_nom)}
+                        ${field("Lieu d'affectation", d.lieu_affectation)}${field("Date d'affectation", d.date_affectation)}${field('Région', d.region)}
+                        ${field('Zone', d.zone)}${field('Date de consécration', d.date_consecration)}${field('Lieu de consécration', d.lieu_consecration)}
+                        ${field('Consacré par', d.consacre_par)}
+                    </div></div>
+                </div>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header py-3" style="background:linear-gradient(135deg,#9C27B0,#7B1FA2);"><h5 class="mb-0 text-white"><i class="fas fa-graduation-cap me-2"></i>4. Formations Suivies du Pasteur</h5></div>
+                    <div class="card-body"><div class="row">
+                        <div class="col-12 mb-3"><div class="small text-muted">Types de formations</div><div class="fw-semibold" style="white-space:pre-wrap;">${esc(safe(d.types_formations))}</div></div>
+                        ${d.diplomes_obtenus ? `<div class="col-12"><div class="small text-muted">Diplômes obtenus</div><div class="fw-semibold" style="white-space:pre-wrap;">${esc(safe(d.diplomes_obtenus))}</div></div>` : ''}
+                    </div></div>
+                </div>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header py-3" style="background:linear-gradient(135deg,#607D8B,#455A64);"><h5 class="mb-0 text-white"><i class="fas fa-file-download me-2"></i>5. Pièce d'Enregistrement</h5></div>
+                    <div class="card-body">
+                        ${d.document_url ? `<div class="d-flex align-items-center justify-content-between flex-wrap gap-3"><div><i class="fas fa-file-pdf text-danger me-2 fs-4"></i><span class="text-muted">${esc(d.document_name||"Document")}</span></div><a href="${d.document_url}" target="_blank" class="btn btn-outline-primary"><i class="fas fa-download me-2"></i>Télécharger</a></div>` : `<div class="text-muted text-center py-3"><i class="fas fa-folder-open me-2"></i>Aucune pièce disponible.</div>`}
+                    </div>
+                </div>`;
+            if (printBtn) {
+                printBtn.disabled = false;
+                printBtn.onclick = function() {
+                    const w = window.open('','_blank');
+                    const logoUrl = d.eglise_logo_url || '/static/main/images/logo_eglise.png';
+                    const fullName = `${safe(d.prenom)} ${safe(d.nom)}`.trim();
+                    const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:2px 4px;vertical-align:top;"><span style="font-size:7pt;color:#666;">${label}</span><br><span style="font-size:8pt;font-weight:600;">${esc(safe(val))}</span></div>`;
+                    const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:4px;border-radius:4px;"><div style="background:${color};color:#fff;padding:3px 8px;font-size:9pt;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${icon} ${title}</div><div style="padding:4px 8px;">${content}</div></div>`;
+                    
+                    const s1 = pf('Prénoms',d.prenom)+pf('Nom',d.nom)+pf('Sexe',d.sexe==='M'?'Masculin':d.sexe==='F'?'Féminin':d.sexe)+pf('Date naissance',d.date_naissance)+pf('Lieu naissance',d.lieu_naissance)+pf('Nationalité',d.nationalite)+pf('Domicile',d.domicile)+pf('État civil',d.etat_civil)+pf("Nb enfants",d.nombre_enfants)+pf('Profession',d.profession)+pf('Téléphone',d.telephone)+pf('Email',d.email);
+                    const s2 = pf('Prénoms du Père',d.prenoms_pere)+pf('Prénoms & Nom Mère',d.prenoms_nom_mere);
+                    const s3 = pf('Fonction',d.fonction)+pf('Statut',d.statut_actuel)+pf('Église',d.eglise_nom)+pf('Lieu affectation',d.lieu_affectation)+pf('Date affectation',d.date_affectation)+pf('Région',d.region)+pf('Zone',d.zone)+pf('Date consécration',d.date_consecration)+pf('Lieu consécration',d.lieu_consecration)+pf('Consacré par',d.consacre_par);
+                    const s4 = `<div style="font-size:8pt;"><span style="font-size:7pt;color:#666;">Types de formations</span><br><span style="font-weight:600;">${esc(safe(d.types_formations))}</span></div>`;
+                    const s5 = d.document_url ? `<span style="font-size:8pt;">Document disponible</span>` : `<span style="font-size:8pt;color:#999;">Aucune pièce</span>`;
+                    
+                    const photoHtml = d.photo_url ? `<img src="${d.photo_url}" style="width:60px;height:75px;object-fit:cover;border-radius:4px;border:1px solid #ddd;">` : '';
+                    
+                    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fiche Pasteur</title>
+<style>@page{size:A4;margin:5mm;}body{font-family:Arial,sans-serif;padding:5px 10px;margin:0;}</style></head><body>
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:2px solid #4CAF50;padding-bottom:5px;margin-bottom:5px;">
+<img src="${logoUrl}" style="height:45px;">
+<div style="text-align:center;flex:1;padding:0 15px;"><div style="font-size:12pt;font-weight:bold;color:#4CAF50;">Fiche du Personnel Pastoral</div><div style="font-size:8pt;color:#666;">${esc(safe(d.eglise_nom))}</div></div>
+<img src="${logoUrl}" style="height:45px;">
+</div>
+<div style="text-align:center;margin-bottom:5px;">${photoHtml}<div style="font-size:9pt;font-weight:bold;">${esc(fullName)}</div><div style="font-size:8pt;color:#666;">${esc(safe(d.fonction))}</div></div>
+${section('#4CAF50','&#128100;','1. Informations Personnelles',s1)}
+${section('#FF9800','&#128101;','2. Filiation',s2)}
+${section('#2196F3','&#9962;','3. Affectation du Pasteur',s3)}
+${section('#9C27B0','&#127891;','4. Formations Suivies',s4)}
+${section('#607D8B','&#128196;',"5. Pièce d'Enregistrement",s5)}
+<div style="position:fixed;bottom:10px;left:0;right:0;text-align:center;">
+<hr style="border:none;border-top:1px solid #4CAF50;margin:5px 20px;">
+<div style="font-size:8pt;font-style:italic;color:#4CAF50;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();window.close();},800);};<\/script></body></html>`;
+                    w.document.write(html);
+                    w.document.close();
+                };
+            }
+        })
+        .catch(err => {
+            body.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Erreur: ${err.message||'Veuillez réessayer.'}</div>`;
+        });
+}
+</script>
 {% endblock %}
