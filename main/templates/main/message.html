@@ -1,0 +1,858 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Message - Gestion Église{% endblock %}
+
+{% block content %}
+<style>
+    .message-page {
+        min-height: 100vh;
+        background: radial-gradient(1200px 700px at 10% 10%, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 55%),
+                    radial-gradient(900px 600px at 90% 10%, rgba(59,130,246,0.22) 0%, rgba(59,130,246,0) 55%),
+                    radial-gradient(1100px 650px at 50% 95%, rgba(137,37,62,0.28) 0%, rgba(137,37,62,0) 60%),
+                    linear-gradient(135deg, #0f172a 0%, #4c1d95 45%, #89253e 100%);
+        padding: 40px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .message-page {
+        --accent: #2563eb;
+        --accent2: #1d4ed8;
+    }
+
+    .message-page[data-theme="national"] {
+        --accent: #2563eb;
+        --accent2: #1d4ed8;
+    }
+
+    .message-page[data-theme="pasteurs"] {
+        --accent: #16a34a;
+        --accent2: #0f766e;
+    }
+
+    .message-page[data-theme="departements"] {
+        --accent: #7c3aed;
+        --accent2: #4c1d95;
+    }
+
+    .message-page[data-theme="membres"] {
+        --accent: #db2777;
+        --accent2: #be123c;
+    }
+
+    .message-page::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px);
+        background-size: 18px 18px;
+        opacity: 0.18;
+        pointer-events: none;
+    }
+
+    .bg-blob {
+        position: absolute;
+        width: 520px;
+        height: 520px;
+        border-radius: 999px;
+        filter: blur(55px);
+        opacity: 0.55;
+        transform: translate3d(0,0,0);
+        animation: blobFloat 10s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .bg-blob.blob-1 {
+        left: -160px;
+        top: -160px;
+        background: radial-gradient(circle at 30% 30%, rgba(59,130,246,0.9), rgba(59,130,246,0) 65%);
+        animation-duration: 12s;
+    }
+
+    .bg-blob.blob-2 {
+        right: -200px;
+        top: 40px;
+        background: radial-gradient(circle at 30% 30%, rgba(59,130,246,0.85), rgba(59,130,246,0) 65%);
+        animation-duration: 14s;
+    }
+
+    .bg-blob.blob-3 {
+        left: 20%;
+        bottom: -260px;
+        width: 680px;
+        height: 680px;
+        background: radial-gradient(circle at 30% 30%, rgba(137,37,62,0.95), rgba(137,37,62,0) 60%);
+        animation-duration: 16s;
+    }
+    
+    .message-container {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .message-header {
+        text-align: center;
+        margin-bottom: 30px;
+        animation: fadeInDown 0.8s ease;
+    }
+    
+    .message-icon-wrapper {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        box-shadow: 0 22px 50px rgba(0,0,0,0.35);
+        animation: pulse 2s ease-in-out infinite;
+        border: 1px solid rgba(255,255,255,0.35);
+        backdrop-filter: blur(10px);
+    }
+    
+    .message-icon-wrapper i {
+        font-size: 3rem;
+        background: linear-gradient(135deg, #89253e, var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .message-header h1 {
+        color: #fff;
+        font-size: 2.5rem;
+        font-weight: 800;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        margin-bottom: 10px;
+    }
+
+    .message-header h1 {
+        background: linear-gradient(135deg, #ffffff 0%, var(--accent) 40%, #ff9ad5 70%, #ffffff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: none;
+        filter: drop-shadow(0 10px 22px rgba(0,0,0,0.35));
+        letter-spacing: 0.5px;
+    }
+    
+    .message-header p {
+        color: rgba(255,255,255,0.92);
+        font-size: 1.1rem;
+    }
+
+    .message-header p {
+        background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 35%, #3b82f6 70%, #1d4ed8 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 6px 16px rgba(0,0,0,0.25));
+        font-weight: 600;
+    }
+    
+    .message-card {
+        background: rgba(255, 255, 255, 0.10);
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 28px 70px rgba(0,0,0,0.45);
+        animation: fadeInUp 0.8s ease;
+        border: 1px solid rgba(255,255,255,0.18);
+        backdrop-filter: blur(16px);
+        position: relative;
+    }
+
+    .message-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        padding: 1px;
+        border-radius: 25px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.38), color-mix(in srgb, var(--accent) 55%, transparent), rgba(137,37,62,0.55));
+        -webkit-mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+        mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+        opacity: 0.95;
+    }
+    
+    .message-card-header {
+        background: linear-gradient(135deg, #89253e 0%, var(--accent) 100%);
+        padding: 25px 30px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .message-card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s ease-in-out infinite;
+    }
+    
+    .message-card-header h5 {
+        margin: 0;
+        color: #fff;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .message-card-header .card-header-logo {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        object-fit: cover;
+        background: rgba(255,255,255,0.95);
+        padding: 2px;
+        box-shadow: 0 10px 22px rgba(2, 6, 23, 0.35);
+        border: 1px solid rgba(255,255,255,0.18);
+        flex: 0 0 auto;
+    }
+    
+    .message-card-header h5 i {
+        font-size: 1.6rem;
+        margin-right: 0;
+    }
+    
+    .message-card-body {
+        padding: 35px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(248,249,250,0.92) 100%);
+    }
+    
+    .form-group-modern {
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .form-label-modern {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+    
+    .form-label-modern i {
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(135deg, #89253e, var(--accent));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        margin-right: 12px;
+        font-size: 1rem;
+    }
+    
+    .form-input-modern {
+        width: 100%;
+        padding: 15px 20px;
+        border: 2px solid rgba(15, 23, 42, 0.10);
+        border-radius: 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.9);
+    }
+    
+    .form-input-modern:focus {
+        outline: none;
+        border-color: #89253e;
+        box-shadow: 0 0 0 4px rgba(137, 37, 62, 0.14), 0 12px 32px rgba(15, 23, 42, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .message-page[data-theme] .form-input-modern:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent), 0 12px 32px rgba(15, 23, 42, 0.12);
+    }
+    
+    .form-input-modern:hover {
+        border-color: var(--accent);
+    }
+    
+    .form-input-modern::placeholder {
+        color: #aaa;
+    }
+    
+    .form-textarea-modern {
+        resize: none;
+        min-height: 150px;
+    }
+    
+    .char-counter {
+        text-align: right;
+        font-size: 0.85rem;
+        color: #888;
+        margin-top: 8px;
+    }
+    
+    .btn-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding-top: 25px;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .target-switch {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .target-btn {
+        border: 1px solid rgba(15, 23, 42, 0.10);
+        background: rgba(255,255,255,0.92);
+        border-radius: 16px;
+        padding: 12px 12px;
+        font-weight: 800;
+        color: #0f172a;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        user-select: none;
+        text-align: center;
+    }
+
+    .target-btn span {
+        text-align: center;
+        line-height: 1.15;
+    }
+
+    .target-btn i {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #89253e, var(--accent));
+        color: #fff;
+        box-shadow: 0 10px 24px rgba(137,37,62,0.18);
+        flex: 0 0 auto;
+    }
+
+    .target-btn[data-target="national"] i { background: linear-gradient(135deg, #1d4ed8, #60a5fa); }
+    .target-btn[data-target="pasteurs"] i { background: linear-gradient(135deg, #16a34a, #0f766e); }
+    .target-btn[data-target="departements"] i { background: linear-gradient(135deg, #7c3aed, #4c1d95); }
+    .target-btn[data-target="membres"] i { background: linear-gradient(135deg, #db2777, #be123c); }
+
+    .target-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 40px rgba(15,23,42,0.12);
+        border-color: rgba(137,37,62,0.25);
+    }
+
+    .target-btn.is-active {
+        background: linear-gradient(135deg, rgba(137,37,62,0.10), rgba(59,130,246,0.12));
+        border-color: rgba(137,37,62,0.40);
+        box-shadow: 0 18px 46px rgba(137,37,62,0.16);
+    }
+
+    .target-btn.is-active {
+        background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, transparent), rgba(137,37,62,0.10));
+        border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+        box-shadow: 0 18px 46px color-mix(in srgb, var(--accent) 16%, transparent);
+    }
+
+    .target-hint {
+        background: linear-gradient(135deg, rgba(59,130,246,0.14), rgba(76,29,149,0.10));
+        border: 1px solid rgba(59,130,246,0.18);
+        border-radius: 16px;
+        padding: 12px 14px;
+        color: #0f172a;
+        font-weight: 700;
+        margin-bottom: 18px;
+        display: none;
+    }
+
+    .target-hint strong {
+        color: #1d4ed8;
+    }
+
+    .message-form-content {
+        display: none;
+    }
+
+    @media (max-width: 992px) {
+        .target-switch {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    
+    .btn-back {
+        padding: 14px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        border: 2px solid #ddd;
+        background: #fff;
+        color: #666;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+    
+    .btn-back:hover {
+        background: #f8f9fa;
+        border-color: #89253e;
+        color: #89253e;
+        transform: translateX(-5px);
+    }
+    
+    .btn-back i {
+        margin-right: 8px;
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-back:hover i {
+        transform: translateX(-5px);
+    }
+    
+    .btn-send {
+        padding: 14px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        background: linear-gradient(135deg, #89253e 0%, var(--accent) 45%, var(--accent2) 100%);
+        background-size: 200% 200%;
+        color: #fff;
+        border: none;
+        box-shadow: 0 14px 40px rgba(137, 37, 62, 0.45);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-send::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn-send:hover::before {
+        left: 100%;
+    }
+    
+    .btn-send:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 22px 58px rgba(137, 37, 62, 0.55);
+        background-position: 100% 0;
+    }
+    
+    .btn-send i {
+        margin-left: 10px;
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-send:hover i {
+        transform: translateX(5px);
+    }
+
+    .send-meta {
+        text-align: right;
+        margin-top: 8px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: rgba(15, 23, 42, 0.75);
+    }
+
+    .send-meta span {
+        font-weight: 800;
+        color: var(--accent);
+    }
+    
+    .decorative-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+    }
+    
+    .decorative-dots span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #89253e, var(--accent));
+        opacity: 0.6;
+        animation: dotPulse 1.5s ease-in-out infinite;
+    }
+    
+    .decorative-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .decorative-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+        }
+    }
+    
+    @keyframes shine {
+        0%, 100% {
+            transform: translateX(-100%) rotate(45deg);
+        }
+        50% {
+            transform: translateX(100%) rotate(45deg);
+        }
+    }
+    
+    @keyframes dotPulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0.6;
+        }
+        50% {
+            transform: scale(1.3);
+            opacity: 1;
+        }
+    }
+
+    @keyframes blobFloat {
+        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+        50% { transform: translate3d(30px, 18px, 0) scale(1.06); }
+    }
+    
+    @media (max-width: 768px) {
+        .message-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .message-card-body {
+            padding: 25px 20px;
+        }
+        
+        .btn-actions {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .btn-back, .btn-send {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="message-page">
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+    <div class="container">
+        <div class="message-container">
+            <!-- En-tête -->
+            <div class="message-header">
+                <div class="message-icon-wrapper">
+                    <i class="bi bi-chat-dots-fill"></i>
+                </div>
+                <h1>Envoyer un Message</h1>
+                <p>Communiquez facilement avec les membres de l'église</p>
+                <div class="decorative-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            
+            <!-- Carte Formulaire -->
+            <div class="message-card">
+                <div class="message-card-header">
+                    <h5>
+                        <i class="bi bi-envelope-paper-fill"></i>
+                        Nouveau Message
+                        <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo" class="card-header-logo">
+                    </h5>
+                </div>
+                <div class="message-card-body">
+                    <form id="messageForm" method="post" action="">
+                        {% csrf_token %}
+
+                        <input type="hidden" id="targetInput" name="target" value="national">
+                        <input type="hidden" id="recipientIdInput" name="recipient_id" value="">
+
+                        <div class="target-switch" role="group" aria-label="Cibles">
+                            <div class="target-btn is-active" data-target="national" tabindex="0">
+                                <i class="bi bi-flag-fill" aria-hidden="true"></i>
+                                <span>Au comité National</span>
+                            </div>
+                            <div class="target-btn" data-target="pasteurs" tabindex="0">
+                                <i class="bi bi-person-badge-fill" aria-hidden="true"></i>
+                                <span>Aux Pasteurs</span>
+                            </div>
+                            <div class="target-btn" data-target="departements" tabindex="0">
+                                <i class="bi bi-diagram-3-fill" aria-hidden="true"></i>
+                                <span>Aux Responsables Département</span>
+                            </div>
+                            <div class="target-btn" data-target="membres" tabindex="0">
+                                <i class="bi bi-people-fill" aria-hidden="true"></i>
+                                <span>Aux Membres</span>
+                            </div>
+                        </div>
+
+                        <div id="messageFormContent" class="message-form-content">
+                            <div id="targetHint" class="target-hint">
+                                Envoi <strong id="targetHintLabel">Comité National</strong> vers: <span id="targetHintValue">{{ contact_receiver }}</span>
+                            </div>
+                            
+                            <!-- Destinataire -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="bi bi-person-fill"></i>
+                                    <span>Destinataire</span>
+                                </label>
+                                <input type="text" class="form-input-modern" id="recipientManualEmails" name="recipient_emails" placeholder="Saisissez une ou plusieurs adresses email (séparées par virgules)" value="" data-national="{{ contact_receiver }}" style="display:none;">
+                                <select class="form-input-modern" id="recipientSelectPasteurs" style="display:none;">
+                                    <option value="">Choisir un pasteur</option>
+                                    <option value="all">Tous les pasteurs</option>
+                                    {% for p in pasteurs %}
+                                        <option value="{{ p.id }}">{{ p.prenom }} {{ p.nom }}{% if p.email %} ({{ p.email }}){% endif %}</option>
+                                    {% endfor %}
+                                </select>
+
+                                <select class="form-input-modern" id="recipientSelectDepartements" style="display:none;">
+                                    <option value="">Choisir un département</option>
+                                    <option value="all">Tous les responsables département</option>
+                                    {% for d in departements %}
+                                        <option value="{{ d.id }}">{{ d.nom }}{% if d.email %} ({{ d.email }}){% endif %}</option>
+                                    {% endfor %}
+                                </select>
+
+                                <select class="form-input-modern" id="recipientSelectMembres" style="display:none;">
+                                    <option value="">Choisir un membre</option>
+                                    <option value="all">Tous les membres</option>
+                                    {% for m in membres %}
+                                        <option value="{{ m.id }}">{{ m.prenom }} {{ m.nom }}{% if m.email %} ({{ m.email }}){% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Objet -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="bi bi-tag-fill"></i>
+                                    <span>Objet du message</span>
+                                </label>
+                                <input type="text" class="form-input-modern" id="objet" name="objet" placeholder="Quel est l'objet de votre message ?" required>
+                            </div>
+                            
+                            <!-- Message -->
+                            <div class="form-group-modern">
+                                <label class="form-label-modern">
+                                    <i class="bi bi-chat-left-text-fill"></i>
+                                    <span>Votre message</span>
+                                </label>
+                                <textarea class="form-input-modern form-textarea-modern" id="contenu" name="contenu" placeholder="Rédigez votre message ici..." maxlength="1000" oninput="updateCharCount()" required></textarea>
+                                <div class="char-counter">
+                                    <span id="charCount">0</span> / 1000 caractères
+                                </div>
+                            </div>
+                            
+                            <!-- Boutons -->
+                            <div class="btn-actions">
+                                <a href="{% url 'main:gestion' %}" class="btn-back">
+                                    <i class="bi bi-arrow-left"></i>
+                                    Retour
+                                </a>
+                                <div>
+                                    <button type="submit" class="btn-send">
+                                        Envoyer
+                                        <i class="bi bi-send-fill"></i>
+                                    </button>
+                                    <div class="send-meta">Envoyé depuis: <span>{{ sender_email }}</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateCharCount() {
+    const textarea = document.getElementById('contenu');
+    const charCount = document.getElementById('charCount');
+    charCount.textContent = textarea.value.length;
+}
+
+(function(){
+    const page = document.querySelector('.message-page');
+    const buttons = document.querySelectorAll('.target-btn');
+    const targetInput = document.getElementById('targetInput');
+    const recipientIdInput = document.getElementById('recipientIdInput');
+
+    const messageFormContent = document.getElementById('messageFormContent');
+
+    const recipientManualEmails = document.getElementById('recipientManualEmails');
+    const selectPasteurs = document.getElementById('recipientSelectPasteurs');
+    const selectDepartements = document.getElementById('recipientSelectDepartements');
+    const selectMembres = document.getElementById('recipientSelectMembres');
+
+    const targetHint = document.getElementById('targetHint');
+    const targetHintLabel = document.getElementById('targetHintLabel');
+
+    function setActiveTarget(t){
+        targetInput.value = t;
+        recipientIdInput.value = '';
+
+        if (page) {
+            page.setAttribute('data-theme', t);
+        }
+
+        if (messageFormContent) {
+            messageFormContent.style.display = 'block';
+        }
+
+        buttons.forEach(b => b.classList.toggle('is-active', b.dataset.target === t));
+
+        selectPasteurs.style.display = (t === 'pasteurs') ? '' : 'none';
+        selectDepartements.style.display = (t === 'departements') ? '' : 'none';
+        selectMembres.style.display = (t === 'membres') ? '' : 'none';
+        recipientManualEmails.style.display = '';
+        if (t === 'national') {
+            recipientManualEmails.value = recipientManualEmails.getAttribute('data-national') || '';
+        } else {
+            const nationalDefault = recipientManualEmails.getAttribute('data-national') || '';
+            if ((recipientManualEmails.value || '').trim() === (nationalDefault || '').trim()) {
+                recipientManualEmails.value = '';
+            }
+        }
+
+        if (targetHintLabel) {
+            if (t === 'national') targetHintLabel.textContent = 'Comité National';
+            if (t === 'pasteurs') targetHintLabel.textContent = 'Pasteurs';
+            if (t === 'departements') targetHintLabel.textContent = 'Responsables Département';
+            if (t === 'membres') targetHintLabel.textContent = 'Membres';
+        }
+
+        if (targetHint) {
+            targetHint.style.display = (t === 'national') ? '' : 'none';
+        }
+
+        if (t === 'pasteurs') selectPasteurs.value = '';
+        if (t === 'departements') selectDepartements.value = '';
+        if (t === 'membres') selectMembres.value = '';
+    }
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => setActiveTarget(btn.dataset.target));
+        btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setActiveTarget(btn.dataset.target);
+            }
+        });
+    });
+
+    function syncRecipient(){
+        const t = targetInput.value;
+        if (t === 'pasteurs') recipientIdInput.value = selectPasteurs.value || '';
+        if (t === 'departements') recipientIdInput.value = selectDepartements.value || '';
+        if (t === 'membres') recipientIdInput.value = selectMembres.value || '';
+        if (t === 'national') recipientIdInput.value = '';
+    }
+
+    [selectPasteurs, selectDepartements, selectMembres].forEach(sel => {
+        sel.addEventListener('change', syncRecipient);
+    });
+
+    function validateRecipientOrSelection() {
+        const t = targetInput.value;
+        const hasManual = !!(recipientManualEmails && recipientManualEmails.value.trim());
+        const hasSelection = !!(recipientIdInput.value || '').trim();
+
+        let ok = true;
+        if (t === 'national') {
+            ok = hasManual;
+        } else {
+            ok = hasManual || hasSelection;
+        }
+
+        if (!ok && recipientManualEmails) {
+            recipientManualEmails.setCustomValidity('Veuillez saisir au moins un email ou choisir un destinataire.');
+            recipientManualEmails.reportValidity();
+            return false;
+        }
+        if (recipientManualEmails) {
+            recipientManualEmails.setCustomValidity('');
+        }
+        return true;
+    }
+
+    if (recipientManualEmails) {
+        recipientManualEmails.addEventListener('input', function(){
+            recipientManualEmails.setCustomValidity('');
+        });
+    }
+
+    document.getElementById('messageForm').addEventListener('submit', function(e){
+        syncRecipient();
+        if (!validateRecipientOrSelection()) {
+            e.preventDefault();
+        }
+    });
+})();
+</script>
+{% endblock %}

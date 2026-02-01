@@ -1229,6 +1229,7 @@ body.home-page .main-content {
 .gestion-nav {
     display: flex;
     gap: 2rem;
+    flex-wrap: wrap;
     margin-top: 2rem;
 }
 

@@ -31,15 +31,19 @@
             position: relative;
         }
         .dropdown-submenu > .dropdown-menu {
+            display: none;
             top: 0;
             left: 100%;
             margin-top: -1px;
-            display: none;
+            z-index: 1060;
             background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important;
             border: none;
             box-shadow: 0 5px 20px rgba(30, 58, 138, 0.4);
         }
         .dropdown-submenu:hover > .dropdown-menu {
+            display: block;
+        }
+        .dropdown-submenu.show > .dropdown-menu {
             display: block;
         }
         .dropdown-submenu .dropdown-item {
@@ -156,6 +160,66 @@
             transform: scale(1.02);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
         }
+
+        .btn-donate {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #89253e, #b8860b) !important;
+            border: none !important;
+            color: #fff !important;
+            box-shadow: 0 12px 26px rgba(184, 134, 11, 0.25);
+            transform: translateZ(0);
+            animation: donatePulse 2.2s ease-in-out infinite;
+        }
+
+        .btn-donate::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -60%;
+            width: 55%;
+            height: 180%;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(20deg);
+            animation: donateShine 1.8s linear infinite;
+            pointer-events: none;
+        }
+
+        .btn-donate:hover {
+            transform: translateY(-1px) scale(1.03);
+            box-shadow: 0 16px 34px rgba(184, 134, 11, 0.32);
+        }
+
+        @keyframes donateShine {
+            0% { left: -60%; opacity: 0; }
+            10% { opacity: 1; }
+            100% { left: 140%; opacity: 0; }
+        }
+
+        @keyframes donatePulse {
+            0%, 100% { box-shadow: 0 12px 26px rgba(184, 134, 11, 0.22); }
+            50% { box-shadow: 0 18px 40px rgba(184, 134, 11, 0.35); }
+        }
+
+        .btn-donate-confirm {
+            position: relative;
+            overflow: hidden;
+            transform: translateZ(0);
+            animation: donatePulse 2.2s ease-in-out infinite;
+        }
+
+        .btn-donate-confirm::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -60%;
+            width: 55%;
+            height: 180%;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(20deg);
+            animation: donateShine 1.8s linear infinite;
+            pointer-events: none;
+        }
         #donationModal .modal-body::-webkit-scrollbar {
             width: 8px;
         }
@@ -166,6 +230,64 @@
         #donationModal .modal-body::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, #89253e, #b8860b);
             border-radius: 4px;
+        }
+
+        /* Correctifs d'affichage du modal Don (responsive + overflow) */
+        /* Assurer que le modal passe au-dessus des éléments fixed (navbar/top-bar) */
+        #donationModal {
+            z-index: 5000;
+            pointer-events: auto;
+        }
+        .modal-backdrop {
+            z-index: 4990;
+        }
+        /* Si un overlay/backdrop se retrouve au-dessus, garantir que le contenu reste cliquable */
+        #donationModal .modal-dialog,
+        #donationModal .modal-content {
+            pointer-events: auto;
+        }
+        /* Éviter que le modal soit masqué par la top-bar + navbar (éléments fixed) */
+        #donationModal.modal {
+            padding-top: 120px;
+        }
+        #donationModal .modal-dialog {
+            margin: 1rem;
+        }
+        @media (min-width: 576px) {
+            #donationModal .modal-dialog {
+                margin: 1.75rem auto;
+            }
+        }
+        @media (max-width: 991.98px) {
+            #donationModal.modal {
+                padding-top: 110px;
+            }
+        }
+        @media (max-width: 575.98px) {
+            #donationModal.modal {
+                padding-top: 100px;
+            }
+        }
+        #donationModal .modal-content {
+            max-height: 92vh;
+        }
+        #donationModal .modal-body {
+            overflow-y: auto;
+        }
+        @media (max-width: 575.98px) {
+            #donationModal .modal-header {
+                padding: 0.85rem 1rem;
+            }
+            #donationModal .modal-body {
+                padding: 1rem !important;
+            }
+            #donationModal .modal-footer {
+                padding: 1rem !important;
+                gap: 0.5rem;
+            }
+            #donationModal .modal-footer .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -178,7 +300,7 @@
                 <span class="social-top-label"><i style="color: #89253e; font-weight: 500;">{% trans "info" %}</i> <span class="guinea-flag" style="display: inline-flex; margin-left: 5px; vertical-align: middle; width: 30px; height: 20px; border: 1px solid #ddd; border-radius: 2px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1);"><span style="flex: 1; background-color: #ce1126;"></span><span style="flex: 1; background-color: #fcd116;"></span><span style="flex: 1; background-color: #009e49;"></span></span></span>
                 <span style="margin-left: 15px;"><i class="bi bi-telephone" style="color: #89253e;"></i> (+224) 622 36 81 48</span>
                 <span style="margin-left: 15px;"><i class="bi bi-telephone" style="color: #89253e;"></i> (+224) 664 35 33 82</span>
-                <span style="margin-left: 15px;"><i class="bi bi-envelope" style="color: #89253e;"></i> E-mail: eglisealleluiagn@gmail.com</span>
+                <span style="margin-left: 15px;"><i class="bi bi-envelope" style="color: #89253e;"></i> E-mail: eglisepentecotealleluiagn@gmail.com</span>
             </div>
             <div class="social-top-right">
                 <a href="https://www.facebook.com/share/1AchV2bgQD/?mibextid=wwXIfr" class="social-icon-nav facebook" aria-label="Facebook" target="_blank"><i class="bi bi-facebook"></i></a>
@@ -260,7 +382,7 @@
                 </li>
                 <li class="nav-item dropdown">
                     {% if user.is_authenticated %}
-                    <a href="#" class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'gestion' or request.resolver_match.url_name == 'eglises' or request.resolver_match.url_name == 'personnel_pastoral' or request.resolver_match.url_name == 'les_membres' or request.resolver_match.url_name == 'nos_fideles' or request.resolver_match.url_name == 'departements' or request.resolver_match.url_name == 'finances' or request.resolver_match.url_name == 'banque' or request.resolver_match.url_name == 'effectifs_culte_complet' or request.resolver_match.url_name == 'planification_complet' %}active{% endif %}" id="gestionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a href="#" class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'gestion' or request.resolver_match.url_name == 'eglises' or request.resolver_match.url_name == 'personnel_pastoral' or request.resolver_match.url_name == 'les_membres' or request.resolver_match.url_name == 'nos_fideles' or request.resolver_match.url_name == 'departements' or request.resolver_match.url_name == 'finances' or request.resolver_match.url_name == 'banque' or request.resolver_match.url_name == 'comptabilite' or request.resolver_match.url_name == 'effectifs_culte_complet' or request.resolver_match.url_name == 'planification_complet' %}active{% endif %}" id="gestionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         {% trans "Gestion" %}
                     </a>
                     {% else %}
@@ -293,7 +415,7 @@
                             <ul class="dropdown-menu dropdown-menu-dark submenu-dept">
                                 <li>
                                     <a href="{% url 'main:departements' %}#formulaire-departement" class="dropdown-item">
-                                        <i class="bi bi-plus-circle me-2"></i>{% trans "Ajouter Département" %}
+                                        <i class="bi bi-plus-circle me-2"></i>{% trans "Ajouter / Voir" %}
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
@@ -340,11 +462,34 @@
                                 </li>
                             </ul>
                         </li>
-                        <!-- Item 'Nos Finances' supprimé -->
-                        <li>
-                            <a class="dropdown-item" href="{% url 'main:banque' %}">
-                                <i class="bi bi-bank me-2" aria-hidden="true"></i>{% trans "Finance" %}
+                        <li class="dropdown-submenu">
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault();">
+                                <i class="bi bi-bank me-2" aria-hidden="true"></i>{% trans "Finance" %} <i class="bi bi-chevron-right float-end"></i>
                             </a>
+                            <ul class="dropdown-menu dropdown-menu-dark submenu-dept">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'main:banque' %}">
+                                        <i class="bi bi-file-earmark-text me-2" aria-hidden="true"></i>Situation des Eglises
+                                    </a>
+                                </li>
+                                <li class="dropdown-submenu">
+                                    <a href="#" class="dropdown-item" onclick="event.preventDefault();">
+                                        <i class="bi bi-journal-text me-2" aria-hidden="true"></i>Comptabilité CN <i class="bi bi-chevron-right float-end"></i>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark submenu-dept">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'main:comptabilite' %}?tab=recettes">
+                                                <i class="bi bi-cash-stack me-2" aria-hidden="true"></i>RECETTES
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'main:comptabilite' %}?tab=depenses">
+                                                <i class="bi bi-wallet2 me-2" aria-hidden="true"></i>DÉPENSES
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
                         </li>
                         <li>
                             <a href="{% url 'main:effectifs_culte_complet' %}" class="dropdown-item">
@@ -354,6 +499,11 @@
                         <li>
                             <a href="{% url 'main:planification_complet' %}" class="dropdown-item">
                                 <i class="bi bi-calendar-week me-2" aria-hidden="true"></i>{% trans "Planning" %}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'main:message' %}" class="dropdown-item">
+                                <i class="bi bi-chat-dots me-2" aria-hidden="true"></i>{% trans "Message" %}
                             </a>
                         </li>
                         <!-- Bouton Caisse supprimé -->
@@ -451,6 +601,16 @@
 
     <!-- Contenu principal -->
     <main class="main-content">
+        {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% block content %}
         {% endblock %}
     </main>
@@ -469,7 +629,7 @@
                                 Dixinn, bellevue en face de l'Ecobank<br>Conakry, Guinée
                             </p>
                             <p><i class="bi bi-telephone-fill"></i> +224 622 36 81 48</p>
-                            <p><i class="bi bi-envelope-fill"></i> eglisealleluiagn@gmail.com</p>
+                            <p><i class="bi bi-envelope-fill"></i> eglisepentecotealleluiagn@gmail.com</p>
                             
                             <!-- CTA pour les dons -->
                             <div class="mt-4">
@@ -605,7 +765,7 @@
 
     <!-- Modal Formulaire de Don -->
     <div class="modal fade" id="donationModal" tabindex="-1" aria-labelledby="donationModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
                 <!-- En-tête du modal -->
                 <div class="modal-header text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #89253e, #b8860b); border: none;">
@@ -631,7 +791,8 @@
                         <p class="mb-0 mt-1 text-muted small">Votre don aide à soutenir les activités de l'église et à répandre la Parole de Dieu.</p>
                     </div>
                     
-                    <form id="donationForm">
+                    <form id="donationForm" method="post" action="{% url 'main:donation_send' %}">
+                        {% csrf_token %}
                         <!-- Section Informations personnelles -->
                         <div class="mb-4 p-3" style="background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
                             <h6 class="mb-3" style="color: #89253e; border-bottom: 2px solid #b8860b; padding-bottom: 8px;">
@@ -642,25 +803,25 @@
                                     <label for="donorName" class="form-label fw-bold small text-muted">
                                         <i class="bi bi-person-fill me-1" style="color: #89253e;"></i>Nom *
                                     </label>
-                                    <input type="text" class="form-control" id="donorName" placeholder="Votre nom" required style="border-radius: 10px; border: 2px solid #e0e0e0;">
+                                    <input type="text" class="form-control" id="donorName" name="donor_name" placeholder="Votre nom" required style="border-radius: 10px; border: 2px solid #e0e0e0;">
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <label for="donorEmail" class="form-label fw-bold small text-muted">
                                         <i class="bi bi-envelope-fill me-1" style="color: #89253e;"></i>Email
                                     </label>
-                                    <input type="email" class="form-control" id="donorEmail" placeholder="votre@email.com" style="border-radius: 10px; border: 2px solid #e0e0e0;">
+                                    <input type="email" class="form-control" id="donorEmail" name="donor_email" placeholder="votre@email.com" style="border-radius: 10px; border: 2px solid #e0e0e0;">
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <label for="donorPhone" class="form-label fw-bold small text-muted">
                                         <i class="bi bi-telephone-fill me-1" style="color: #89253e;"></i>Téléphone *
                                     </label>
-                                    <input type="tel" class="form-control" id="donorPhone" placeholder="+224 6XX XX XX" required style="border-radius: 10px; border: 2px solid #e0e0e0;">
+                                    <input type="tel" class="form-control" id="donorPhone" name="donor_phone" placeholder="+224 6XX XX XX" required style="border-radius: 10px; border: 2px solid #e0e0e0;">
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <label for="donorChurch" class="form-label fw-bold small text-muted">
                                         <i class="bi bi-building me-1" style="color: #89253e;"></i>Église
                                     </label>
-                                    <input type="text" class="form-control" id="donorChurch" placeholder="Votre église" style="border-radius: 10px; border: 2px solid #e0e0e0;">
+                                    <input type="text" class="form-control" id="donorChurch" name="donor_church" placeholder="Votre église" style="border-radius: 10px; border: 2px solid #e0e0e0;">
                                 </div>
                             </div>
                         </div>
@@ -687,14 +848,14 @@
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text" style="background: linear-gradient(135deg, #89253e, #b8860b); color: white; border: none; border-radius: 12px 0 0 12px;">GNF</span>
-                                        <input type="number" class="form-control form-control-lg" id="donationAmount" placeholder="Entrez le montant" required style="border-radius: 0 12px 12px 0; border: 2px solid #e0e0e0; border-left: none;">
+                                        <input type="number" class="form-control form-control-lg" id="donationAmount" name="donation_amount" placeholder="Entrez le montant" required style="border-radius: 0 12px 12px 0; border: 2px solid #e0e0e0; border-left: none;">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small text-muted">
                                         <i class="bi bi-tag-fill me-1" style="color: #b8860b;"></i>Type de don
                                     </label>
-                                    <select class="form-select form-select-lg" id="donationType" style="border-radius: 12px; border: 2px solid #e0e0e0;">
+                                    <select class="form-select form-select-lg" id="donationType" name="donation_type" style="border-radius: 12px; border: 2px solid #e0e0e0;">
                                         <option value="general">🙏 Don général</option>
                                         <option value="dime">💰 Dîme</option>
                                         <option value="offrande">🎁 Offrande</option>
@@ -717,42 +878,42 @@
                             </label>
                             <div class="row g-2">
                                 <div class="col-4 col-md-2">
-                                    <input type="radio" class="btn-check" name="paymentMethod" id="payOrange" value="orange" required>
+                                    <input type="radio" class="btn-check" name="payment_method" id="payOrange" value="orange" required>
                                     <label class="btn w-100 py-2" for="payOrange" style="border-radius: 10px; border: 2px solid #ff7900; background: linear-gradient(135deg, #ff790015, #ff790005); transition: all 0.3s;">
                                         <i class="bi bi-phone-fill d-block" style="font-size: 1rem; color: #ff7900;"></i>
                                         <span style="font-weight: 600; font-size: 0.7rem; color: #ff7900;">Orange</span>
                                     </label>
                                 </div>
                                 <div class="col-4 col-md-2">
-                                    <input type="radio" class="btn-check" name="paymentMethod" id="payMTN" value="mtn">
+                                    <input type="radio" class="btn-check" name="payment_method" id="payMTN" value="mtn">
                                     <label class="btn w-100 py-2" for="payMTN" style="border-radius: 10px; border: 2px solid #ffcc00; background: linear-gradient(135deg, #ffcc0015, #ffcc0005); transition: all 0.3s;">
                                         <i class="bi bi-phone-fill d-block" style="font-size: 1rem; color: #cc9900;"></i>
                                         <span style="font-weight: 600; font-size: 0.7rem; color: #cc9900;">MTN</span>
                                     </label>
                                 </div>
                                 <div class="col-4 col-md-2">
-                                    <input type="radio" class="btn-check" name="paymentMethod" id="payBank" value="bank">
+                                    <input type="radio" class="btn-check" name="payment_method" id="payBank" value="bank">
                                     <label class="btn w-100 py-2" for="payBank" style="border-radius: 10px; border: 2px solid #0d6efd; background: linear-gradient(135deg, #0d6efd15, #0d6efd05); transition: all 0.3s;">
                                         <i class="bi bi-bank d-block" style="font-size: 1rem; color: #0d6efd;"></i>
                                         <span style="font-weight: 600; font-size: 0.7rem; color: #0d6efd;">Virement</span>
                                     </label>
                                 </div>
                                 <div class="col-4 col-md-2">
-                                    <input type="radio" class="btn-check" name="paymentMethod" id="payCash" value="cash">
+                                    <input type="radio" class="btn-check" name="payment_method" id="payCash" value="cash">
                                     <label class="btn w-100 py-2" for="payCash" style="border-radius: 10px; border: 2px solid #198754; background: linear-gradient(135deg, #19875415, #19875405); transition: all 0.3s;">
                                         <i class="bi bi-cash-stack d-block" style="font-size: 1rem; color: #198754;"></i>
                                         <span style="font-weight: 600; font-size: 0.7rem; color: #198754;">Espèces</span>
                                     </label>
                                 </div>
                                 <div class="col-4 col-md-2">
-                                    <input type="radio" class="btn-check" name="paymentMethod" id="payPaypal" value="paypal">
+                                    <input type="radio" class="btn-check" name="payment_method" id="payPaypal" value="paypal">
                                     <label class="btn w-100 py-2" for="payPaypal" style="border-radius: 10px; border: 2px solid #003087; background: linear-gradient(135deg, #00308715, #00308705); transition: all 0.3s;">
                                         <i class="bi bi-paypal d-block" style="font-size: 1rem; color: #003087;"></i>
                                         <span style="font-weight: 600; font-size: 0.7rem; color: #003087;">PayPal</span>
                                     </label>
                                 </div>
                                 <div class="col-4 col-md-2">
-                                    <input type="radio" class="btn-check" name="paymentMethod" id="payVisa" value="visa">
+                                    <input type="radio" class="btn-check" name="payment_method" id="payVisa" value="visa">
                                     <label class="btn w-100 py-2" for="payVisa" style="border-radius: 10px; border: 2px solid #1a1f71; background: linear-gradient(135deg, #1a1f7115, #1a1f7105); transition: all 0.3s;">
                                         <i class="bi bi-credit-card-2-front-fill d-block" style="font-size: 1rem; color: #1a1f71;"></i>
                                         <span style="font-weight: 600; font-size: 0.7rem; color: #1a1f71;">Visa</span>
@@ -792,7 +953,7 @@
                             <label for="donationMessage" class="form-label fw-bold small text-muted">
                                 <i class="bi bi-chat-heart me-1" style="color: #89253e;"></i>Message ou intention de prière (optionnel)
                             </label>
-                            <textarea class="form-control" id="donationMessage" rows="3" placeholder="Laissez un message ou une intention de prière..." style="border-radius: 12px; border: 2px solid #e0e0e0; resize: none;"></textarea>
+                            <textarea class="form-control" id="donationMessage" name="donation_message" rows="3" placeholder="Laissez un message ou une intention de prière..." style="border-radius: 12px; border: 2px solid #e0e0e0; resize: none;"></textarea>
                         </div>
                     </form>
                 </div>
@@ -802,7 +963,7 @@
                     <button type="button" class="btn btn-light btn-lg px-4" data-bs-dismiss="modal" style="border-radius: 25px; border: 2px solid #ddd;">
                         <i class="bi bi-x-lg me-2"></i>Annuler
                     </button>
-                    <button type="submit" form="donationForm" class="btn btn-lg text-white px-5" style="background: linear-gradient(135deg, #89253e, #b8860b); border-radius: 25px; box-shadow: 0 4px 15px rgba(137, 37, 62, 0.4); transition: all 0.3s;">
+                    <button type="submit" form="donationForm" class="btn btn-lg text-white px-5 btn-donate-confirm" style="background: linear-gradient(135deg, #89253e, #b8860b); border-radius: 25px; box-shadow: 0 4px 15px rgba(137, 37, 62, 0.4); transition: all 0.3s;">
                         <i class="bi bi-heart-fill me-2"></i>Confirmer le don
                     </button>
                 </div>
@@ -829,7 +990,7 @@
         });
         
         // Afficher les infos de paiement selon le mode choisi
-        document.querySelectorAll('input[name="paymentMethod"]').forEach(function(radio) {
+        document.querySelectorAll('input[name="payment_method"]').forEach(function(radio) {
             radio.addEventListener('change', function() {
                 document.getElementById('mobilePaymentInfo').style.display = 'none';
                 document.getElementById('bankPaymentInfo').style.display = 'none';
@@ -842,35 +1003,67 @@
             });
         });
         
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         // Soumission du formulaire
-        document.getElementById('donationForm').addEventListener('submit', function(e) {
+        document.getElementById('donationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
+            var form = this;
             var name = document.getElementById('donorName').value;
             var amount = document.getElementById('donationAmount').value;
-            var type = document.getElementById('donationType').options[document.getElementById('donationType').selectedIndex].text;
-            var paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-            
+            var typeText = document.getElementById('donationType').options[document.getElementById('donationType').selectedIndex].text;
+            var paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+
             if (!name || !amount || !paymentMethod) {
                 alert('Veuillez remplir tous les champs obligatoires.');
                 return;
             }
-            
-            // Message de confirmation
-            alert('🙏 Merci ' + name + ' pour votre don de ' + parseInt(amount).toLocaleString() + ' GNF !\n\nType: ' + type + '\n\nQue Dieu vous bénisse abondamment !');
-            
-            // Fermer le modal
-            var modal = bootstrap.Modal.getInstance(document.getElementById('donationModal'));
-            modal.hide();
-            
-            // Réinitialiser le formulaire
-            this.reset();
-            document.querySelectorAll('.donation-amount').forEach(b => {
-                b.classList.remove('active', 'btn-primary');
-                b.classList.add('btn-outline-primary');
-            });
-            document.getElementById('mobilePaymentInfo').style.display = 'none';
-            document.getElementById('bankPaymentInfo').style.display = 'none';
+
+            try {
+                var payload = new FormData(form);
+                payload.set('payment_method', paymentMethod.value);
+                payload.set('donation_type', document.getElementById('donationType').value);
+
+                var resp = await fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') || '' },
+                    body: payload
+                });
+
+                var data = null;
+                try { data = await resp.json(); } catch (err) { data = null; }
+
+                if (!resp.ok || !data || data.success !== true) {
+                    var errors = (data && data.errors) ? data.errors : ['Impossible d\'envoyer le don pour le moment.'];
+                    alert(errors.join('\n'));
+                    return;
+                }
+
+                alert('🙏 Merci ' + name + ' pour votre don de ' + parseInt(amount).toLocaleString() + ' GNF !\n\nType: ' + typeText + '\n\nVotre message a été envoyé. Que Dieu vous bénisse abondamment !');
+
+                var modal = bootstrap.Modal.getInstance(document.getElementById('donationModal'));
+                modal.hide();
+
+                form.reset();
+                document.getElementById('mobilePaymentInfo').style.display = 'none';
+                document.getElementById('bankPaymentInfo').style.display = 'none';
+            } catch (err) {
+                alert("Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
+            }
         });
     });
     </script>
@@ -913,23 +1106,21 @@
       // Gestion des sous-menus sur mobile
       document.querySelectorAll('.dropdown-submenu > a').forEach(function(el) {
         el.addEventListener('click', function(e) {
-          if (window.innerWidth < 992) {
-            e.preventDefault();
-            e.stopPropagation();
-            var parent = this.parentElement;
-            // Fermer les autres sous-menus ouverts
-            document.querySelectorAll('.dropdown-submenu.show').forEach(function(other) {
-              if (other !== parent) {
-                other.classList.remove('show');
-                var otherMenu = other.querySelector('.dropdown-menu');
-                if (otherMenu) otherMenu.classList.remove('show');
-              }
-            });
-            // Toggle le sous-menu actuel
-            parent.classList.toggle('show');
-            var submenu = parent.querySelector('.dropdown-menu');
-            if (submenu) submenu.classList.toggle('show');
-          }
+          e.preventDefault();
+          e.stopPropagation();
+          var parent = this.parentElement;
+          // Fermer les autres sous-menus ouverts
+          document.querySelectorAll('.dropdown-submenu.show').forEach(function(other) {
+            if (other !== parent) {
+              other.classList.remove('show');
+              var otherMenu = other.querySelector('.dropdown-menu');
+              if (otherMenu) otherMenu.classList.remove('show');
+            }
+          });
+          // Toggle le sous-menu actuel
+          parent.classList.toggle('show');
+          var submenu = parent.querySelector('.dropdown-menu');
+          if (submenu) submenu.classList.toggle('show');
         });
       });
     </script>

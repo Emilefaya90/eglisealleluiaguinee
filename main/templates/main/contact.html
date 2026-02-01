@@ -30,7 +30,7 @@
         
         <!-- Cartes d'information -->
         <div class="row g-4 mb-5">
-            <div class="col-md-4">
+            <div class="col-lg-3 col-md-6">
                 <div class="contact-card h-100 text-center p-4">
                     <div class="contact-icon-wrapper">
                         <div class="contact-icon">
@@ -39,11 +39,28 @@
                         <div class="icon-pulse"></div>
                     </div>
                     <h6 class="h5 mt-3">Email</h6>
-                    <p class="mb-0 text-muted">eglisealleluiagn@gmail.com</p>
+                    <p class="mb-0">
+                        <a class="text-muted" href="mailto:eglisepentecotealleluiagn@gmail.com">eglisepentecotealleluiagn@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="contact-card h-100 text-center p-4">
+                    <div class="contact-icon-wrapper">
+                        <div class="contact-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="icon-pulse"></div>
+                    </div>
+                    <h6 class="h5 mt-3">Site Web</h6>
+                    <p class="mb-0">
+                        <a class="text-muted" href="https://www.eglisepentecotealleluiagn.org/" target="_blank" rel="noopener noreferrer">https://www.eglisepentecotealleluiagn.org/</a>
+                    </p>
                 </div>
             </div>
             
-            <div class="col-md-4">
+            <div class="col-lg-3 col-md-6">
                 <div class="contact-card h-100 text-center p-4">
                     <div class="contact-icon-wrapper">
                         <div class="contact-icon phone">
@@ -57,7 +74,7 @@
                 </div>
             </div>
             
-            <div class="col-md-4">
+            <div class="col-lg-3 col-md-6">
                 <div class="contact-card h-100 text-center p-4">
                     <div class="contact-icon-wrapper">
                         <div class="contact-icon location">
@@ -76,20 +93,28 @@
         <div class="contact-form-wrapper">
             <div class="contact-form">
                 <!-- En-tête du formulaire avec animation -->
-                <div class="form-header">
+                <div class="form-header" style="position:relative; overflow:hidden; border-radius:18px; padding:2.2rem 1.8rem; background: linear-gradient(135deg, rgba(13,110,253,0.95) 0%, rgba(111,66,193,0.92) 55%, rgba(255,140,0,0.90) 100%); box-shadow: 0 18px 45px rgba(17,24,39,0.18);">
                     <div class="header-decoration">
-                        <span class="decoration-circle"></span>
-                        <span class="decoration-circle"></span>
-                        <span class="decoration-circle"></span>
+                        <div class="header-dots">
+                            <span class="decoration-circle"></span>
+                            <span class="decoration-circle"></span>
+                            <span class="decoration-circle"></span>
+                        </div>
+                        <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo Église" class="header-logo">
                     </div>
                     <div class="header-icon">
                         <i class="fas fa-paper-plane"></i>
                     </div>
-                    <h2 style="font-size: 2rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 0.8rem;">
+                    <div style="display:inline-flex; align-items:center; gap:.5rem; padding:.35rem .9rem; border-radius:999px; background: rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.28); color:#fff; font-weight:700; font-size:.9rem; letter-spacing:.2px; margin-bottom: .9rem;">
+                        <i class="fas fa-bolt" style="opacity:0.95;"></i>
+                        <span>Réponse rapide</span>
+                    </div>
+                    <h2 style="font-size: 2.2rem; font-weight: 900; letter-spacing: .2px; text-shadow: 0 8px 22px rgba(0,0,0,0.25); margin-bottom: 0.75rem; color:#fff;">
                         <i class="fas fa-envelope me-2"></i>Envoyez-nous un message
                     </h2>
-                    <p class="form-subtitle" style="font-size: 1.2rem; opacity: 1; font-weight: 500; background: rgba(255,255,255,0.2); padding: 0.5rem 1.5rem; border-radius: 50px; display: inline-block;">
-                        <i class="fas fa-clock me-2"></i>Nous vous répondrons dans les plus brefs délais
+                    <p class="form-subtitle" style="font-size: 1.05rem; opacity: 1; font-weight: 500; background: rgba(255,255,255,0.16); padding: 0.7rem 1.2rem; border-radius: 14px; display: inline-flex; align-items:center; gap:.5rem; color:#fff; margin:0;">
+                        <i class="fas fa-clock"></i>
+                        <span>Nous vous répondrons dans les plus brefs délais</span>
                     </p>
                 </div>
                 
@@ -226,7 +251,7 @@
                                     <i class="bi bi-telephone-outbound"></i>
                                     <span>Appeler maintenant</span>
                                 </a>
-                                <a href="mailto:eglisealleluiagn@gmail.com" class="btn-action email">
+                                <a href="mailto:eglisepentecotealleluiagn@gmail.com" class="btn-action email">
                                     <i class="bi bi-envelope"></i>
                                     <span>Écrire un email</span>
                                 </a>
@@ -468,7 +493,25 @@
     top: 15px;
     left: 20px;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.header-dots {
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
+}
+
+.header-logo {
+    width: 46px;
+    height: 46px;
+    object-fit: cover;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    padding: 3px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
 }
 
 .decoration-circle {
@@ -544,20 +587,22 @@
 
 .input-wrapper {
     position: relative;
-    background: #f8fafc;
+    background: linear-gradient(135deg, rgba(102,126,234,0.10) 0%, rgba(118,75,162,0.08) 55%, rgba(255,140,0,0.08) 100%);
     border-radius: 12px;
     transition: all 0.3s ease;
-    border: 2px solid transparent;
+    border: 1px solid rgba(102, 126, 234, 0.20);
+    box-shadow: 0 10px 22px rgba(17, 24, 39, 0.06);
 }
 
 .input-wrapper:hover {
-    background: #f1f5f9;
+    background: linear-gradient(135deg, rgba(102,126,234,0.14) 0%, rgba(118,75,162,0.10) 55%, rgba(255,140,0,0.10) 100%);
+    border-color: rgba(102, 126, 234, 0.28);
 }
 
 .input-wrapper:focus-within {
     background: #fff;
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.70);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.18), 0 18px 35px rgba(17, 24, 39, 0.12);
 }
 
 .input-icon-left {
@@ -577,7 +622,7 @@
 }
 
 .input-wrapper:focus-within .input-icon-left {
-    color: #667eea;
+    color: #4f46e5;
 }
 
 .form-input {
@@ -600,7 +645,7 @@
     left: 48px;
     top: 50%;
     transform: translateY(-50%);
-    color: #64748b;
+    color: #475569;
     font-size: 1rem;
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -618,7 +663,7 @@
     top: -10px;
     left: 12px;
     font-size: 0.8rem;
-    color: #667eea;
+    color: #4f46e5;
     background: #fff;
     border-radius: 4px;
     font-weight: 600;
@@ -636,7 +681,7 @@
     left: 50%;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #4f46e5, #764ba2, #ff8c00);
     transition: all 0.3s ease;
     border-radius: 0 0 12px 12px;
 }
@@ -655,18 +700,18 @@
 .input-hint {
     display: block;
     margin-top: 6px;
-    color: #94a3b8;
+    color: #64748b;
     font-size: 0.8rem;
 }
 
 .input-hint i {
-    color: #667eea;
+    color: #4f46e5;
 }
 
 .textarea-counter {
     text-align: right;
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: #64748b;
     margin-top: 4px;
 }
 

@@ -588,13 +588,22 @@
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Finance — Liste complète</title>
+        <title>Banque — Liste complète</title>
         <style>
-          @page { size: A4 landscape; margin: 10mm; }
+          @page { size: A4 landscape; margin: 8mm; }
           html, body { font-family: Arial, sans-serif; }
-          body { margin: 0; padding: 10mm; color: #222; }
-          h1 { color: #333; text-align: center; margin: 0 0 12px; font-size: 18px; }
+          body { margin: 0; padding: 8mm; color: #222; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          h1 { color: #333; text-align: center; margin: 0 0 10px; font-size: 18px; }
           .meta { text-align: center; color: #555; font-size: 12px; margin-bottom: 8px; }
+          .header { display:flex; align-items:center; justify-content:center; gap: 12px; padding-bottom: 8px; margin-bottom: 10px; border-bottom: 2px solid #4CAF50; }
+          .header img { width: 44px; height: 44px; object-fit: contain; }
+          .header .title { text-align:center; }
+          .header .title .t { font-size: 16px; font-weight: 900; color: #4CAF50; margin:0; }
+          .header .title .s { font-size: 12px; color: #555; margin-top: 3px; }
+          .footer { margin-top: 10px; text-align: center; }
+          .footer hr { border: none; border-top: 1px solid #4CAF50; margin: 8px 0 6px; }
+          .footer .motto { font-size: 10px; font-style: italic; color: #4CAF50; }
           .totals { margin: 8px 0 12px; padding: 10px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; }
           .total-item { display: inline-block; margin: 3px 10px; font-size: 12px; }
           table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -608,7 +617,14 @@
         </style>
       </head>
       <body>
-        <h1>Enregistrements Finance — Liste complète</h1>
+        <div class="header">
+          <img src="/static/main/images/logo_eglise.png" alt="Logo">
+          <div class="title">
+            <div class="t">ENREGISTREMENTS BANQUE</div>
+            <div class="s">Liste complète</div>
+          </div>
+          <img src="/static/main/images/logo_eglise.png" alt="Logo">
+        </div>
         <div class="meta">Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</div>
         <div class="totals">
           <div class="total-item"><strong>Total Revenus:</strong> ${currentRevenus} GNF</div>
@@ -649,6 +665,10 @@
     printWindow.document.write(`
           </tbody>
         </table>
+        <div class="footer">
+          <hr>
+          <div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+        </div>
       </body>
       </html>
     `);
@@ -705,11 +725,20 @@
         <meta charset="utf-8">
         <title>Banque — Liste filtrée</title>
         <style>
-          @page { size: A4 landscape; margin: 10mm; }
+          @page { size: A4 landscape; margin: 8mm; }
           html, body { font-family: Arial, sans-serif; }
-          body { margin: 0; padding: 10mm; color: #222; }
-          h1 { color: #333; text-align: center; margin: 0 0 12px; font-size: 18px; }
+          body { margin: 0; padding: 8mm; color: #222; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          h1 { color: #333; text-align: center; margin: 0 0 10px; font-size: 18px; }
           .meta { text-align: center; color: #555; font-size: 12px; margin-bottom: 8px; }
+          .header { display:flex; align-items:center; justify-content:center; gap: 12px; padding-bottom: 8px; margin-bottom: 10px; border-bottom: 2px solid #4CAF50; }
+          .header img { width: 44px; height: 44px; object-fit: contain; }
+          .header .title { text-align:center; }
+          .header .title .t { font-size: 16px; font-weight: 900; color: #4CAF50; margin:0; }
+          .header .title .s { font-size: 12px; color: #555; margin-top: 3px; }
+          .footer { margin-top: 10px; text-align: center; }
+          .footer hr { border: none; border-top: 1px solid #4CAF50; margin: 8px 0 6px; }
+          .footer .motto { font-size: 10px; font-style: italic; color: #4CAF50; }
           .totals { margin: 8px 0 12px; padding: 10px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; }
           .total-item { display: inline-block; margin: 3px 10px; font-size: 12px; }
           table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -723,7 +752,14 @@
         </style>
       </head>
       <body>
-        <h1>Enregistrements Banque — Vue filtrée</h1>
+        <div class="header">
+          <img src="/static/main/images/logo_eglise.png" alt="Logo">
+          <div class="title">
+            <div class="t">ENREGISTREMENTS BANQUE</div>
+            <div class="s">Vue filtrée</div>
+          </div>
+          <img src="/static/main/images/logo_eglise.png" alt="Logo">
+        </div>
         <div class="meta">Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</div>
         <div class="totals">
           <div class="total-item"><strong>Total Revenus:</strong> ${currentRevenus} GNF</div>
@@ -764,6 +800,10 @@
     printWindow.document.write(`
           </tbody>
         </table>
+        <div class="footer">
+          <hr>
+          <div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+        </div>
       </body>
       </html>
     `);

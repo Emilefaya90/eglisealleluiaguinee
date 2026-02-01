@@ -277,9 +277,14 @@
     </div>
     <div class="card-footer bg-light d-flex justify-content-between align-items-center">
       <span class="text-muted small" id="fullTotalRecords">Total: 0 enregistrements</span>
-      <button type="button" id="fullViewAll" class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalAllEffectifs">
-        <i class="bi bi-eye me-1"></i> Voir tous les effectifs
-      </button>
+      <div class="d-flex gap-2">
+        <button type="button" id="btnPrintFullTable" class="btn btn-success btn-sm rounded-pill px-3">
+          <i class="bi bi-printer me-1"></i> Imprimer
+        </button>
+        <button type="button" id="fullViewAll" class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalAllEffectifs">
+          <i class="bi bi-eye me-1"></i> Voir tous les effectifs
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -533,6 +538,53 @@
   document.getElementById('fullNext')?.addEventListener('click', ()=>{ const ps=Number(fullPageSize); const pages = ps>0 ? Math.max(1, Math.ceil(applyFilters(FULL_DATA).length/ps)) : 1; if(fullPage<pages){ fullPage++; renderFull(); } });
   document.getElementById('fullLast')?.addEventListener('click', ()=>{ const ps=Number(fullPageSize); const pages = ps>0 ? Math.max(1, Math.ceil(applyFilters(FULL_DATA).length/ps)) : 1; fullPage=pages; renderFull(); });
   
+  // Imprimer le tableau Liste complète
+  document.getElementById('btnPrintFullTable')?.addEventListener('click', ()=>{
+    const table = document.getElementById('fullCulteTable');
+    if (!table) return;
+    const egSel = document.getElementById('fullFilterEglise');
+    const egText = egSel && egSel.value ? egSel.options[egSel.selectedIndex].text : 'Toutes les églises';
+    const df = document.getElementById('fullFilterFrom')?.value || '';
+    const dt = document.getElementById('fullFilterTo')?.value || '';
+    const now = new Date();
+    const nowStr = now.toLocaleString('fr-FR');
+    const header = `
+      <div class="print-header">
+        <img src="/static/main/images/logo_eglise.png" alt="Logo">
+        <div class="title">
+          <div class="t">EFFECTIFS DU CULTE — LISTE COMPLÈTE</div>
+          <div class="s">${egText} | ${df || 'Toutes'} → ${dt || 'Toutes'} | ${nowStr}</div>
+        </div>
+        <img src="/static/main/images/logo_eglise.png" alt="Logo">
+      </div>
+    `;
+    const footer = `<div class="print-footer"><hr><div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div></div>`;
+    const styles = `
+      @page { size: A4; margin: 8mm; }
+      body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 8mm 8mm 25mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .print-header { display: flex; align-items: center; justify-content: center; gap: 12px; padding-bottom: 8px; margin-bottom: 10px; border-bottom: 2px solid #4e73df; }
+      .print-header img { width: 44px; height: 44px; object-fit: contain; }
+      .print-header .title { text-align: center; }
+      .print-header .t { font-size: 16px; font-weight: 900; color: #4e73df; }
+      .print-header .s { font-size: 12px; color: #555; margin-top: 3px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9pt; }
+      th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+      th { background: #4e73df; color: white; }
+      tfoot th, tfoot td { font-weight: bold; background: #e9ecef; }
+      .text-end { text-align: right; }
+      tr:nth-child(even) { background-color: #f8f9fa; }
+      .print-footer { position: fixed; bottom: 5mm; left: 8mm; right: 8mm; text-align: center; background: #fff; }
+      .print-footer hr { border: none; border-top: 1px solid #4e73df; margin: 0 10px 4px; }
+      .print-footer .motto { font-size: 10px; font-style: italic; color: #4e73df; }
+    `;
+    const win = window.open('', '_blank');
+    if (!win){ showToast("Autorisez les fenêtres contextuelles pour l'impression.", 'warning'); return; }
+    win.document.open();
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Effectifs du culte - Liste complète</title><style>${styles}</style></head><body>${header}${table.outerHTML}${footer}<script>setTimeout(function(){window.print(); window.close();}, 300);<\/script></body></html>`);
+    win.document.close();
+  });
+  
   // ========== MODAL: TOUS LES EFFECTIFS ==========
   let MODAL_DATA = [];
   
@@ -673,29 +725,34 @@
     const now = new Date();
     const nowStr = now.toLocaleString('fr-FR');
     const header = `
-      <div style="text-align:center; margin-bottom:20px;">
-        <h2 style="margin:0; color:#4e73df;">Effectifs du Culte Dominical</h2>
-        <p style="margin:5px 0; color:#666;">Liste complète de tous les enregistrements</p>
-      </div>
-      <div style="margin-bottom:15px; padding:10px; background:#f8f9fa; border-radius:5px;">
-        <strong>Église:</strong> ${egText} | 
-        <strong>Période:</strong> ${df || 'Toutes'} → ${dt || 'Toutes'} | 
-        <strong>Exporté le:</strong> ${nowStr}
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;padding-bottom:8px;margin-bottom:10px;border-bottom:2px solid #4e73df;">
+        <img src="/static/main/images/logo_eglise.png" style="width:44px;height:44px;object-fit:contain;">
+        <div style="text-align:center;">
+          <div style="font-size:16px;font-weight:900;color:#4e73df;">EFFECTIFS DU CULTE</div>
+          <div style="font-size:12px;color:#555;margin-top:3px;">${egText} | ${df || 'Toutes'} → ${dt || 'Toutes'} | ${nowStr}</div>
+        </div>
+        <img src="/static/main/images/logo_eglise.png" style="width:44px;height:44px;object-fit:contain;">
       </div>
     `;
+    const footer = `<div class="print-footer"><hr><div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div></div>`;
     const styles = `
-      body { font-family: Arial, Helvetica, sans-serif; margin: 20px; }
+      @page { size: A4; margin: 8mm; }
+      body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 8mm 8mm 25mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       table { width: 100%; border-collapse: collapse; margin-top: 10px; }
       th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
       th { background: #4e73df; color: white; }
       tfoot th, tfoot td { font-weight: bold; background: #e9ecef; }
       .text-end { text-align: right; }
       tr:nth-child(even) { background-color: #f8f9fa; }
+      .print-footer { position: fixed; bottom: 5mm; left: 8mm; right: 8mm; text-align: center; background: #fff; }
+      .print-footer hr { border: none; border-top: 1px solid #4e73df; margin: 0 10px 4px; }
+      .print-footer .motto { font-size: 10px; font-style: italic; color: #4e73df; }
     `;
     const win = window.open('', '_blank');
     if (!win){ showToast("Autorisez les fenêtres contextuelles pour l'impression.", 'warning'); return; }
     win.document.open();
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Effectifs du culte</title><style>${styles}</style></head><body>${header}${table.outerHTML}<script>setTimeout(function(){window.print(); window.close();}, 300);<\/script></body></html>`);
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Effectifs du culte</title><style>${styles}</style></head><body>${header}${table.outerHTML}${footer}<script>setTimeout(function(){window.print(); window.close();}, 300);<\/script></body></html>`);
     win.document.close();
   });
 
@@ -731,12 +788,13 @@
     const dt = document.getElementById('fullFilterTo')?.value || '';
     const now = new Date();
     const nowStr = now.getFullYear()+ '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-    const header = `<h2>Effectifs du culte (complet)</h2><div class="meta">Église: <strong>${egText}</strong> | Période: <strong>${df||'Toutes'}</strong> → <strong>${dt||'Toutes'}</strong> | Exporté le: ${nowStr}</div>`;
-    const styles = `body{font-family:Arial,Helvetica,sans-serif;margin:20px;} h2{margin:0 0 10px;} .meta{margin-bottom:12px;color:#555;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ddd;padding:6px 8px;} th{background:#f5f5f5;text-align:left;} tfoot th,tfoot td{font-weight:bold;background:#fafafa;} .text-end{text-align:right;}`;
+    const header = `<div class="hdr"><img src="/static/main/images/logo_eglise.png" alt="Logo"><div class="ttl"><div class="t">EFFECTIFS DU CULTE</div><div class="s">${egText} | ${df||'Toutes'} → ${dt||'Toutes'} | ${nowStr}</div></div><img src="/static/main/images/logo_eglise.png" alt="Logo"></div>`;
+    const footer = `<div class="ftr"><hr><div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div></div>`;
+    const styles = `@page{size:A4;margin:8mm;}body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:8mm 8mm 25mm;}*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;} .hdr{display:flex;align-items:center;justify-content:center;gap:12px;padding-bottom:8px;margin-bottom:10px;border-bottom:2px solid #4e73df;} .hdr img{width:44px;height:44px;object-fit:contain;} .ttl{text-align:center;} .t{font-size:16px;font-weight:900;color:#4e73df;} .s{margin-top:3px;color:#555;font-size:12px;} table{width:100%;border-collapse:collapse;} th,td{border:1px solid #ddd;padding:6px 8px;} th{background:#f5f5f5;text-align:left;} tfoot th,tfoot td{font-weight:bold;background:#fafafa;} .text-end{text-align:right;} .ftr{position:fixed;bottom:5mm;left:8mm;right:8mm;text-align:center;background:#fff;} .ftr hr{border:none;border-top:1px solid #4e73df;margin:0 10px 4px;} .motto{font-size:10px;font-style:italic;color:#4e73df;}`;
     const win = window.open('', '_blank');
     if (!win){ showToast("Autorisez les fenêtres contextuelles pour l'export PDF.", 'warning'); return; }
     win.document.open();
-    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Effectifs du culte</title><style>${styles}</style></head><body>${header}${table.outerHTML}<script>setTimeout(function(){window.print(); window.close();}, 200);<\/script></body></html>`);
+    win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Effectifs du culte</title><style>${styles}</style></head><body>${header}${table.outerHTML}${footer}<script>setTimeout(function(){window.print(); window.close();}, 200);<\/script></body></html>`);
     win.document.close();
   });
 

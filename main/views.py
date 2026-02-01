@@ -21,6 +21,79 @@ import unicodedata as _ud
 from django.forms.models import model_to_dict
 from io import BytesIO
 
+
+@require_POST
+def donation_send(request):
+    """Réception du formulaire de don (modal) et envoi d'un email à l'administrateur."""
+    donor_name = (request.POST.get('donor_name') or '').strip()
+    donor_email = (request.POST.get('donor_email') or '').strip()
+    donor_phone = (request.POST.get('donor_phone') or '').strip()
+    donor_church = (request.POST.get('donor_church') or '').strip()
+    donation_amount = (request.POST.get('donation_amount') or '').strip()
+    donation_type = (request.POST.get('donation_type') or '').strip()
+    payment_method = (request.POST.get('payment_method') or '').strip()
+    donation_message = (request.POST.get('donation_message') or '').strip()
+
+    errors = []
+
+    if len(donor_name) < 2:
+        errors.append("Veuillez saisir votre nom.")
+
+    # Téléphone requis dans le modal
+    if not donor_phone:
+        errors.append("Veuillez saisir votre téléphone.")
+    else:
+        if not re.fullmatch(r"[+()\d\s-]{8,20}", donor_phone):
+            errors.append("Numéro de téléphone invalide (utilisez chiffres, +, espaces, - ou ()).")
+
+    # Email optionnel mais valider si présent
+    if donor_email:
+        try:
+            validate_email(donor_email)
+        except ValidationError:
+            errors.append("Adresse email invalide.")
+
+    # Montant requis
+    amount_int = None
+    try:
+        amount_int = int(float(donation_amount))
+        if amount_int <= 0:
+            errors.append("Montant invalide.")
+    except Exception:
+        errors.append("Montant invalide.")
+
+    if not payment_method:
+        errors.append("Veuillez choisir un mode de paiement.")
+
+    if errors:
+        return JsonResponse({'success': False, 'errors': errors}, status=400)
+
+    # Envoi email
+    try:
+        subject_line = "[Don] Nouveau don confirmé"
+        amount_str = f"{amount_int:,}".replace(',', ' ')
+        body = (
+            "Nouveau don confirmé\n\n"
+            f"Nom: {donor_name}\n"
+            f"Téléphone: {donor_phone}\n"
+            f"Email: {donor_email or '—'}\n"
+            f"Église: {donor_church or '—'}\n\n"
+            f"Montant: {amount_str} GNF\n"
+            f"Type de don: {donation_type or '—'}\n"
+            f"Mode de paiement: {payment_method}\n\n"
+            f"Message/Intention: {donation_message or '—'}\n"
+        )
+        send_mail(
+            subject_line,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [getattr(settings, 'CONTACT_RECEIVER', settings.DEFAULT_FROM_EMAIL)],
+            fail_silently=False,
+        )
+        return JsonResponse({'success': True})
+    except Exception:
+        return JsonResponse({'success': False, 'errors': ["Une erreur est survenue lors de l'envoi de l'email."]}, status=500)
+
 # Helpers souples pour sérialisation
 def _get_first_attr(obj, names, default=None):
     for n in names:
@@ -937,6 +1010,9 @@ def comptabilite(request):
             return JsonResponse({'success': False, 'error': str(e)})
     
     # GET request - afficher la page
+    active_tab = (request.GET.get('tab') or 'recettes').strip().lower()
+    if active_tab not in ('recettes', 'depenses'):
+        active_tab = 'recettes'
     rapports = ComptabiliteReport.objects.all().order_by('-id')
     
     # Sérialiser les données pour JavaScript
@@ -969,7 +1045,8 @@ def comptabilite(request):
         })
     
     context = {
-        'rapports_json': json.dumps(rapports_data, cls=DjangoJSONEncoder)
+        'rapports_json': json.dumps(rapports_data, cls=DjangoJSONEncoder),
+        'active_tab': active_tab,
     }
     
     return render(request, 'main/comptabilite.html', context)
@@ -2953,6 +3030,120 @@ def archivage_rapports(request):
 def communication(request):
     """Vue pour la page Communication"""
     return render(request, 'main/communication.html')
+
+@login_required
+def message(request):
+    """Vue pour la page Message."""
+    sender_email = getattr(settings, 'MESSAGE_SENDER_EMAIL', 'eglisepentecotealleluiagn@gmail.com')
+    if request.method == 'POST':
+        target = (request.POST.get('target') or '').strip()
+        recipient_id = (request.POST.get('recipient_id') or '').strip()
+        recipient_emails_raw = (request.POST.get('recipient_emails') or '').strip()
+        subject = (request.POST.get('objet') or '').strip()
+        content = (request.POST.get('contenu') or '').strip()
+
+        errors = []
+        if target not in {'national', 'pasteurs', 'departements', 'membres'}:
+            errors.append("Veuillez choisir une cible (National, Pasteurs, Départements, Membres).")
+        if len(subject) < 3:
+            errors.append("Veuillez saisir un objet (au moins 3 caractères).")
+        if len(content) < 10:
+            errors.append("Veuillez écrire un message (au moins 10 caractères).")
+
+        recipients_manual = []
+        if not errors and recipient_emails_raw:
+            candidates = [e.strip() for e in re.split(r"[;,\s]+", recipient_emails_raw) if e.strip()]
+            invalids = []
+            for addr in candidates:
+                try:
+                    validate_email(addr)
+                except ValidationError:
+                    invalids.append(addr)
+            if invalids:
+                errors.append("Adresse(s) email invalide(s): " + ", ".join(invalids))
+            else:
+                recipients_manual = candidates
+
+        recipients_selected = []
+        if not errors:
+            if target == 'national':
+                recipients_selected = [getattr(settings, 'CONTACT_RECEIVER', settings.DEFAULT_FROM_EMAIL)]
+            elif target == 'pasteurs':
+                if recipient_id == 'all':
+                    recipients_selected = list(
+                        PersonnelPastoral.objects.exclude(email='').values_list('email', flat=True)
+                    )
+                elif recipient_id:
+                    try:
+                        p = PersonnelPastoral.objects.get(id=int(recipient_id))
+                        if p.email:
+                            recipients_selected = [p.email]
+                    except Exception:
+                        recipients_selected = []
+            elif target == 'departements':
+                if recipient_id == 'all':
+                    recipients_selected = list(
+                        Departement.objects.exclude(email__isnull=True).exclude(email='').values_list('email', flat=True)
+                    )
+                elif recipient_id:
+                    try:
+                        d = Departement.objects.get(id=int(recipient_id))
+                        if d.email:
+                            recipients_selected = [d.email]
+                    except Exception:
+                        recipients_selected = []
+            elif target == 'membres':
+                if recipient_id == 'all':
+                    recipients_selected = list(
+                        Membre.objects.exclude(email='').values_list('email', flat=True)
+                    )
+                elif recipient_id:
+                    try:
+                        m = Membre.objects.get(id=int(recipient_id))
+                        if m.email:
+                            recipients_selected = [m.email]
+                    except Exception:
+                        recipients_selected = []
+
+        recipients = (recipients_manual or []) + (recipients_selected or [])
+
+        recipients = [r for r in recipients if r]
+        recipients = list(dict.fromkeys(recipients))
+
+        if not errors and not recipients:
+            errors.append("Veuillez saisir au moins un destinataire (email) ou choisir un destinataire dans la liste.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return redirect('main:message')
+
+        try:
+            send_mail(
+                subject,
+                content,
+                sender_email,
+                recipients,
+                fail_silently=False,
+            )
+            messages.success(request, "Message envoyé avec succès.")
+        except Exception:
+            messages.error(request, "Une erreur est survenue lors de l'envoi du message.")
+
+        return redirect('main:message')
+
+    pasteurs = PersonnelPastoral.objects.all().order_by('nom', 'prenom')
+    departements = Departement.objects.all().order_by('nom')
+    membres = Membre.objects.all().order_by('nom', 'prenom')
+
+    context = {
+        'pasteurs': pasteurs,
+        'departements': departements,
+        'membres': membres,
+        'contact_receiver': getattr(settings, 'CONTACT_RECEIVER', settings.DEFAULT_FROM_EMAIL),
+        'sender_email': sender_email,
+    }
+    return render(request, 'main/message.html', context)
 
 def biographie_pasteurs(request):
     """Vue pour la page Biographie des Pasteurs"""

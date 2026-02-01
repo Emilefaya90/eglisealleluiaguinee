@@ -175,6 +175,10 @@
 </style>
 {% endblock %}
 
+{% block extra_js_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="page-content finances-bg" style="position: relative; min-height: 100vh; width: 100%; padding-top: 0;">
   <div style="position: fixed; left: 0; bottom: 0; width: 100vw; height: auto; min-height: 40vh; z-index: 0; pointer-events: none;">
@@ -1438,7 +1442,8 @@
             </div>
             <div class="modal-body" id="financeDetailsBody"></div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary" id="btnPrintFinanceDetails"><i class="bi bi-printer me-2"></i>Imprimer</button>
+              <button type="button" class="btn btn-success" id="btnPrintFinanceDetails"><i class="bi bi-printer me-2"></i>Imprimer</button>
+              <button type="button" class="btn btn-primary" id="btnDownloadFinanceDetails"><i class="bi bi-download me-2"></i>Télécharger</button>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
           </div>
@@ -1513,33 +1518,112 @@
     document.getElementById('btnPrintFinanceDetails').onclick = function() {
       const w = window.open('','_blank');
       const logoUrl = '/static/main/images/logo_eglise.png';
-      const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:2px 4px;vertical-align:top;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:600;">${safe(val)}</span></div>`;
-      const pf2 = (label, val) => `<div style="display:inline-block;width:48%;padding:2px 4px;vertical-align:top;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:600;">${safe(val)}</span></div>`;
-      const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:6px;border-radius:4px;"><div style="background:${color};color:#fff;padding:4px 10px;font-size:10pt;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${icon} ${title}</div><div style="padding:6px 10px;">${content}</div></div>`;
+      const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:4px 6px;vertical-align:top;margin-bottom:4px;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:700;line-height:1.25;">${safe(val)}</span></div>`;
+      const pf2 = (label, val) => `<div style="display:inline-block;width:48%;padding:4px 6px;vertical-align:top;margin-bottom:4px;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:700;line-height:1.25;">${safe(val)}</span></div>`;
+      const pf3 = (label, val) => `<div style="flex:1;min-width:0;padding:4px 6px;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:700;line-height:1.25;">${safe(val)}</span></div>`;
+      const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:10px;border-radius:7px;overflow:hidden;page-break-inside:avoid;"><div style="background:${color};color:#fff;padding:7px 10px;font-size:10pt;font-weight:800;letter-spacing:.2px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${icon} ${title}</div><div style="padding:7px 8px;">${content}</div></div>`;
       const s1 = pf('Église',rec.eglise_nom)+pf('Période',rec.periode)+pf('Responsable',rec.responsable)+pf('Contact',rec.contact)+pf('Email',rec.email)+pf('Date du Rapport',rec.date_rapport);
       const s2 = pf2('Sources de Revenus',rec.sources_revenus)+pf2('Montants Revenus',rec.montants_revenus)+pf2('Dates Revenus',rec.dates_revenus)+pf2('Modes de Paiement',rec.modes_paiement_revenus)+pf2('Total Revenus',fmtFR(rec.total_revenus));
       const s3 = pf2('Natures des Dépenses',rec.natures_depenses)+pf2('Montants Dépenses',rec.montants_depenses)+pf2('Bénéficiaires',rec.beneficiaires)+pf2('Catégories',rec.categories)+pf2('Justificatifs',rec.justificatifs)+pf2('Total Dépenses',fmtFR(rec.total_depenses));
       const s4 = pf('Solde Initial',fmtFR(rec.solde_initial))+pf('Total Revenus',fmtFR(rec.total_revenus))+pf('Total Dépenses',fmtFR(rec.total_depenses))+pf('Solde Final',fmtFR(rec.solde_final));
-      const s5 = pf('Vérifié par',rec.verifie_par)+pf('Approuvé par',rec.approuve_par)+pf('Date du Rapport',rec.date_rapport);
+      const s5 = `<div style="display:flex;gap:0;align-items:flex-start;justify-content:space-between;">${pf3('Vérifié par (Comité financier)',rec.verifie_par)}${pf3('Approuvé par (Pasteur/Responsable)',rec.approuve_par)}${pf3('Date du Rapport',rec.date_rapport)}</div>`;
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rapport Financier</title>
-<style>@page{size:A4;margin:8mm;}body{font-family:Arial,sans-serif;padding:5px 10px;margin:0;}</style></head><body>
-<div style="display:flex;align-items:center;justify-content:center;border-bottom:2px solid #4CAF50;padding-bottom:8px;margin-bottom:8px;">
-<img src="${logoUrl}" style="height:50px;">
-<div style="text-align:center;flex:1;padding:0 15px;"><div style="font-size:14pt;font-weight:bold;color:#4CAF50;">Rapport Financier</div><div style="font-size:9pt;color:#666;">${safe(rec.eglise_nom)}</div></div>
-<img src="${logoUrl}" style="height:50px;">
+<style>
+@page{size:A4;margin:6mm;}
+body{font-family:Arial,sans-serif;padding:4px 8px 25mm;margin:0;font-size:9pt;line-height:1.25;}
+*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+.print-footer{position:fixed;bottom:5mm;left:5mm;right:5mm;text-align:center;background:#fff;}
+.print-footer hr{border:none;border-top:1px solid #4CAF50;margin:0 10px 4px;}
+.print-footer .motto{font-size:7pt;font-style:italic;color:#4CAF50;}
+</style></head><body>
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:2px solid #4CAF50;padding-bottom:7px;margin-bottom:10px;">
+<img src="${logoUrl}" style="height:46px;width:46px;object-fit:contain;">
+<div style="text-align:center;flex:1;padding:0 10px;"><div style="font-size:14pt;font-weight:900;color:#4CAF50;">RAPPORT FINANCIER</div><div style="font-size:9pt;color:#666;margin-top:2px;">${safe(rec.eglise_nom)}</div></div>
+<img src="${logoUrl}" style="height:46px;width:46px;object-fit:contain;">
 </div>
 ${section('#2196F3','&#128712;','1. Informations Générales',s1)}
 ${section('#4CAF50','&#128181;',"2. Revenus (Entrées d'argent)",s2)}
 ${section('#f44336','&#128184;',"3. Dépenses (Sorties d'argent)",s3)}
 ${section('#00BCD4','&#128176;','4. Solde Financier',s4)}
 ${section('#FF9800','&#9989;','5. Validation et Approbation',s5)}
-<div style="position:fixed;bottom:10px;left:0;right:0;text-align:center;">
-<hr style="border:none;border-top:1px solid #4CAF50;margin:5px 20px;">
-<div style="font-size:8pt;font-style:italic;color:#4CAF50;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+<div class="print-footer">
+<hr>
+<div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();window.close();},800);};<\/script></body></html>`;
       w.document.write(html);
       w.document.close();
+    };
+    
+    // Bouton Télécharger
+    document.getElementById('btnDownloadFinanceDetails').onclick = async function() {
+      const logoUrl = '/static/main/images/logo_eglise.png';
+      
+      // Convertir l'image en base64
+      let logoBase64 = '';
+      try {
+        const response = await fetch(logoUrl);
+        const blob = await response.blob();
+        logoBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) {
+        console.error('Erreur logo:', e);
+      }
+      const logoSrc = logoBase64 || logoUrl;
+      
+      const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:4px 6px;vertical-align:top;margin-bottom:5px;"><span style="font-size:9pt;color:#666;">${label}</span><br><span style="font-size:10pt;font-weight:600;">${safe(val)}</span></div>`;
+      const pf2 = (label, val) => `<div style="display:inline-block;width:48%;padding:4px 6px;vertical-align:top;margin-bottom:5px;"><span style="font-size:9pt;color:#666;">${label}</span><br><span style="font-size:10pt;font-weight:600;">${safe(val)}</span></div>`;
+      const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:15px;border-radius:6px;overflow:hidden;"><div style="background:${color};color:#fff;padding:8px 12px;font-size:11pt;font-weight:600;">${icon} ${title}</div><div style="padding:10px 12px;background:#fff;">${content}</div></div>`;
+      const s1 = pf('Église',rec.eglise_nom)+pf('Période',rec.periode)+pf('Responsable',rec.responsable)+pf('Contact',rec.contact)+pf('Email',rec.email)+pf('Date du Rapport',rec.date_rapport);
+      const s2 = pf2('Sources de Revenus',rec.sources_revenus)+pf2('Montants Revenus',rec.montants_revenus)+pf2('Dates Revenus',rec.dates_revenus)+pf2('Modes de Paiement',rec.modes_paiement_revenus)+pf2('Total Revenus',fmtFR(rec.total_revenus));
+      const s3 = pf2('Natures des Dépenses',rec.natures_depenses)+pf2('Montants Dépenses',rec.montants_depenses)+pf2('Bénéficiaires',rec.beneficiaires)+pf2('Catégories',rec.categories)+pf2('Justificatifs',rec.justificatifs)+pf2('Total Dépenses',fmtFR(rec.total_depenses));
+      const s4 = pf('Solde Initial',fmtFR(rec.solde_initial))+pf('Total Revenus',fmtFR(rec.total_revenus))+pf('Total Dépenses',fmtFR(rec.total_depenses))+pf('Solde Final',fmtFR(rec.solde_final));
+      const s5 = pf('Vérifié par',rec.verifie_par)+pf('Approuvé par',rec.approuve_par)+pf('Date du Rapport',rec.date_rapport);
+      const htmlContent = `<div style="font-family:Arial,sans-serif;padding:10px;font-size:9pt;width:100%;box-sizing:border-box;">
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:3px solid #4CAF50;padding-bottom:10px;margin-bottom:15px;">
+<img src="${logoSrc}" style="height:60px;width:60px;object-fit:contain;">
+<div style="text-align:center;flex:1;padding:0 15px;"><div style="font-size:16pt;font-weight:bold;color:#4CAF50;">RAPPORT FINANCIER</div><div style="font-size:10pt;color:#666;margin-top:5px;">${safe(rec.eglise_nom)}</div></div>
+<img src="${logoSrc}" style="height:60px;width:60px;object-fit:contain;">
+</div>
+${section('#2196F3','&#128712;','1. Informations Générales',s1)}
+${section('#4CAF50','&#128181;',"2. Revenus (Entrées d'argent)",s2)}
+${section('#f44336','&#128184;',"3. Dépenses (Sorties d'argent)",s3)}
+${section('#00BCD4','&#128176;','4. Solde Financier',s4)}
+${section('#FF9800','&#9989;','5. Validation et Approbation',s5)}
+<div style="margin-top:20px;text-align:center;border-top:2px solid #4CAF50;padding-top:10px;">
+<div style="font-size:9pt;font-style:italic;color:#4CAF50;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+</div>
+</div>`;
+      
+      // Créer un élément temporaire pour générer le PDF
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      tempDiv.style.position = 'fixed';
+      tempDiv.style.left = '-10000px';
+      tempDiv.style.top = '0';
+      tempDiv.style.width = '210mm';
+      tempDiv.style.background = '#ffffff';
+      tempDiv.style.opacity = '1';
+      tempDiv.style.pointerEvents = 'none';
+      tempDiv.style.zIndex = '-1';
+      document.body.appendChild(tempDiv);
+      
+      // Options pour html2pdf
+      const opt = {
+        margin: 6,
+        filename: `Rapport_Financier_${safe(rec.eglise_nom)}_${safe(rec.periode)}.pdf`.replace(/[^a-zA-Z0-9_\.]/g, '_'),
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      // Générer et télécharger le PDF automatiquement
+      html2pdf().set(opt).from(tempDiv).save().then(() => {
+        document.body.removeChild(tempDiv);
+      });
     };
   }
 

@@ -269,20 +269,59 @@
         pointer-events: none;
     }
 
+    #modalVoirEglise {
+        z-index: 99999 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+    
+    #modalVoirEglise .modal-dialog {
+        margin: 10px auto !important;
+        max-width: 95% !important;
+        position: relative !important;
+        pointer-events: auto !important;
+    }
+
     #modalVoirEglise .modal-content {
         background: #ffffff;
+        pointer-events: auto !important;
+        position: relative !important;
+        z-index: 99999 !important;
     }
 
     #modalVoirEglise .modal-body {
         background: #ffffff !important;
-        padding-bottom: 110px;
+        padding-bottom: 30px;
+        max-height: calc(100vh - 180px);
+        overflow-y: auto;
+        pointer-events: auto !important;
     }
 
     #modalVoirEglise .modal-footer {
         background: #ffffff;
         position: sticky;
         bottom: 0;
-        z-index: 2;
+        z-index: 100000;
+        pointer-events: auto !important;
+    }
+    
+    #modalVoirEglise .modal-header {
+        pointer-events: auto !important;
+    }
+    
+    #modalVoirEglise .btn-close {
+        pointer-events: auto !important;
+        z-index: 100001 !important;
+    }
+    
+    .modal-backdrop.show {
+        z-index: 99998 !important;
+        opacity: 0.7 !important;
     }
 
     .eglise-view-field {
@@ -848,7 +887,7 @@
                            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.15)';" 
                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
                             <i class="fas fa-eye me-1 text-primary" style="font-size: 0.8rem;"></i>
-                            <span class="text-dark">Voir les Églises Entrées</span>
+                            <span class="text-dark">Voir toutes les Eglises</span>
                         </a>
                     </div>
                 </div>
@@ -864,6 +903,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
 // JavaScript pour les boutons d'exportation
@@ -1314,8 +1354,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 
-                <div class="table-responsive" style="max-height: 150px; overflow-y: auto; overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px;">
-                    <table class="table table-striped table-bordered table-hover table-eglises">
+                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto; overflow-x: auto; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <table class="table table-striped table-bordered table-hover table-eglises" id="eglisesMainTable">
                         <thead class="table-dark">
                             <tr>
                                                                 <th class="col-nom">Nom de l'Église</th>
@@ -1598,37 +1638,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <i class="fas fa-trash-alt me-1"></i> Confirmer
                                     </button>
                                 </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal pour voir les détails de l'église -->
-                <div class="modal fade" id="modalVoirEglise" tabindex="-1" aria-labelledby="modalVoirEgliseLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-                        <div class="modal-content" style="border-radius: 20px; overflow: hidden; border: none;" id="modalContentToPrint">
-                            <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 25px 30px;">
-                                <div class="d-flex align-items-center">
-                                    <img src="{% static 'main/images/LogoEg.png' %}" alt="Logo Église" id="logoEgliseModal" style="width: 70px; height: 70px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-right: 20px;">
-                                    <div>
-                                        <h4 class="modal-title mb-1" id="modalVoirEgliseLabel" style="font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
-                                            <i class="fas fa-church me-2"></i>FICHE DE L'ÉGLISE
-                                        </h4>
-                                        <p class="mb-0" style="font-size: 1rem; color: rgba(255,255,255,0.9);" id="nomEgliseModal"></p>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body p-4" id="detailsEgliseBody" style="background: #ffffff;">
-                                <!-- Contenu dynamique -->
-                            </div>
-                            <div class="modal-footer d-flex justify-content-between" style="border-top: 1px solid #eee; padding: 15px 30px;">
-                                <button type="button" class="btn btn-success" onclick="imprimerFicheEglise()">
-                                    <i class="fas fa-print me-2"></i> Imprimer
-                                </button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fas fa-times me-1"></i> Fermer
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -2327,27 +2336,64 @@ document.addEventListener('DOMContentLoaded', function() {
                 modifierEglise(egliseId, nomEglise);
                 return;
             }
+            
+            // Bouton Imprimer Fiche Église
+            const btnImprimer = e.target.closest('#btnImprimerFicheEglise');
+            if (btnImprimer) {
+                e.preventDefault();
+                imprimerFicheEglise();
+                return;
+            }
+            
+            // Bouton Télécharger Fiche Église
+            const btnTelecharger = e.target.closest('#btnTelechargerFicheEglise');
+            if (btnTelecharger) {
+                e.preventDefault();
+                telechargerFicheEglise();
+                return;
+            }
         });
     }
     
     // Fonction pour voir les détails d'une église
     function voirDetailsEglise(egliseId, nomEglise) {
+        console.log('voirDetailsEglise appelée avec:', egliseId, nomEglise);
+        
         const modalEl = document.getElementById('modalVoirEglise');
-        const modal = new bootstrap.Modal(modalEl);
+        if (!modalEl) {
+            console.error('Modal modalVoirEglise introuvable dans le DOM');
+            alert('Erreur: Le modal de détails est introuvable.');
+            return;
+        }
+        
+        const nomEgliseEl = document.getElementById('nomEgliseModal');
+        const detailsBodyEl = document.getElementById('detailsEgliseBody');
+        
+        if (!nomEgliseEl || !detailsBodyEl) {
+            console.error('Éléments du modal introuvables');
+            alert('Erreur: Les éléments du modal sont introuvables.');
+            return;
+        }
         
         // Afficher le modal immédiatement avec un chargement
-        document.getElementById('nomEgliseModal').textContent = nomEglise || '';
-        document.getElementById('detailsEgliseBody').innerHTML = `
+        nomEgliseEl.textContent = nomEglise || '';
+        detailsBodyEl.innerHTML = `
             <div class="text-center py-5">
                 <div class="spinner-border text-primary" role="status"></div>
                 <div class="mt-3 text-muted">Chargement des informations...</div>
             </div>
         `;
+        
+        const modal = new bootstrap.Modal(modalEl);
         modal.show();
 
         return fetch(`/get_eglise_details/${egliseId}/`)
-            .then(r => r.json())
+            .then(r => {
+                console.log('Réponse reçue:', r.status);
+                return r.json();
+            })
             .then(payload => {
+                console.log('Données reçues:', payload);
                 if (!payload || payload.success !== true) {
                     throw new Error((payload && payload.error) ? payload.error : 'Erreur inconnue');
                 }
@@ -2356,11 +2402,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return eglise;
             })
             .catch(err => {
-                console.error(err);
-                document.getElementById('detailsEgliseBody').innerHTML = `
+                console.error('Erreur lors du chargement:', err);
+                detailsBodyEl.innerHTML = `
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        Impossible de charger les détails de l'église.
+                        Impossible de charger les détails de l'église: ${err.message}
                     </div>
                 `;
                 throw err;
@@ -2546,39 +2592,234 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fonction pour imprimer la fiche de l'église
     function imprimerFicheEglise() {
-        const printContent = document.getElementById('modalContentToPrint').innerHTML;
+        const nomEglise = document.getElementById('nomEgliseModal').textContent || 'Église';
+        const logoUrl = '/static/main/images/logo_eglise.png';
+        
+        // Récupérer les données de l'église depuis le modal
+        const modalBody = document.getElementById('detailsEgliseBody');
+        if (!modalBody || modalBody.querySelectorAll('.eglise-view-field').length === 0) {
+            alert("Les détails de l'église ne sont pas encore chargés. Patientez un instant puis réessayez.");
+            return;
+        }
+        
+        // Extraire les valeurs des champs
+        const getFieldValue = (label) => {
+            const fields = modalBody.querySelectorAll('.eglise-view-field');
+            for (let field of fields) {
+                const labelEl = field.querySelector('small');
+                if (labelEl && labelEl.textContent.includes(label)) {
+                    const valueEl = field.querySelector('.fw-semibold');
+                    return valueEl ? valueEl.textContent.trim() : '-';
+                }
+            }
+            return '-';
+        };
+        
+        // Extraire les activités (badges)
+        const badges = modalBody.querySelectorAll('.badge');
+        const activites = Array.from(badges).map(b => b.textContent.trim()).join(', ') || '-';
+        
+        // Extraire autres activités
+        const autresActivitesEl = modalBody.querySelector('.eglise-view-field[style*="white-space"]');
+        const autresActivites = autresActivitesEl ? autresActivitesEl.textContent.trim() : '-';
+        
+        // Fonction pour créer un champ (version impression, compact 1 page)
+        const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:2px 4px;vertical-align:top;margin-bottom:2px;"><span style="font-size:7pt;color:#666;">${label}</span><br><span style="font-size:8pt;font-weight:700;line-height:1.15;">${val || '-'}</span></div>`;
+        const pf2 = (label, val) => `<div style="display:inline-block;width:48%;padding:2px 4px;vertical-align:top;margin-bottom:2px;"><span style="font-size:7pt;color:#666;">${label}</span><br><span style="font-size:8pt;font-weight:700;line-height:1.15;">${val || '-'}</span></div>`;
+        const pf1 = (label, val) => `<div style="display:inline-block;width:100%;padding:2px 4px;vertical-align:top;margin-bottom:2px;"><span style="font-size:7pt;color:#666;">${label}</span><br><span style="font-size:8pt;font-weight:700;line-height:1.15;">${val || '-'}</span></div>`;
+        
+        // Fonction pour créer une section (version impression, compact 1 page)
+        const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:5px;border-radius:6px;overflow:hidden;page-break-inside:avoid;"><div style="background:${color};color:#fff;padding:4px 8px;font-size:9pt;font-weight:800;letter-spacing:.1px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${icon} ${title}</div><div style="padding:4px 6px;">${content}</div></div>`;
+        
+        // Section 1: Informations sur l'église
+        const s1 = pf('Nom', getFieldValue('Nom')) + 
+                   pf('Pays', getFieldValue('Pays')) + 
+                   pf('Ville', getFieldValue('Ville')) +
+                   pf('Quartier', getFieldValue('Quartier')) + 
+                   pf('Adresse', getFieldValue('Adresse')) + 
+                   pf('Nombre de membres', getFieldValue('Nombre de membres')) +
+                   pf('Pasteur en charge', getFieldValue('Pasteur en charge')) + 
+                   pf('Téléphone', getFieldValue('Téléphone')) + 
+                   pf('Email', getFieldValue('Email')) +
+                   pf2('Date de fondation', getFieldValue('Date de fondation')) + 
+                   pf2("Date d'enregistrement", getFieldValue("Date d'enregistrement"));
+        
+        // Section 2: Statut Juridique
+        const s2 = pf('Association à but non lucratif ?', getFieldValue('Association à but non lucratif')) + 
+                   pf("Numéro d'enregistrement", getFieldValue("Numéro d'enregistrement")) + 
+                   pf("Date d'enregistrement", getFieldValue("Date d'enregistrement"));
+        
+        // Section 3: Activités et Services
+        const s3 = pf1('Activités', activites) + 
+                   pf1('Autres activités (détails)', autresActivites);
+        
+        // Section 4: Pièces Jointes
+        const s4 = pf2('Document des membres fondateurs', '✓ Téléchargé') + 
+                   pf2('Statuts & règlements intérieurs', '✓ Téléchargé') +
+                   pf2("Pièce d'identité du responsable", '✓ Téléchargé') + 
+                   pf2("Preuve d'adresse", '✓ Téléchargé');
+        
+        // Section 5: Déclaration
+        const s5 = pf('Nom du déclarant', getFieldValue('Nom du déclarant')) + 
+                   pf('Qualité du déclarant', getFieldValue('Qualité du déclarant')) + 
+                   pf('Date de déclaration', getFieldValue('Date de déclaration'));
+        
         const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Fiche de l'Église</title>
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-                <style>
-                    body { padding: 20px; }
-                    .modal-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                    .modal-footer { display: none !important; }
-                    .btn-close { display: none !important; }
-                    @media print {
-                        .modal-footer { display: none !important; }
-                        .btn-close { display: none !important; }
-                    }
-                </style>
-            </head>
-            <body>
-                ${printContent}
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        window.onafterprint = function() { window.close(); };
-                    };
-                <\/script>
-            </body>
-            </html>
-        `);
+        printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fiche de l'Église - ${nomEglise}</title>
+<style>
+@page{size:A4;margin:5mm;}
+body{font-family:Arial,sans-serif;padding:2px 5px 25mm;margin:0;font-size:8pt;line-height:1.12;}
+* { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.print-footer{position:fixed;bottom:5mm;left:5mm;right:5mm;text-align:center;background:#fff;}
+.print-footer hr{border:none;border-top:1px solid #667eea;margin:0 10px 4px;}
+.print-footer .motto{font-size:7pt;font-style:italic;color:#667eea;}
+</style></head><body>
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:2px solid #667eea;padding-bottom:5px;margin-bottom:5px;">
+<img src="${logoUrl}" style="height:40px;width:40px;object-fit:contain;">
+<div style="text-align:center;flex:1;padding:0 8px;"><div style="font-size:12pt;font-weight:900;color:#667eea;">FICHE DE L'ÉGLISE</div><div style="font-size:8pt;color:#666;margin-top:2px;">${nomEglise}</div></div>
+<img src="${logoUrl}" style="height:40px;width:40px;object-fit:contain;">
+</div>
+${section('#0d6efd','&#9962;','1. Informations sur l&apos;église',s1)}
+${section('#198754','&#9878;','2. Statut Juridique',s2)}
+${section('#0dcaf0','&#9881;','3. Activités et Services',s3)}
+${section('#ffc107','&#128206;','4. Pièces Jointes Requises',s4)}
+${section('#6f42c1','&#9997;','5. Déclaration',s5)}
+<div class="print-footer">
+<hr>
+<div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();window.close();},800);};<\/script></body></html>`);
         printWindow.document.close();
+    }
+    
+    // Fonction pour télécharger la fiche de l'église en PDF
+    async function telechargerFicheEglise() {
+        const nomEglise = document.getElementById('nomEgliseModal').textContent || 'Église';
+        const logoUrl = '/static/main/images/logo_eglise.png';
+        
+        // Convertir l'image en base64 pour l'intégrer dans le fichier HTML
+        let logoBase64 = '';
+        try {
+            const response = await fetch(logoUrl);
+            const blob = await response.blob();
+            logoBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        } catch (e) {
+            console.error('Erreur lors du chargement du logo:', e);
+            logoBase64 = '';
+        }
+        
+        // Récupérer les données de l'église depuis le modal
+        const modalBody = document.getElementById('detailsEgliseBody');
+        
+        // Extraire les valeurs des champs
+        const getFieldValue = (label) => {
+            const fields = modalBody.querySelectorAll('.eglise-view-field');
+            for (let field of fields) {
+                const labelEl = field.querySelector('small');
+                if (labelEl && labelEl.textContent.includes(label)) {
+                    const valueEl = field.querySelector('.fw-semibold');
+                    return valueEl ? valueEl.textContent.trim() : '-';
+                }
+            }
+            return '-';
+        };
+        
+        // Extraire les activités (badges)
+        const badges = modalBody.querySelectorAll('.badge');
+        const activites = Array.from(badges).map(b => b.textContent.trim()).join(', ') || '-';
+        
+        // Extraire autres activités
+        const autresActivitesEl = modalBody.querySelector('.eglise-view-field[style*="white-space"]');
+        const autresActivites = autresActivitesEl ? autresActivitesEl.textContent.trim() : '-';
+        
+        // Fonction pour créer un champ (tailles augmentées pour PDF)
+        const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:4px 6px;vertical-align:top;margin-bottom:5px;"><span style="font-size:9pt;color:#666;">${label}</span><br><span style="font-size:10pt;font-weight:600;">${val || '-'}</span></div>`;
+        const pf2 = (label, val) => `<div style="display:inline-block;width:48%;padding:4px 6px;vertical-align:top;margin-bottom:5px;"><span style="font-size:9pt;color:#666;">${label}</span><br><span style="font-size:10pt;font-weight:600;">${val || '-'}</span></div>`;
+        const pf1 = (label, val) => `<div style="display:inline-block;width:100%;padding:4px 6px;vertical-align:top;margin-bottom:5px;"><span style="font-size:9pt;color:#666;">${label}</span><br><span style="font-size:10pt;font-weight:600;">${val || '-'}</span></div>`;
+        
+        // Fonction pour créer une section (tailles augmentées pour PDF)
+        const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:15px;border-radius:6px;overflow:hidden;"><div style="background:${color};color:#fff;padding:8px 12px;font-size:11pt;font-weight:600;">${icon} ${title}</div><div style="padding:10px 12px;background:#fff;">${content}</div></div>`;
+        
+        // Section 1: Informations sur l'église
+        const s1 = pf('Nom', getFieldValue('Nom')) + 
+                   pf('Pays', getFieldValue('Pays')) + 
+                   pf('Ville', getFieldValue('Ville')) +
+                   pf('Quartier', getFieldValue('Quartier')) + 
+                   pf('Adresse', getFieldValue('Adresse')) + 
+                   pf('Nombre de membres', getFieldValue('Nombre de membres')) +
+                   pf('Pasteur en charge', getFieldValue('Pasteur en charge')) + 
+                   pf('Téléphone', getFieldValue('Téléphone')) + 
+                   pf('Email', getFieldValue('Email')) +
+                   pf2('Date de fondation', getFieldValue('Date de fondation')) + 
+                   pf2("Date d'enregistrement", getFieldValue("Date d'enregistrement"));
+        
+        // Section 2: Statut Juridique
+        const s2 = pf('Association à but non lucratif ?', getFieldValue('Association à but non lucratif')) + 
+                   pf("Numéro d'enregistrement", getFieldValue("Numéro d'enregistrement")) + 
+                   pf("Date d'enregistrement", getFieldValue("Date d'enregistrement"));
+        
+        // Section 3: Activités et Services
+        const s3 = pf1('Activités', activites) + 
+                   pf1('Autres activités (détails)', autresActivites);
+        
+        // Section 4: Pièces Jointes
+        const s4 = pf2('Document des membres fondateurs', '✓ Téléchargé') + 
+                   pf2('Statuts & règlements intérieurs', '✓ Téléchargé') +
+                   pf2("Pièce d'identité du responsable", '✓ Téléchargé') + 
+                   pf2("Preuve d'adresse", '✓ Téléchargé');
+        
+        // Section 5: Déclaration
+        const s5 = pf('Nom du déclarant', getFieldValue('Nom du déclarant')) + 
+                   pf('Qualité du déclarant', getFieldValue('Qualité du déclarant')) + 
+                   pf('Date de déclaration', getFieldValue('Date de déclaration'));
+        
+        const logoSrc = logoBase64 || logoUrl;
+        const htmlContent = `<div style="font-family:Arial,sans-serif;padding:10px;font-size:9pt;width:100%;box-sizing:border-box;">
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:3px solid #667eea;padding-bottom:10px;margin-bottom:15px;">
+<img src="${logoSrc}" style="height:60px;width:60px;object-fit:contain;">
+<div style="text-align:center;flex:1;padding:0 15px;"><div style="font-size:16pt;font-weight:bold;color:#667eea;">FICHE DE L'ÉGLISE</div><div style="font-size:10pt;color:#666;margin-top:5px;">${nomEglise}</div></div>
+<img src="${logoSrc}" style="height:60px;width:60px;object-fit:contain;">
+</div>
+${section('#0d6efd','&#9962;','1. Informations sur l&apos;église',s1)}
+${section('#198754','&#9878;','2. Statut Juridique',s2)}
+${section('#0dcaf0','&#9881;','3. Activités et Services',s3)}
+${section('#ffc107','&#128206;','4. Pièces Jointes Requises',s4)}
+${section('#6f42c1','&#9997;','5. Déclaration',s5)}
+<div style="margin-top:20px;text-align:center;border-top:2px solid #667eea;padding-top:10px;">
+<div style="font-size:9pt;font-style:italic;color:#667eea;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+</div>
+</div>`;
+        
+        // Créer un élément temporaire pour générer le PDF
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        tempDiv.style.position = 'fixed';
+        tempDiv.style.left = '-10000px';
+        tempDiv.style.top = '0';
+        tempDiv.style.width = '210mm';
+        tempDiv.style.background = '#ffffff';
+        tempDiv.style.opacity = '1';
+        tempDiv.style.pointerEvents = 'none';
+        tempDiv.style.zIndex = '-1';
+        document.body.appendChild(tempDiv);
+        
+        // Options pour html2pdf
+        const opt = {
+            margin: 6,
+            filename: `Fiche_Eglise_${nomEglise.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        // Générer et télécharger le PDF automatiquement
+        html2pdf().set(opt).from(tempDiv).save().then(() => {
+            document.body.removeChild(tempDiv);
+        });
     }
     
     // Fonction pour modifier une église
@@ -2639,14 +2880,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Gérer le clic sur le bouton "Voir les Églises Entrées"
+    // Gérer le clic sur le bouton "Voir toutes les Eglises"
     const btnVoirEglises = document.getElementById('btnVoirEglises');
     if (btnVoirEglises) {
         btnVoirEglises.addEventListener('click', function(e) {
             e.preventDefault();
             
             // Récupérer toutes les églises du tableau
-            const eglisesTable = document.querySelector('table.table-eglises');
+            const eglisesTable = document.getElementById('eglisesMainTable');
+            if (!eglisesTable) return;
             const eglisesRows = eglisesTable.querySelectorAll('tbody tr:not(.d-none)');
             
             // Vider le corps du tableau dans le modal
@@ -2924,8 +3166,41 @@ function chargerListePasteurs() {
         </div>
     </div>
 </div>
- 
-<
+
+<!-- Modal pour voir les détails de l'église - PLACÉ EN DEHORS DE TOUTE STRUCTURE -->
+<div class="modal fade" id="modalVoirEglise" tabindex="-1" aria-labelledby="modalVoirEgliseLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius: 20px; overflow: hidden; border: none;" id="modalContentToPrint">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 25px 30px;">
+                <div class="d-flex align-items-center">
+                    <img src="{% static 'main/images/LogoEg.png' %}" alt="Logo Église" id="logoEgliseModal" style="width: 70px; height: 70px; border-radius: 12px; border: 3px solid rgba(255,255,255,0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-right: 20px;">
+                    <div>
+                        <h4 class="modal-title mb-1" id="modalVoirEgliseLabel" style="font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+                            <i class="fas fa-church me-2"></i>FICHE DE L'ÉGLISE
+                        </h4>
+                        <p class="mb-0" style="font-size: 1rem; color: rgba(255,255,255,0.9);" id="nomEgliseModal"></p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="detailsEgliseBody" style="background: #ffffff;">
+                <!-- Contenu dynamique -->
+            </div>
+            <div class="modal-footer d-flex justify-content-end gap-2" style="border-top: 1px solid #eee; padding: 15px 30px;">
+                <button type="button" class="btn btn-success" id="btnImprimerFicheEglise">
+                    <i class="fas fa-print me-2"></i> Imprimer
+                </button>
+                <button type="button" class="btn btn-primary" id="btnTelechargerFicheEglise">
+                    <i class="fas fa-download me-2"></i> Télécharger
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}

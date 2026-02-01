@@ -164,17 +164,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- Email configuration ---
 # Par défaut: backend console (affiche les emails dans la console pour les tests)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'no-reply@eglisealleluia.local'
-CONTACT_RECEIVER = 'eglisealleluiagn@gmail.com'
 
-# Pour activer un envoi SMTP réel, décommentez et renseignez:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'votre_email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'votre_mot_de_passe_ou_app_password'
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# Destinataire des messages (Contactez-nous + Don)
+CONTACT_RECEIVER = 'eglisepentecotealleluiagn@gmail.com'
+
+# Configuration SMTP Gmail via variables d'environnement
+# - EPAG_EMAIL_USER: ex. eglisepentecotealleluiagn@gmail.com
+# - EPAG_EMAIL_PASSWORD: mot de passe d'application Google (16 caractères)
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.getenv('EPAG_EMAIL_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EPAG_EMAIL_PASSWORD', '')
+
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+else:
+    DEFAULT_FROM_EMAIL = 'no-reply@eglisealleluia.local'
 
 # --- Authentication ---
 LOGIN_URL = '/login/'

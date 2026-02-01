@@ -9,20 +9,55 @@
         
         <div class="content-section">
             <div class="gestion-nav">
-                <a href="{% url 'main:eglises' %}" class="gestion-link">
-                    <i class="bi bi-building me-2" aria-hidden="true"></i> Églises
+                <a href="{% url 'main:eglises' %}" class="gestion-link btn btn-outline-primary">
+                    <i class="bi bi-building me-2" aria-hidden="true"></i> Eglise
                 </a>
-                <a href="{% url 'main:personnel_pastoral' %}" class="gestion-link">
+                <a href="{% url 'main:personnel_pastoral' %}" class="gestion-link btn btn-outline-primary">
                     <i class="bi bi-person-badge me-2" aria-hidden="true"></i> Personnel Pastoral
                 </a>
-                <a href="{% url 'main:membres_eglise' %}" class="gestion-link">
-                    <i class="bi bi-people me-2" aria-hidden="true"></i> Membres d'Église
+                <a href="{% url 'main:nos_fideles' %}" class="gestion-link btn btn-outline-primary">
+                    <i class="bi bi-people me-2" aria-hidden="true"></i> Fideles
                 </a>
-                <a href="{% url 'main:departements' %}" class="gestion-link">
+                <a href="{% url 'main:departements' %}" class="gestion-link btn btn-outline-primary">
                     <i class="bi bi-grid me-2" aria-hidden="true"></i> Départements
                 </a>
-                <a href="{% url 'main:finances' %}" class="gestion-link">
-                    <i class="bi bi-cash-coin me-2" aria-hidden="true"></i> Finances
+                <div class="dropdown">
+                    <a href="#" class="gestion-link btn btn-outline-primary dropdown-toggle" id="financeGestionDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-cash-coin me-2" aria-hidden="true"></i> Finance
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="financeGestionDropdown">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'main:banque' %}">
+                                <i class="bi bi-file-earmark-text me-2" aria-hidden="true"></i>Situation des Eglises
+                            </a>
+                        </li>
+                        <li class="dropdown-submenu">
+                            <a href="#" class="dropdown-item" onclick="event.preventDefault();">
+                                <i class="bi bi-journal-text me-2" aria-hidden="true"></i>Comptabilité CN <i class="bi bi-chevron-right float-end"></i>
+                            </a>
+                            <ul class="dropdown-menu submenu-dept">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'main:comptabilite' %}?tab=recettes">
+                                        <i class="bi bi-cash-stack me-2" aria-hidden="true"></i>RECETTES
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'main:comptabilite' %}?tab=depenses">
+                                        <i class="bi bi-wallet2 me-2" aria-hidden="true"></i>DÉPENSES
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <a href="{% url 'main:effectifs_culte_complet' %}" class="gestion-link btn btn-outline-primary">
+                    <i class="bi bi-clipboard-data me-2" aria-hidden="true"></i> Effectif culte
+                </a>
+                <a href="{% url 'main:planification' %}" class="gestion-link btn btn-outline-primary">
+                    <i class="bi bi-calendar-event me-2" aria-hidden="true"></i> Planification
+                </a>
+                <a id="btnMessageGestion" href="{% url 'main:message' %}" class="gestion-link btn btn-primary" style="display: inline-flex; align-items: center;">
+                    <i class="bi bi-chat-dots me-2" aria-hidden="true"></i> Message
                 </a>
             </div>
         </div>

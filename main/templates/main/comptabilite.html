@@ -1,0 +1,901 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Comptabilité CN | Gestion Église{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <div class="container-fluid">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2 mb-3">
+            <h2 class="mb-0">{% if active_tab == 'recettes' %}<span class="text-primary">Recette du Comité National</span>{% elif active_tab == 'depenses' %}<span class="text-danger">Dépenses du Comité National</span>{% else %}Comptabilité CN{% endif %}</h2>
+            <div class="btn-group">
+                <a href="{% url 'main:comptabilite' %}?tab=recettes" class="btn btn-outline-primary {% if active_tab == 'recettes' %}active{% endif %}">RECETTES</a>
+                <a href="{% url 'main:comptabilite' %}?tab=depenses" class="btn btn-outline-danger {% if active_tab == 'depenses' %}active{% endif %}">DÉPENSES</a>
+            </div>
+        </div>
+
+        {% if active_tab == 'recettes' %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light fw-bold">Formulaire RECETTES</div>
+            <div class="card-body">
+                <form id="recetteForm" class="row g-3" novalidate>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-primary">Date</label>
+                        <input type="date" class="form-control border-primary" id="recetteDate" required>
+                        <div class="invalid-feedback">Date requise</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-success">Libellé</label>
+                        <input type="text" class="form-control border-success" id="recetteLibelle" required>
+                        <div class="invalid-feedback">Libellé requis</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-warning">Montant</label>
+                        <input type="number" class="form-control border-warning" id="recetteMontant" min="0" step="1" required>
+                        <div class="invalid-feedback">Montant requis</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-info">Motif</label>
+                        <input type="text" class="form-control border-info" id="recetteMotif" required>
+                        <div class="invalid-feedback">Motif requis</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-secondary">Approuvé par</label>
+                        <input type="text" class="form-control border-secondary" id="recetteApprouvePar" required>
+                        <div class="invalid-feedback">Champ requis</div>
+                    </div>
+
+                    <input type="hidden" id="recetteEditId" value="">
+
+                    <div class="col-12 d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary" id="recetteSaveBtn">Enregistrer</button>
+                        <button type="button" class="btn btn-outline-secondary" id="recetteResetBtn">Réinitialiser</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white d-flex flex-row align-items-center justify-content-between gap-2">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <div class="fw-bold">Tableau des RECETTES</div>
+                </div>
+                <div class="d-flex flex-nowrap align-items-center gap-2 me-md-5">
+                    <input type="text" class="form-control form-control-sm" id="recetteSearchInput" placeholder="Rechercher..." style="max-width:220px;" autocomplete="off">
+                    <button type="button" class="btn btn-sm btn-outline-success" id="recetteExportCsvBtn">Exporter Excel</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="recettePrintBtn">Imprimer</button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0" id="recettesTable">
+                        <thead class="table-primary">
+                            <tr>
+                                <th style="width:60px;">#</th>
+                                <th>Date</th>
+                                <th>Libellé</th>
+                                <th class="text-end">Montant</th>
+                                <th>Motif</th>
+                                <th>Approuvé par</th>
+                                <th style="width:220px;" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recettesTbody"></tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Total</th>
+                                <th class="text-end" id="recettesTotal">0</th>
+                                <th colspan="3"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if active_tab == 'depenses' %}
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light fw-bold">Formulaire DÉPENSES</div>
+            <div class="card-body">
+                <form id="depenseForm" class="row g-3" novalidate>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-primary">Date</label>
+                        <input type="date" class="form-control border-primary" id="depenseDate" required>
+                        <div class="invalid-feedback">Date requise</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-success">Libellé</label>
+                        <input type="text" class="form-control border-success" id="depenseLibelle" required>
+                        <div class="invalid-feedback">Libellé requis</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-warning">Montant</label>
+                        <input type="number" class="form-control border-warning" id="depenseMontant" min="0" step="1" required>
+                        <div class="invalid-feedback">Montant requis</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-info">Type de paiement</label>
+                        <select class="form-select border-info" id="depenseTypePaiement" required>
+                            <option value="">-- Sélectionnez --</option>
+                            <option value="Espece">Espèce</option>
+                            <option value="Orange Money">Orange Money</option>
+                            <option value="Mobile Money">Mobile Money</option>
+                            <option value="Virement">Virement autre</option>
+                        </select>
+                        <div class="invalid-feedback">Type de paiement requis</div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-secondary">Approuvé par</label>
+                        <input type="text" class="form-control border-secondary" id="depenseApprouvePar" required>
+                        <div class="invalid-feedback">Champ requis</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-dark">Motif</label>
+                        <input type="text" class="form-control border-dark" id="depenseMotif" required>
+                        <div class="invalid-feedback">Motif requis</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-danger">Pièce justificative (IMG/PDF)</label>
+                        <input type="file" class="form-control border-danger" id="depenseJustificatif" accept="image/*,.pdf" required>
+                        <div class="invalid-feedback">Justificatif requis</div>
+                        <div class="form-text" id="depenseJustificatifInfo"></div>
+                    </div>
+
+                    <input type="hidden" id="depenseEditId" value="">
+                    <input type="hidden" id="depenseJustificatifData" value="">
+                    <input type="hidden" id="depenseJustificatifName" value="">
+                    <input type="hidden" id="depenseJustificatifMime" value="">
+
+                    <div class="col-12 d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary" id="depenseSaveBtn">Enregistrer</button>
+                        <button type="button" class="btn btn-outline-secondary" id="depenseResetBtn">Réinitialiser</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex flex-row align-items-center justify-content-between gap-2">
+                <div class="fw-bold">Tableau des DÉPENSES</div>
+                <div class="d-flex flex-nowrap align-items-center gap-2 me-md-5">
+                    <input type="text" class="form-control form-control-sm" id="depenseSearchInput" placeholder="Rechercher..." style="max-width:220px;" autocomplete="off">
+                    <button type="button" class="btn btn-sm btn-outline-success" id="depenseExportCsvBtn">Exporter Excel</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="depensePrintBtn">Imprimer</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="depenseClearBtn">Tout supprimer</button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0" id="depensesTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:60px;">#</th>
+                                <th>Date</th>
+                                <th>Libellé</th>
+                                <th class="text-end">Montant</th>
+                                <th>Type paiement</th>
+                                <th>Motif</th>
+                                <th>Justificatif</th>
+                                <th>Approuvé par</th>
+                                <th style="width:220px;" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="depensesTbody"></tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Total</th>
+                                <th class="text-end" id="depensesTotal">0</th>
+                                <th colspan="5"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if active_tab == 'recettes' %}
+<script>
+(function(){
+    const STORAGE_KEY = 'cn_recettes_v1';
+
+    const form = document.getElementById('recetteForm');
+    const resetBtn = document.getElementById('recetteResetBtn');
+    const exportBtn = document.getElementById('recetteExportCsvBtn');
+    const printBtn = document.getElementById('recettePrintBtn');
+    const searchInput = document.getElementById('recetteSearchInput');
+
+    const dateEl = document.getElementById('recetteDate');
+    const libelleEl = document.getElementById('recetteLibelle');
+    const montantEl = document.getElementById('recetteMontant');
+    const motifEl = document.getElementById('recetteMotif');
+    const approuveEl = document.getElementById('recetteApprouvePar');
+    const editIdEl = document.getElementById('recetteEditId');
+
+    const tbody = document.getElementById('recettesTbody');
+    const totalEl = document.getElementById('recettesTotal');
+
+    function loadRows(){
+        try{
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const data = raw ? JSON.parse(raw) : [];
+            return Array.isArray(data) ? data : [];
+        }catch(e){
+            return [];
+        }
+    }
+
+    function saveRows(rows){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+    }
+
+    function fmtMoney(n){
+        try{
+            const num = Number(n || 0);
+            return num.toLocaleString('fr-FR');
+        }catch(e){
+            return String(n || 0);
+        }
+    }
+
+    function recalcTotal(rows){
+        const tot = rows.reduce((acc, r) => acc + (Number(r.montant || 0) || 0), 0);
+        totalEl.textContent = fmtMoney(tot);
+    }
+
+    function getFilteredRows(rows){
+        const q = String((searchInput && searchInput.value) || '').trim().toLowerCase();
+        if (!q) return rows;
+        return rows.filter(r => {
+            const hay = [
+                r.date,
+                r.libelle,
+                r.motif,
+                r.approuve_par,
+                r.montant,
+            ].map(v => String(v ?? '').toLowerCase()).join(' | ');
+            return hay.includes(q);
+        });
+    }
+
+    function render(){
+        const rows = getFilteredRows(loadRows());
+        tbody.innerHTML = '';
+
+        rows.forEach((r, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>${r.date || ''}</td>
+                <td>${(r.libelle || '').replace(/</g,'&lt;')}</td>
+                <td class="text-end">${fmtMoney(r.montant)}</td>
+                <td>${(r.motif || '').replace(/</g,'&lt;')}</td>
+                <td>${(r.approuve_par || '').replace(/</g,'&lt;')}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-action="view" data-id="${r.id}">Voir</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary me-1" data-action="edit" data-id="${r.id}">Modifier</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${r.id}">Supprimer</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        recalcTotal(rows);
+    }
+
+    function resetForm(){
+        form.classList.remove('was-validated');
+        form.reset();
+        editIdEl.value = '';
+    }
+
+    function getFormData(){
+        return {
+            date: dateEl.value,
+            libelle: libelleEl.value.trim(),
+            montant: Number(montantEl.value || 0),
+            motif: motifEl.value.trim(),
+            approuve_par: approuveEl.value.trim(),
+        };
+    }
+
+    function validate(){
+        if (!form.checkValidity()){
+            form.classList.add('was-validated');
+            return false;
+        }
+        return true;
+    }
+
+    function upsertRow(row){
+        const rows = loadRows();
+        const idx = rows.findIndex(r => String(r.id) === String(row.id));
+        if (idx >= 0) rows[idx] = row;
+        else rows.unshift(row);
+        saveRows(rows);
+        render();
+    }
+
+    function deleteRow(id){
+        const rows = loadRows().filter(r => String(r.id) !== String(id));
+        saveRows(rows);
+        render();
+    }
+
+    function exportExcel(){
+        const rows = loadRows();
+        const headers = ['Date','Libellé','Montant','Motif','Approuvé par'];
+        const escapeHtml = (s) => String(s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+        const tableRows = rows.map(r => {
+            const cols = [r.date, r.libelle, r.montant, r.motif, r.approuve_par]
+                .map(v => `<td>${escapeHtml(v)}</td>`)
+                .join('');
+            return `<tr>${cols}</tr>`;
+        }).join('');
+
+        const headerRow = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+        const html =
+            '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
+            '<head><meta charset="UTF-8"></head><body>' +
+            '<table border="1">' +
+            `<thead><tr>${headerRow}</tr></thead>` +
+            `<tbody>${tableRows}</tbody>` +
+            '</table>' +
+            '</body></html>';
+
+        const blob = new Blob(["\ufeff", html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'recettes_cn.xls';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    function printTable(){
+        const tableHtml = document.getElementById('recettesTable').outerHTML;
+        const w = window.open('', '_blank');
+        if (!w) return;
+        w.document.write('<html><head><title>RECETTES</title>');
+        w.document.write('<style>'+
+          'body{font-family:Arial,sans-serif;padding:0;margin:0;color:#111827}'+
+          '.page{padding:18px}'+
+          '.header{background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:14px}'+
+          '.header .title{font-size:16px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}'+
+          '.header .sub{opacity:.95;margin-top:4px;font-size:12px}'+
+          '.footer{margin-top:14px;padding:10px 12px;border-radius:12px;background:#f1f5f9;color:#0f172a;font-size:11px;display:flex;justify-content:space-between;gap:10px}'+
+          '.footer .muted{opacity:.8}'+
+          'table{width:100%;border-collapse:collapse}'+
+          'th,td{border:1px solid #cbd5e1;padding:6px;font-size:12px}'+
+          'th{background:#e0f2fe;color:#0c4a6e}'+
+          '.text-end{text-align:right}'+
+          '@media print{'+
+            'body{print-color-adjust:exact;-webkit-print-color-adjust:exact}'+
+            '.page{padding:0}'+
+            '.header,.footer{border-radius:0}'+
+          '}'+
+        '</style>');
+        w.document.write('</head><body>');
+        w.document.write('<div class="page">');
+        w.document.write('<div class="header">'+
+          '<div class="title">Recette du Comité National — RECETTES</div>'+
+          '<div class="sub">Église Alléluia • Document généré le: '+ new Date().toLocaleString('fr-FR') +'</div>'+
+        '</div>');
+        w.document.write(tableHtml);
+        w.document.write('<div class="footer">'+
+          '<div><strong>Gestion Église</strong> <span class="muted">• Recette du Comité National</span></div>'+
+          '<div class="muted">Impression: RECETTES</div>'+
+        '</div>');
+        w.document.write('</div></body></html>');
+        w.document.close();
+        w.focus();
+        w.print();
+    }
+
+    function printRecetteDetail(row){
+        const w = window.open('', '_blank');
+        if (!w) return;
+        w.document.write('<html><head><title>RECETTE</title>');
+        w.document.write('<style>'+
+          'body{font-family:Arial,sans-serif;padding:0;margin:0;color:#111827}'+
+          '.page{padding:18px}'+
+          '.header{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:14px}'+
+          '.header .title{font-size:16px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}'+
+          '.header .sub{opacity:.95;margin-top:4px;font-size:12px}'+
+          '.box{border:1px solid #cbd5e1;border-radius:12px;padding:12px;max-width:820px;background:#ffffff}'+
+          '.row{margin:8px 0;padding:8px 10px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0}'+
+          '.k{display:inline-block;min-width:150px;font-weight:800;color:#14532d}'+
+          '.actions{margin-top:12px}'+
+          'button{padding:10px 14px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:700}'+
+          '.footer{margin-top:14px;padding:10px 12px;border-radius:12px;background:#ecfeff;color:#0f172a;font-size:11px;display:flex;justify-content:space-between;gap:10px}'+
+          '.footer .muted{opacity:.8}'+
+          '@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}.page{padding:0}.header,.footer{border-radius:0}}'+
+        '</style>');
+        w.document.write('</head><body>');
+        w.document.write('<div class="page">');
+        w.document.write('<div class="header">'+
+          '<div class="title">Détail — Recette</div>'+
+          '<div class="sub">Église Alléluia • Document généré le: '+ new Date().toLocaleString('fr-FR') +'</div>'+
+        '</div>');
+        w.document.write('<div class="box">');
+        w.document.write(`<div class="row"><span class="k">Date:</span> ${String(row.date||'')}</div>`);
+        w.document.write(`<div class="row"><span class="k">Libellé:</span> ${String(row.libelle||'').replace(/</g,'&lt;')}</div>`);
+        w.document.write(`<div class="row"><span class="k">Montant:</span> ${fmtMoney(row.montant)}</div>`);
+        w.document.write(`<div class="row"><span class="k">Motif:</span> ${String(row.motif||'').replace(/</g,'&lt;')}</div>`);
+        w.document.write(`<div class="row"><span class="k">Approuvé par:</span> ${String(row.approuve_par||'').replace(/</g,'&lt;')}</div>`);
+        w.document.write('<div class="actions"><button onclick="window.print()">Imprimer</button></div>');
+        w.document.write('</div>');
+        w.document.write('<div class="footer">'+
+          '<div><strong>Gestion Église</strong> <span class="muted">• Recette du Comité National</span></div>'+
+          '<div class="muted">Impression: Détail Recette</div>'+
+        '</div>');
+        w.document.write('</div></body></html>');
+        w.document.close();
+        w.focus();
+    }
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+
+        const data = getFormData();
+        const editId = editIdEl.value;
+        const id = editId ? editId : String(Date.now());
+        upsertRow({ id, ...data });
+        resetForm();
+    });
+
+    resetBtn.addEventListener('click', resetForm);
+    exportBtn.addEventListener('click', exportExcel);
+    printBtn.addEventListener('click', printTable);
+    if (searchInput){
+        searchInput.addEventListener('input', render);
+    }
+
+    tbody.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-id');
+
+        if (action === 'view'){
+            const rows = loadRows();
+            const row = rows.find(r => String(r.id) === String(id));
+            if (!row) return;
+            printRecetteDetail(row);
+            return;
+        }
+
+        if (action === 'delete'){
+            if (!confirm('Supprimer cette recette ?')) return;
+            deleteRow(id);
+            return;
+        }
+
+        if (action === 'edit'){
+            const rows = loadRows();
+            const row = rows.find(r => String(r.id) === String(id));
+            if (!row) return;
+            editIdEl.value = row.id;
+            dateEl.value = row.date || '';
+            libelleEl.value = row.libelle || '';
+            montantEl.value = row.montant ?? 0;
+            motifEl.value = row.motif || '';
+            approuveEl.value = row.approuve_par || '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+
+    render();
+})();
+</script>
+{% endif %}
+{% if active_tab == 'depenses' %}
+<script>
+(function(){
+    const STORAGE_KEY = 'cn_depenses_v1';
+
+    const form = document.getElementById('depenseForm');
+    const resetBtn = document.getElementById('depenseResetBtn');
+    const exportBtn = document.getElementById('depenseExportCsvBtn');
+    const printBtn = document.getElementById('depensePrintBtn');
+    const clearBtn = document.getElementById('depenseClearBtn');
+    const searchInput = document.getElementById('depenseSearchInput');
+
+    const dateEl = document.getElementById('depenseDate');
+    const libelleEl = document.getElementById('depenseLibelle');
+    const montantEl = document.getElementById('depenseMontant');
+    const typePaiementEl = document.getElementById('depenseTypePaiement');
+    const motifEl = document.getElementById('depenseMotif');
+    const approuveEl = document.getElementById('depenseApprouvePar');
+    const fileEl = document.getElementById('depenseJustificatif');
+
+    const editIdEl = document.getElementById('depenseEditId');
+    const fileDataEl = document.getElementById('depenseJustificatifData');
+    const fileNameEl = document.getElementById('depenseJustificatifName');
+    const fileMimeEl = document.getElementById('depenseJustificatifMime');
+    const fileInfoEl = document.getElementById('depenseJustificatifInfo');
+
+    const tbody = document.getElementById('depensesTbody');
+    const totalEl = document.getElementById('depensesTotal');
+
+    function loadRows(){
+        try{
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const data = raw ? JSON.parse(raw) : [];
+            return Array.isArray(data) ? data : [];
+        }catch(e){
+            return [];
+        }
+    }
+
+    function saveRows(rows){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+    }
+
+    function fmtMoney(n){
+        try{
+            const num = Number(n || 0);
+            return num.toLocaleString('fr-FR');
+        }catch(e){
+            return String(n || 0);
+        }
+    }
+
+    function recalcTotal(rows){
+        const tot = rows.reduce((acc, r) => acc + (Number(r.montant || 0) || 0), 0);
+        totalEl.textContent = fmtMoney(tot);
+    }
+
+    function escapeHtml(s){
+        return String(s ?? '').replace(/</g,'&lt;');
+    }
+
+    function justificatifCell(r){
+        if(!r.justificatif_name || !r.justificatif_data) return '';
+        const safeName = escapeHtml(r.justificatif_name);
+        return `<a href="${r.justificatif_data}" target="_blank" rel="noopener">${safeName}</a>`;
+    }
+
+    function getFilteredRows(rows){
+        const q = String((searchInput && searchInput.value) || '').trim().toLowerCase();
+        if (!q) return rows;
+        return rows.filter(r => {
+            const hay = [
+                r.date,
+                r.libelle,
+                r.montant,
+                r.type_paiement,
+                r.motif,
+                r.justificatif_name,
+                r.approuve_par,
+            ].map(v => String(v ?? '').toLowerCase()).join(' | ');
+            return hay.includes(q);
+        });
+    }
+
+    function render(){
+        const rows = getFilteredRows(loadRows());
+        tbody.innerHTML = '';
+
+        rows.forEach((r, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>${r.date || ''}</td>
+                <td>${escapeHtml(r.libelle)}</td>
+                <td class="text-end">${fmtMoney(r.montant)}</td>
+                <td>${escapeHtml(r.type_paiement)}</td>
+                <td>${escapeHtml(r.motif)}</td>
+                <td>${justificatifCell(r)}</td>
+                <td>${escapeHtml(r.approuve_par)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-action="view" data-id="${r.id}">Voir</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary me-1" data-action="edit" data-id="${r.id}">Modifier</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${r.id}">Supprimer</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        recalcTotal(rows);
+    }
+
+    function resetForm(){
+        form.classList.remove('was-validated');
+        form.reset();
+        editIdEl.value = '';
+        fileDataEl.value = '';
+        fileNameEl.value = '';
+        fileMimeEl.value = '';
+        fileInfoEl.textContent = '';
+    }
+
+    function validate(){
+        const ok = form.checkValidity();
+        if(!ok) form.classList.add('was-validated');
+        return ok;
+    }
+
+    function getFormData(){
+        return {
+            date: dateEl.value,
+            libelle: libelleEl.value.trim(),
+            montant: Number(montantEl.value || 0),
+            type_paiement: typePaiementEl.value,
+            motif: motifEl.value.trim(),
+            approuve_par: approuveEl.value.trim(),
+            justificatif_data: fileDataEl.value,
+            justificatif_name: fileNameEl.value,
+            justificatif_mime: fileMimeEl.value,
+        };
+    }
+
+    function upsertRow(row){
+        const rows = loadRows();
+        const idx = rows.findIndex(r => String(r.id) === String(row.id));
+        if (idx >= 0) rows[idx] = row;
+        else rows.unshift(row);
+        saveRows(rows);
+        render();
+    }
+
+    function deleteRow(id){
+        const rows = loadRows().filter(r => String(r.id) !== String(id));
+        saveRows(rows);
+        render();
+    }
+
+    function exportExcel(){
+        const rows = loadRows();
+        const headers = ['Date','Libellé','Montant','Type paiement','Motif','Justificatif','Approuvé par'];
+        const escapeHtml = (s) => String(s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+
+        const tableRows = rows.map(r => {
+            const cols = [
+                r.date,
+                r.libelle,
+                r.montant,
+                r.type_paiement,
+                r.motif,
+                r.justificatif_name,
+                r.approuve_par,
+            ].map(v => `<td>${escapeHtml(v)}</td>`).join('');
+            return `<tr>${cols}</tr>`;
+        }).join('');
+
+        const headerRow = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+        const html =
+            '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
+            '<head><meta charset="UTF-8"></head><body>' +
+            '<table border="1">' +
+            `<thead><tr>${headerRow}</tr></thead>` +
+            `<tbody>${tableRows}</tbody>` +
+            '</table>' +
+            '</body></html>';
+
+        const blob = new Blob(["\ufeff", html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'depenses_cn.xls';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    function printTable(){
+        const tableHtml = document.getElementById('depensesTable').outerHTML;
+        const w = window.open('', '_blank');
+        if (!w) return;
+        w.document.write('<html><head><title>DÉPENSES</title>');
+        w.document.write('<style>'+
+          'body{font-family:Arial,sans-serif;padding:0;margin:0;color:#111827}'+
+          '.page{padding:18px}'+
+          '.header{background:linear-gradient(135deg,#991b1b,#ef4444);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:14px}'+
+          '.header .title{font-size:16px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}'+
+          '.header .sub{opacity:.95;margin-top:4px;font-size:12px}'+
+          '.footer{margin-top:14px;padding:10px 12px;border-radius:12px;background:#fff1f2;color:#0f172a;font-size:11px;display:flex;justify-content:space-between;gap:10px}'+
+          '.footer .muted{opacity:.8}'+
+          'table{width:100%;border-collapse:collapse}'+
+          'th,td{border:1px solid #cbd5e1;padding:6px;font-size:12px}'+
+          'th{background:#fee2e2;color:#7f1d1d}'+
+          '.text-end{text-align:right}'+
+          'a{color:#0f172a;text-decoration:none}'+
+          '@media print{'+
+            'body{print-color-adjust:exact;-webkit-print-color-adjust:exact}'+
+            '.page{padding:0}'+
+            '.header,.footer{border-radius:0}'+
+          '}'+
+        '</style>');
+        w.document.write('</head><body>');
+        w.document.write('<div class="page">');
+        w.document.write('<div class="header">'+
+          '<div class="title">Dépenses du Comité National — DÉPENSES</div>'+
+          '<div class="sub">Église Alléluia • Document généré le: '+ new Date().toLocaleString('fr-FR') +'</div>'+
+        '</div>');
+        w.document.write(tableHtml);
+        w.document.write('<div class="footer">'+
+          '<div><strong>Gestion Église</strong> <span class="muted">• Dépenses du Comité National</span></div>'+
+          '<div class="muted">Impression: DÉPENSES</div>'+
+        '</div>');
+        w.document.write('</div></body></html>');
+        w.document.close();
+        w.focus();
+        w.print();
+    }
+
+    function printDepenseDetail(row){
+        const w = window.open('', '_blank');
+        if (!w) return;
+        w.document.write('<html><head><title>DÉPENSE</title>');
+        w.document.write('<style>'+
+          'body{font-family:Arial,sans-serif;padding:0;margin:0;color:#111827}'+
+          '.page{padding:18px}'+
+          '.header{background:linear-gradient(135deg,#991b1b,#ef4444);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:14px}'+
+          '.header .title{font-size:16px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}'+
+          '.header .sub{opacity:.95;margin-top:4px;font-size:12px}'+
+          '.box{border:1px solid #cbd5e1;border-radius:12px;padding:12px;max-width:920px;background:#ffffff}'+
+          '.row{margin:8px 0;padding:8px 10px;border-radius:10px;background:#fff1f2;border:1px solid #fecdd3}'+
+          '.k{display:inline-block;min-width:170px;font-weight:800;color:#7f1d1d}'+
+          '.actions{margin-top:12px}'+
+          'button{padding:10px 14px;border:0;border-radius:10px;background:#dc2626;color:#fff;font-weight:700}'+
+          'a{color:#0f172a;text-decoration:underline}'+
+          '.footer{margin-top:14px;padding:10px 12px;border-radius:12px;background:#f1f5f9;color:#0f172a;font-size:11px;display:flex;justify-content:space-between;gap:10px}'+
+          '.footer .muted{opacity:.8}'+
+          '@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}.page{padding:0}.header,.footer{border-radius:0}}'+
+        '</style>');
+        w.document.write('</head><body>');
+        w.document.write('<div class="page">');
+        w.document.write('<div class="header">'+
+          '<div class="title">Détail — Dépense</div>'+
+          '<div class="sub">Église Alléluia • Document généré le: '+ new Date().toLocaleString('fr-FR') +'</div>'+
+        '</div>');
+        w.document.write('<div class="box">');
+        w.document.write(`<div class="row"><span class="k">Date:</span> ${String(row.date||'')}</div>`);
+        w.document.write(`<div class="row"><span class="k">Libellé:</span> ${escapeHtml(row.libelle)}</div>`);
+        w.document.write(`<div class="row"><span class="k">Montant:</span> ${fmtMoney(row.montant)}</div>`);
+        w.document.write(`<div class="row"><span class="k">Type de paiement:</span> ${escapeHtml(row.type_paiement)}</div>`);
+        w.document.write(`<div class="row"><span class="k">Motif:</span> ${escapeHtml(row.motif)}</div>`);
+        if (row.justificatif_name && row.justificatif_data) {
+            const safeName = escapeHtml(row.justificatif_name);
+            w.document.write(`<div class="row"><span class="k">Justificatif:</span> <a href="${row.justificatif_data}" target="_blank" rel="noopener">${safeName}</a></div>`);
+        } else {
+            w.document.write('<div class="row"><span class="k">Justificatif:</span> -</div>');
+        }
+        w.document.write(`<div class="row"><span class="k">Approuvé par:</span> ${escapeHtml(row.approuve_par)}</div>`);
+        w.document.write('<div class="actions"><button onclick="window.print()">Imprimer</button></div>');
+        w.document.write('</div>');
+        w.document.write('<div class="footer">'+
+          '<div><strong>Gestion Église</strong> <span class="muted">• Dépenses du Comité National</span></div>'+
+          '<div class="muted">Impression: Détail Dépense</div>'+
+        '</div>');
+        w.document.write('</div></body></html>');
+        w.document.close();
+        w.focus();
+    }
+
+    function readFileAsDataUrl(file){
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    fileEl.addEventListener('change', async () => {
+        const file = fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
+        if(!file){
+            fileDataEl.value = '';
+            fileNameEl.value = '';
+            fileMimeEl.value = '';
+            fileInfoEl.textContent = '';
+            return;
+        }
+        try{
+            const dataUrl = await readFileAsDataUrl(file);
+            fileDataEl.value = dataUrl;
+            fileNameEl.value = file.name || '';
+            fileMimeEl.value = file.type || '';
+            fileInfoEl.textContent = file.name;
+        }catch(e){
+            fileDataEl.value = '';
+            fileNameEl.value = '';
+            fileMimeEl.value = '';
+            fileInfoEl.textContent = '';
+            alert('Erreur lors du chargement du justificatif.');
+        }
+    });
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+
+        const data = getFormData();
+        const editId = editIdEl.value;
+        const id = editId ? editId : String(Date.now());
+
+        upsertRow({ id, ...data });
+        resetForm();
+    });
+
+    resetBtn.addEventListener('click', resetForm);
+    exportBtn.addEventListener('click', exportExcel);
+    printBtn.addEventListener('click', printTable);
+
+    if (searchInput){
+        searchInput.addEventListener('input', render);
+    }
+
+    clearBtn.addEventListener('click', () => {
+        if (!confirm('Supprimer toutes les dépenses ?')) return;
+        saveRows([]);
+        render();
+    });
+
+    tbody.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const action = btn.getAttribute('data-action');
+        const id = btn.getAttribute('data-id');
+
+        if (action === 'view'){
+            const rows = loadRows();
+            const row = rows.find(r => String(r.id) === String(id));
+            if (!row) return;
+            printDepenseDetail(row);
+            return;
+        }
+
+        if (action === 'delete'){
+            if (!confirm('Supprimer cette dépense ?')) return;
+            deleteRow(id);
+            return;
+        }
+
+        if (action === 'edit'){
+            const rows = loadRows();
+            const row = rows.find(r => String(r.id) === String(id));
+            if (!row) return;
+            editIdEl.value = row.id;
+            dateEl.value = row.date || '';
+            libelleEl.value = row.libelle || '';
+            montantEl.value = row.montant ?? 0;
+            typePaiementEl.value = row.type_paiement || '';
+            motifEl.value = row.motif || '';
+            approuveEl.value = row.approuve_par || '';
+            fileDataEl.value = row.justificatif_data || '';
+            fileNameEl.value = row.justificatif_name || '';
+            fileMimeEl.value = row.justificatif_mime || '';
+            fileInfoEl.textContent = row.justificatif_name ? ('Justificatif actuel: ' + row.justificatif_name) : '';
+            form.classList.remove('was-validated');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+
+    render();
+})();
+</script>
+{% endif %}
+{% endblock %}

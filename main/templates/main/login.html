@@ -6,123 +6,326 @@
 
 {% block extra_css %}
 <style>
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.05); opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+    
     .login-container {
-        min-height: 80vh;
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f8f9fa;
+        background: 
+            linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(137, 37, 62, 0.85)),
+            url('/static/main/images/LogoEg.png') center center / 900px no-repeat fixed;
         padding: 2rem;
+        position: relative;
+        overflow: hidden;
     }
     
-    .login-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        overflow: hidden;
-        max-width: 450px;
+    .login-container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+        animation: float 20s ease-in-out infinite;
+    }
+    
+    .floating-shapes {
+        position: absolute;
         width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    
+    .floating-shapes span {
+        position: absolute;
+        display: block;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        animation: float 25s infinite;
+    }
+    
+    .floating-shapes span:nth-child(1) { width: 80px; height: 80px; left: 10%; top: 20%; animation-delay: 0s; }
+    .floating-shapes span:nth-child(2) { width: 60px; height: 60px; left: 80%; top: 50%; animation-delay: 2s; }
+    .floating-shapes span:nth-child(3) { width: 100px; height: 100px; left: 70%; top: 80%; animation-delay: 4s; }
+    .floating-shapes span:nth-child(4) { width: 40px; height: 40px; left: 20%; top: 70%; animation-delay: 6s; }
+    .floating-shapes span:nth-child(5) { width: 70px; height: 70px; left: 50%; top: 10%; animation-delay: 8s; }
+    
+    .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            inset 0 1px 1px rgba(255, 255, 255, 0.6);
+        overflow: hidden;
+        max-width: 420px;
+        width: 100%;
+        animation: slideUp 0.8s ease-out;
+        position: relative;
+        z-index: 10;
     }
     
     .login-header {
-        background: linear-gradient(135deg, #89253e, #b8860b);
+        background: linear-gradient(135deg, #89253e 0%, #b8860b 50%, #89253e 100%);
+        background-size: 200% 200%;
+        animation: gradientShift 5s ease infinite;
         color: white;
-        padding: 2rem;
+        padding: 2.5rem 2rem;
         text-align: center;
+        position: relative;
+        overflow: hidden;
     }
     
-    .login-header img {
-        width: 80px;
-        height: 80px;
+    .login-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 200%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        animation: shimmer 3s infinite;
+    }
+    
+    .login-header .logo-circle {
+        width: 90px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 50%;
-        border: 3px solid white;
-        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.2rem;
+        border: 3px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        animation: pulse 3s ease-in-out infinite;
+    }
+    
+    .login-header .login-icon {
+        font-size: 2.5rem;
+        color: white;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
     
     .login-header h2 {
         margin: 0;
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        letter-spacing: 0.5px;
     }
     
     .login-header p {
-        margin: 0.5rem 0 0;
-        opacity: 0.9;
-        font-size: 0.9rem;
+        margin: 0.6rem 0 0;
+        opacity: 0.95;
+        font-size: 0.95rem;
+        font-weight: 300;
     }
     
     .login-body {
-        padding: 2rem;
+        padding: 2.5rem 2rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
     }
     
     .form-floating {
-        margin-bottom: 1rem;
+        margin-bottom: 1.2rem;
     }
     
     .form-floating .form-control {
-        border-radius: 10px;
-        border: 2px solid #e0e0e0;
-        padding: 1rem 0.75rem;
+        border-radius: 12px;
+        border: 2px solid #e8e8e8;
+        padding: 1.2rem 1rem 0.6rem;
+        font-size: 1rem;
+        background: #fafafa;
+        transition: all 0.3s ease;
     }
     
     .form-floating .form-control:focus {
         border-color: #89253e;
-        box-shadow: 0 0 0 0.2rem rgba(137, 37, 62, 0.25);
+        box-shadow: 0 0 0 4px rgba(137, 37, 62, 0.15);
+        background: white;
+        transform: translateY(-2px);
     }
     
-    .btn-login {
-        background: linear-gradient(135deg, #89253e, #b8860b);
+    .form-floating label {
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .form-floating label i {
+        color: #89253e;
+    }
+    
+    .password-container {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
         border: none;
-        border-radius: 10px;
-        padding: 0.75rem 2rem;
-        font-weight: 600;
-        font-size: 1rem;
-        width: 100%;
-        color: white;
+        color: #888;
+        cursor: pointer;
+        padding: 8px;
+        z-index: 10;
+        border-radius: 8px;
         transition: all 0.3s ease;
     }
     
+    .password-toggle:hover {
+        color: #89253e;
+        background: rgba(137, 37, 62, 0.1);
+    }
+    
+    .password-container .form-control {
+        padding-right: 50px;
+    }
+    
+    .btn-login {
+        background: linear-gradient(135deg, #89253e 0%, #b8860b 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        color: white;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .btn-login::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+    
     .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(137, 37, 62, 0.4);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(137, 37, 62, 0.4);
         color: white;
     }
     
-    .login-icon {
-        font-size: 3rem;
-        color: white;
-        margin-bottom: 1rem;
+    .btn-login:hover::before {
+        left: 100%;
+    }
+    
+    .btn-login:active {
+        transform: translateY(-1px);
     }
     
     .alert-danger {
-        border-radius: 10px;
+        border-radius: 12px;
         border: none;
-        background: #fee2e2;
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
         color: #991b1b;
+        padding: 1rem;
+        animation: slideUp 0.5s ease-out;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
     }
     
     .back-link {
         text-align: center;
-        margin-top: 1.5rem;
+        margin-top: 1.8rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
     }
     
     .back-link a {
         color: #666;
         text-decoration: none;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
     
     .back-link a:hover {
         color: #89253e;
+        transform: translateX(-5px);
+    }
+    
+    .back-link a i {
+        transition: transform 0.3s ease;
+    }
+    
+    .back-link a:hover i {
+        transform: translateX(-3px);
+    }
+    
+    @media (max-width: 480px) {
+        .login-card {
+            margin: 1rem;
+            border-radius: 20px;
+        }
+        .login-header {
+            padding: 2rem 1.5rem;
+        }
+        .login-body {
+            padding: 2rem 1.5rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="login-container">
+    <!-- Formes flottantes décoratives -->
+    <div class="floating-shapes">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    
     <div class="login-card">
         <div class="login-header">
-            <i class="fas fa-lock login-icon"></i>
+            <div class="logo-circle">
+                <i class="fas fa-lock login-icon"></i>
+            </div>
             <h2>{% trans "Espace Gestion" %}</h2>
             <p>{% trans "Veuillez vous connecter pour accéder à cette section" %}</p>
         </div>
@@ -147,9 +350,12 @@
                     <label for="username"><i class="fas fa-user me-2"></i>{% trans "Nom d'utilisateur" %}</label>
                 </div>
                 
-                <div class="form-floating mb-4">
+                <div class="form-floating mb-4 password-container">
                     <input type="password" class="form-control" id="password" name="password" placeholder="{% trans 'Mot de passe' %}" required>
                     <label for="password"><i class="fas fa-key me-2"></i>{% trans "Mot de passe" %}</label>
+                    <button type="button" class="password-toggle" id="togglePassword" title="Afficher/Masquer le mot de passe">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                    </button>
                 </div>
                 
                 {% if next %}
@@ -169,4 +375,23 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const password = document.getElementById('password');
+        const icon = document.getElementById('toggleIcon');
+        
+        if (password.type === 'password') {
+            password.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            password.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+</script>
 {% endblock %}

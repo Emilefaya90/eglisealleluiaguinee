@@ -165,6 +165,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                         th { background-color: #343a40; color: white; font-weight: bold; }
                         tr:nth-child(even) { background-color: #f8f9fa; }
+                        .footer { margin-top: 12px; text-align: center; }
+                        .footer hr { border: none; border-top: 1px solid #343a40; margin: 8px 0 6px; }
+                        .motto { font-size: 11px; font-style: italic; color: #343a40; }
                         @media print {
                             body { margin: 0; }
                             .no-print { display: none; }
@@ -175,6 +178,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h1>Églises Enregistrées</h1>
                     <div class="date">Imprimé le: ${new Date().toLocaleDateString('fr-FR')}</div>
                     ${table.outerHTML}
+                    <div class="footer">
+                        <hr>
+                        <div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+                    </div>
                 </body>
                 </html>
             `;

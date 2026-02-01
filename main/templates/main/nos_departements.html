@@ -759,6 +759,21 @@
               vertical-align: middle;
               white-space: nowrap;
             }
+
+            /* Garder la colonne Actions toujours visible (tableau très large en scrollX) */
+            #departementsTable thead th.no-export,
+            #departementsTable tbody td.no-export {
+              position: sticky;
+              right: 0;
+              min-width: 140px;
+              background: #ffffff;
+              z-index: 3;
+            }
+            #departementsTable thead th.no-export {
+              background: #2b4aa3;
+              color: #ffffff;
+              z-index: 4;
+            }
           </style>
           <div class="table-responsive">
             <table id="departementsTable" class="table table-sm table-hover table-striped align-middle table-modern" style="width:100%">
@@ -890,6 +905,9 @@
               </tbody>
             </table>
             <div class="d-flex justify-content-center my-3">
+              <button type="button" id="btnPrintBottom" class="btn btn-primary me-2">
+                <i class="bi bi-printer me-1"></i> Imprimer
+              </button>
               <a href="{% url 'main:voir_departements' %}" class="btn btn-outline-primary">
                 <i class="bi bi-list-ul me-1"></i> Voir tous les Départements
               </a>
@@ -1240,6 +1258,60 @@
                   return text;
                 }
               }
+            },
+            customize: function (win) {
+              const logoUrl = '/static/main/images/logo_eglise.png';
+              const printedAt = new Date().toLocaleDateString('fr-FR');
+              const headerHtml = `
+                <div class="print-header">
+                  <img src="${logoUrl}" alt="Logo">
+                  <div class="title">
+                    <div class="h">LISTE DES DÉPARTEMENTS</div>
+                    <div class="sub">Imprimé le ${printedAt}</div>
+                  </div>
+                  <img src="${logoUrl}" alt="Logo">
+                </div>
+              `;
+              const footerHtml = `
+                <div class="print-footer">
+                  <hr>
+                  <div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+                </div>
+              `;
+
+              const $body = $(win.document.body);
+              $body.css('font-family', 'Arial, sans-serif');
+              $body.css('margin', '0');
+              $body.css('padding-bottom', '10mm');
+              $body.find('h1').first().remove();
+              $body.prepend(headerHtml);
+              $body.append(footerHtml);
+
+              $(win.document.head).append(`
+                <style>
+                  @page { size: A4 landscape; margin: 4mm; }
+                  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                  body { zoom: 0.82; }
+                  .print-header { display:flex; align-items:center; justify-content:center; border-bottom:2px solid #4e73df; padding-bottom:4px; margin-bottom:6px; }
+                  .print-header img { height:28px; width:28px; object-fit:contain; }
+                  .print-header .title { text-align:center; flex:1; }
+                  .print-header .title .h { font-size: 10pt; font-weight: 900; color:#4e73df; }
+                  .print-header .title .sub { font-size: 7pt; color:#666; margin-top:1px; }
+                  table { width: auto !important; max-width: 100% !important; border-collapse: collapse; table-layout: auto; font-size: 6pt; }
+                  thead { display: table-header-group; }
+                  tbody { display: table-row-group; }
+                  tr { page-break-inside: avoid; break-inside: avoid; }
+                  th, td { border: 1px solid #ddd; padding: 2px 3px; vertical-align: top; white-space: nowrap !important; word-break: normal !important; width: 1%; }
+                  th { background: #343a40 !important; color: #fff !important; text-align:left; }
+                  tr:nth-child(even) { background: #f8f9fa; }
+                  .print-footer { margin-top: 10px; text-align: center; }
+                  .print-footer hr { border: none; border-top: 1px solid #4e73df; margin: 6px 15px; }
+                  .print-footer .motto { font-size: 6pt; font-style: italic; color: #4e73df; }
+                  @media print {
+                    .print-footer { position: fixed; left: 0; right: 0; bottom: 4mm; margin-top: 0; }
+                  }
+                </style>
+              `);
             }
           }
         ]
@@ -1257,6 +1329,7 @@
       $('#btnExportExcel').on('click', function(e){ e.preventDefault(); triggerExport('excel'); });
       $('#btnExportPDF').on('click', function(e){ e.preventDefault(); triggerExport('pdf'); });
       $('#btnPrint').on('click', function(e){ e.preventDefault(); triggerExport('print'); });
+      $('#btnPrintBottom').on('click', function(e){ e.preventDefault(); triggerExport('print'); });
 
       // Handlers Actions (Voir / Modifier / Supprimer)
       function ensureInfoModal(){
@@ -1266,12 +1339,13 @@
           <div class="modal fade" id="deptInfoModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-scrollable">
               <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title">Détails du département</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                <div class="modal-header bg-success text-white">
+                  <h5 class="modal-title"><i class="bi bi-card-list me-2"></i>Détails du département</h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
                 <div class="modal-body" id="deptInfoBody"></div>
                 <div class="modal-footer">
+                  <button type="button" class="btn btn-success" id="btnPrintDept"><i class="bi bi-printer me-1"></i>Imprimer</button>
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                 </div>
               </div>
@@ -1307,9 +1381,12 @@
         };
       }
 
+      let currentDeptData = null;
+      
       $(document).on('click', '.btn-details', function(){
         const tr = $(this).closest('tr');
         const data = getRowData(tr);
+        currentDeptData = data;
         const modalEl = ensureInfoModal();
         const body = modalEl.querySelector('#deptInfoBody');
         body.innerHTML = `
@@ -1336,6 +1413,49 @@
           </div>`;
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
+      });
+      
+      $(document).on('click', '#btnPrintDept', function(){
+        if (!currentDeptData) return;
+        const d = currentDeptData;
+        const logoUrl = '/static/main/images/logo_eglise.png';
+        const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:4px 6px;vertical-align:top;margin-bottom:4px;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:700;line-height:1.25;">${val || '—'}</span></div>`;
+        const pf2 = (label, val) => `<div style="display:inline-block;width:48%;padding:4px 6px;vertical-align:top;margin-bottom:4px;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:700;line-height:1.25;">${val || '—'}</span></div>`;
+        const pf1 = (label, val) => `<div style="display:inline-block;width:100%;padding:4px 6px;vertical-align:top;margin-bottom:4px;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:700;line-height:1.25;">${val || '—'}</span></div>`;
+        const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:8px;border-radius:7px;overflow:hidden;page-break-inside:avoid;"><div style="background:${color};color:#fff;padding:6px 10px;font-size:10pt;font-weight:800;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${icon} ${title}</div><div style="padding:6px 8px;">${content}</div></div>`;
+        
+        const s1 = pf('Église', d.eglise) + pf('Nom', d.nom) + pf('Responsable', d.responsable) + pf('Contacts', d.contacts) + pf('Date création', d.date_creation) + pf('Actif', d.actif);
+        const s2 = pf1('Vision', d.vision) + pf1('Mission', d.mission) + pf1('Objectifs', d.objectifs);
+        const s3 = pf1('Membres clés', d.membres) + pf2('Effectif', d.nb) + pf2('Budget annuel (GNF)', d.budget);
+        const s4 = pf1('Ressources', d.ressources) + pf1('Besoins', d.besoins);
+        const s5 = pf1('Activités', d.activites) + pf2('Prochaine date', d.prochaine_date) + pf2('Lieu', d.lieu) + pf2('Validé', d.valide);
+        
+        const w = window.open('', '_blank');
+        w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fiche Département</title>
+<style>
+@page{size:A4;margin:6mm;}
+body{font-family:Arial,sans-serif;padding:4px 8px 25mm;margin:0;font-size:9pt;line-height:1.25;}
+*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+.print-footer{position:fixed;bottom:5mm;left:5mm;right:5mm;text-align:center;background:#fff;}
+.print-footer hr{border:none;border-top:1px solid #198754;margin:0 10px 4px;}
+.print-footer .motto{font-size:7pt;font-style:italic;color:#198754;}
+</style></head><body>
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:2px solid #198754;padding-bottom:7px;margin-bottom:10px;">
+<img src="${logoUrl}" style="height:46px;width:46px;object-fit:contain;">
+<div style="text-align:center;flex:1;padding:0 10px;"><div style="font-size:14pt;font-weight:900;color:#198754;">FICHE DU DÉPARTEMENT</div><div style="font-size:9pt;color:#666;margin-top:2px;">${d.nom}</div></div>
+<img src="${logoUrl}" style="height:46px;width:46px;object-fit:contain;">
+</div>
+${section('#198754','&#128100;','1. Informations Générales',s1)}
+${section('#0d6efd','&#127919;','2. Vision, Mission & Objectifs',s2)}
+${section('#6f42c1','&#128101;','3. Ressources Humaines',s3)}
+${section('#0dcaf0','&#128736;','4. Ressources & Besoins',s4)}
+${section('#ffc107','&#128197;','5. Activités & Validation',s5)}
+<div class="print-footer">
+<hr>
+<div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+</div>
+<script>window.onload=function(){setTimeout(function(){window.print();window.close();},800);};<\/script></body></html>`);
+        w.document.close();
       });
 
       $(document).on('click', '.btn-edit', function(e){

@@ -543,9 +543,14 @@
     </div>
     <div class="card-footer bg-light d-flex justify-content-between align-items-center">
       <span class="text-muted small"><i class="fas fa-database me-1"></i>Total: <strong id="spTotalCount">0</strong> enregistrements</span>
-      <button type="button" class="btn btn-primary btn-sm" id="btnVoirTousPlanning" data-bs-toggle="modal" data-bs-target="#modalTousPlanning">
-        <i class="fas fa-list-alt me-1"></i>Voir tous les plannings
-      </button>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="spFullPrint">
+          <i class="fas fa-print me-1"></i>Imprimer
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnVoirTousPlanning" data-bs-toggle="modal" data-bs-target="#modalTousPlanning">
+          <i class="fas fa-list-alt me-1"></i>Voir tous les plannings
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -772,6 +777,7 @@
   const pageSizeEl = document.getElementById('spFullPageSize');
   const exportCsvA = document.getElementById('spFullExportCsv');
   const exportXlsxA = document.getElementById('spFullExportXlsx');
+  const spFullPrintBtn = document.getElementById('spFullPrint');
 
   // Elements du formulaire
   const spForm = document.getElementById('spForm');
@@ -800,6 +806,82 @@
     exportCsvA.href = '/api/sp/export.csv' + (query?('?' + query):'');
     exportXlsxA.href = '/api/sp/export.xlsx' + (query?('?' + query):'');
   }
+
+  // Impression du tableau "Résultats" (liste filtrée)
+  spFullPrintBtn?.addEventListener('click', () => {
+    const tbodyEl = document.getElementById('spFullList');
+    const tableEl = tbodyEl ? tbodyEl.closest('table') : null;
+    if (!tableEl) {
+      alert('Tableau des résultats introuvable.');
+      return;
+    }
+
+    const rowCount = tableEl.querySelectorAll('tbody tr').length;
+    if (!rowCount) {
+      alert("Aucune ligne à imprimer. Lance d'abord une recherche pour remplir les résultats.");
+      return;
+    }
+
+    const logoUrl = '/static/main/images/logo_eglise.png';
+    const printedAt = new Date().toLocaleDateString('fr-FR');
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert("La fenêtre d'impression a été bloquée par le navigateur. Autorise les popups puis réessaie.");
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Planification — Résultats</title>
+        <style>
+          @page { size: A4 landscape; margin: 6mm; }
+          body { font-family: Arial, sans-serif; margin: 0; padding-bottom: 16mm; color: #222; font-size: 8pt; line-height: 1.2; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .print-header { display:flex; align-items:center; justify-content:center; border-bottom:2px solid #4e73df; padding-bottom:6px; margin-bottom:8px; }
+          .print-header img { height:40px; width:40px; object-fit:contain; }
+          .print-header .title { text-align:center; flex:1; }
+          .print-header .title h3 { font-size: 12pt; font-weight: 900; color:#4e73df; margin:0; }
+          .print-header .title .sub { font-size: 8pt; color:#666; margin-top:2px; }
+          table { width:100%; border-collapse: collapse; }
+          thead { display: table-header-group; }
+          tbody { display: table-row-group; }
+          tr { page-break-inside: avoid; break-inside: avoid; }
+          th, td { border:1px solid #ddd; padding:4px 6px; vertical-align: top; word-break: break-word; }
+          th { background:#343a40; color:#fff; text-align:left; }
+          tr:nth-child(even) { background:#f8f9fa; }
+          .print-footer { margin-top: 10px; text-align: center; }
+          .print-footer hr { border:none; border-top: 1px solid #4e73df; margin:6px 15px; }
+          .print-footer .motto { font-size:7pt; font-style: italic; color:#4e73df; }
+          @media print {
+            .print-footer { position: fixed; left:0; right:0; bottom: 6mm; margin-top:0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="print-header">
+          <img src="${logoUrl}" alt="Logo">
+          <div class="title">
+            <h3>PLANIFICATION — RÉSULTATS</h3>
+            <div class="sub">Imprimé le ${printedAt}</div>
+          </div>
+          <img src="${logoUrl}" alt="Logo">
+        </div>
+
+        ${tableEl.outerHTML}
+
+        <div class="print-footer">
+          <hr>
+          <div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+        </div>
+        <script>window.onload=function(){setTimeout(function(){window.print();window.close();},400);};<\/script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  });
   async function fetchJSON(url){
     const r = await fetch(url);
     if(!r.ok) throw new Error('HTTP ' + r.status);
@@ -1143,6 +1225,7 @@
   // Impression
   modalPrintBtn.addEventListener('click', () => {
     const printContent = document.getElementById('modalTableContainer').innerHTML;
+    const logoUrl = '/static/main/images/logo_eglise.png';
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -1151,16 +1234,40 @@
         <title>Tous les Plannings</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
-          body { padding: 20px; }
+          @page { size: A4; margin: 6mm; }
+          body { padding: 10px 10px 30mm; font-family: Arial, sans-serif; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           @media print { 
             .no-print { display: none !important; }
-            table { font-size: 10px; }
+            table { font-size: 9px; }
+          }
+          .print-header { display: flex; align-items: center; justify-content: center; gap: 12px; border-bottom: 2px solid #4e73df; padding-bottom: 8px; margin-bottom: 10px; }
+          .print-header img { height: 40px; width: 40px; object-fit: contain; }
+          .print-header .title { text-align: center; flex: 1; }
+          .print-header .title h3 { font-size: 14pt; font-weight: 900; color: #4e73df; margin: 0; }
+          .print-header .title .sub { font-size: 9pt; color: #666; margin-top: 2px; }
+          .print-footer { margin-top: 10px; text-align: center; }
+          .print-footer hr { border: none; border-top: 1px solid #4e73df; margin: 6px 15px; }
+          .print-footer .motto { font-size: 7pt; font-style: italic; color: #4e73df; }
+          @media print {
+            .print-footer { position: fixed; left: 0; right: 0; bottom: 6mm; margin-top: 0; }
           }
         </style>
       </head>
       <body>
-        <h3 class="mb-3">Tous les Plannings - ${new Date().toLocaleDateString('fr-FR')}</h3>
+        <div class="print-header">
+          <img src="${logoUrl}" alt="Logo">
+          <div class="title">
+            <h3>TOUS LES PLANNINGS</h3>
+            <div class="sub">${new Date().toLocaleDateString('fr-FR')}</div>
+          </div>
+          <img src="${logoUrl}" alt="Logo">
+        </div>
         ${printContent}
+        <div class="print-footer">
+          <hr>
+          <div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+        </div>
         <script>window.onload = function() { window.print(); window.close(); }<\/script>
       </body>
       </html>

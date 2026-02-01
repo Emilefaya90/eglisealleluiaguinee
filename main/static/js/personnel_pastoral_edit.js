@@ -187,7 +187,8 @@ function openViewPasteurModal(pasteurId) {
         `;
     }
 
-    const modal = new bootstrap.Modal(modalEl);
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
     modal.show();
 
     fetch(`/get_pasteur_details/${pasteurId}/`)
@@ -379,6 +380,12 @@ function printPasteurDetails(modalEl) {
         const body = modalEl.querySelector('#viewPasteurBody');
         if (!body) return;
         const w = window.open('', '_blank');
+        const footer = `
+            <div class="print-footer" style="text-align:center;">
+                <hr style="border:none;border-top:1px solid #0d6efd;margin:6px 15px;">
+                <div style="font-size:10px;font-style:italic;color:#0d6efd;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+            </div>
+        `;
         const html = `
             <!DOCTYPE html>
             <html>
@@ -387,7 +394,10 @@ function printPasteurDetails(modalEl) {
                 <title>Impression - Détails du pasteur</title>
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
                 <style>
-                    body { padding: 18px; }
+                    html, body { height: 100%; }
+                    body { padding: 18px; display: flex; flex-direction: column; min-height: 100vh; }
+                    .print-content { flex: 1; }
+                    .print-footer { margin-top: auto; }
                     .card { break-inside: avoid; page-break-inside: avoid; }
                     img { max-width: 100%; }
                     @media print {
@@ -397,7 +407,8 @@ function printPasteurDetails(modalEl) {
                 </style>
             </head>
             <body>
-                ${body.innerHTML}
+                <div class="print-content">${body.innerHTML}</div>
+                ${footer}
                 <script>
                     window.onload = function() {
                         window.print();
@@ -540,21 +551,22 @@ function openDetailsPasteurModal(pasteurId) {
         modalEl.id = 'detailsPasteurModal';
         modalEl.className = 'modal fade';
         modalEl.tabIndex = -1;
+        modalEl.style.zIndex = '2000';
         modalEl.innerHTML = `
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
-          <div class="modal-content">
+          <div class="modal-content" style="max-height: 90vh; display: flex; flex-direction: column;">
             <div class="modal-header bg-success text-white">
               <h5 class="modal-title"><i class="fas fa-id-card me-2"></i>Détails du Pasteur</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close btn-close-white" id="btnCloseDetailsPasteurHeader" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="overflow: auto; flex: 1 1 auto;">
               <div id="detailsPasteurBody"></div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="flex: 0 0 auto;">
               <button type="button" class="btn btn-primary" id="btnPrintDetailsPasteur" disabled>
                 <i class="fas fa-print me-2"></i>Imprimer
               </button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+              <button type="button" class="btn btn-secondary" id="btnCloseDetailsPasteurFooter">Fermer</button>
             </div>
           </div>
         </div>`;
@@ -576,7 +588,30 @@ function openDetailsPasteurModal(pasteurId) {
         `;
     }
 
-    const modal = new bootstrap.Modal(modalEl);
+    if (!window.bootstrap || !bootstrap.Modal) {
+        console.error('[PP Actions] Bootstrap Modal non disponible');
+        alert("Erreur: Bootstrap Modal n'est pas disponible sur cette page.");
+        return;
+    }
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+    // Backdrop derrière le modal (évite une couche qui bloque les clics)
+    if (!modalEl.__pp_backdrop_fix_bound__) {
+        modalEl.__pp_backdrop_fix_bound__ = true;
+        modalEl.addEventListener('shown.bs.modal', function() {
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            const backdrop = backdrops.length ? backdrops[backdrops.length - 1] : null;
+            if (backdrop) backdrop.style.zIndex = '1990';
+        });
+    }
+
+    // Fermeture fiable (ne dépend pas de data-bs-dismiss)
+    const closeHeader = modalEl.querySelector('#btnCloseDetailsPasteurHeader');
+    const closeFooter = modalEl.querySelector('#btnCloseDetailsPasteurFooter');
+    if (closeHeader) closeHeader.onclick = () => modal.hide();
+    if (closeFooter) closeFooter.onclick = () => modal.hide();
+
     modal.show();
 
     fetch(`/get_pasteur_details/${pasteurId}/`)
@@ -586,12 +621,13 @@ function openDetailsPasteurModal(pasteurId) {
                 throw new Error((result && result.error) ? result.error : 'Impossible de charger les détails.');
             }
             const d = result.data;
+            modalEl.__pp_details_data__ = d;
             const safe = (v) => (v === null || v === undefined || v === '' ? '-' : v);
             const fullName = `${safe(d.prenom)} ${safe(d.nom)}`.replace(/\s+/g, ' ').trim();
 
             const photo = d.photo_url
-                ? `<img src="${d.photo_url}" alt="Photo" class="rounded-circle shadow" style="width:120px;height:120px;object-fit:cover;">`
-                : `<div class="bg-secondary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width:120px;height:120px;">
+                ? `<img src="${d.photo_url}" alt="Photo" class="shadow" style="width:120px;height:120px;object-fit:cover;border-radius:50%;">`
+                : `<div class="bg-secondary bg-opacity-25 d-flex align-items-center justify-content-center" style="width:120px;height:120px;border-radius:50%;">
                         <i class="fas fa-user text-secondary" style="font-size: 3rem;"></i>
                    </div>`;
 
@@ -743,37 +779,114 @@ function printDetailsPasteur(modalEl) {
     try {
         const body = modalEl.querySelector('#detailsPasteurBody');
         if (!body) return;
+        const d = modalEl.__pp_details_data__ || {};
         const w = window.open('', '_blank');
+        const safe = (v) => (v === null || v === undefined || v === '' ? '-' : v);
+        const logoUrl = d.eglise_logo_url || '/static/main/images/logo_eglise.png';
+        const fullName = `${safe(d.prenom)} ${safe(d.nom)}`.replace(/\s+/g, ' ').trim();
+        const egliseNom = safe(d.eglise_nom);
+        const roleLabel = safe(d.fonction);
+        const now = new Date();
+        const printedAt = now.toLocaleString();
+        const footer = `
+            <div class="print-footer" style="text-align:center;">
+                <hr style="border:none;border-top:1px solid #198754;margin:6px 15px;">
+                <div style="font-size:10px;font-style:italic;color:#198754;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+                <div style="font-size:10px;color:#666;margin-top:3px;">Imprimé le: ${escapeHtml(printedAt)}</div>
+            </div>
+        `;
+        const header = `
+            <div class="print-header" style="border-bottom:2px solid #198754;padding-bottom:10px;margin-bottom:15px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <img src="${logoUrl}" style="height:40px;width:40px;object-fit:contain;" />
+                    <div style="text-align:center;flex:1;">
+                        <div style="font-size:16px;font-weight:800;color:#198754;">FICHE DU PERSONNEL PASTORAL</div>
+                        <div style="font-size:11px;color:#555;">${escapeHtml(egliseNom)}</div>
+                    </div>
+                    <img src="${logoUrl}" style="height:40px;width:40px;object-fit:contain;" />
+                </div>
+                <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:13px;font-weight:800;">${escapeHtml(fullName || '-')}</div>
+                        <div style="font-size:11px;color:#666;">${escapeHtml(roleLabel)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
         const html = `
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="utf-8" />
-                <title>Impression - Détails du Pasteur</title>
+                <title></title>
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
                 <style>
-                    body { padding: 20px; font-size: 12pt; }
-                    .card { break-inside: avoid; page-break-inside: avoid; margin-bottom: 15px; }
-                    .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                    .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                    img { max-width: 100px !important; height: auto !important; }
+                    html, body { height: 100%; }
+                    body { padding: 0; margin: 0; font-size: 8pt; line-height: 1.12; }
+                    #ppPrintRoot { padding: 10px; }
+                    .print-footer { margin-top: 8px; }
+                    .print-header { margin-bottom: 8px !important; padding-bottom: 6px !important; }
+                    .card { break-inside: avoid; page-break-inside: avoid; margin-bottom: 6px; }
+                    .card-header { padding: 4px 8px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .card-body { padding: 6px 8px !important; }
+                    .badge { font-size: 0.75rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .mb-4 { margin-bottom: .4rem !important; }
+                    .mb-3 { margin-bottom: .35rem !important; }
+                    .pb-3 { padding-bottom: .35rem !important; }
+                    .row { --bs-gutter-y: .25rem; }
+                    img { max-width: 80px !important; height: auto !important; }
+                    @page { size: A4; margin: 6mm; }
                     @media print {
                         .btn { display: none !important; }
+
+                        /* Forcer l'affichage des champs en 3 colonnes (plus compact) */
+                        .col-md-6, .col-lg-4 { float: left !important; width: 33.333% !important; }
+                        .col-12 { width: 100% !important; }
+                        .row::after { content: ""; display: table; clear: both; }
+
+                        /* Réduire les textes longs pour tenir sur une page */
+                        [style*="white-space: pre-wrap"] {
+                            display: -webkit-box;
+                            -webkit-box-orient: vertical;
+                            -webkit-line-clamp: 3;
+                            overflow: hidden;
+                        }
+
+                        #ppPrintScale {
+                            transform-origin: top left;
+                        }
                     }
                 </style>
             </head>
             <body>
-                <div class="text-center mb-4">
-                    <h3>Fiche du Personnel Pastoral</h3>
-                    <hr>
+                <div id="ppPrintRoot">
+                    <div id="ppPrintScale">
+                        ${header}
+                        <div class="print-content">${body.innerHTML}</div>
+                        ${footer}
+                    </div>
                 </div>
-                ${body.innerHTML}
                 <script>
                     window.onload = function() {
+                        try {
+                            try { document.title = ''; } catch (e) {}
+                            const scaleEl = document.getElementById('ppPrintScale');
+                            if (scaleEl) {
+                                // Hauteur A4 approximative en CSS px à 96dpi (sans marges)
+                                // 297mm -> 1122px, on enlève une marge de sécurité
+                                const target = 1060;
+                                const h = scaleEl.scrollHeight;
+                                const s = h > 0 ? Math.min(1, target / h) : 1;
+                                scaleEl.style.transform = 'scale(' + s + ')';
+                                // Éviter que le scale réduise la largeur disponible
+                                scaleEl.style.width = (100 / s) + '%';
+                            }
+                        } catch (e) {
+                        }
                         setTimeout(function() {
                             window.print();
                             window.close();
-                        }, 500);
+                        }, 600);
                     };
                 <\/script>
             </body>

@@ -705,6 +705,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
   <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script>
     (function(){
@@ -1393,7 +1394,8 @@
                   </div>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-primary" id="btnPrintMembre"><i class="bi bi-printer me-2"></i>Imprimer</button>
+                  <button type="button" class="btn btn-success" id="btnPrintMembre"><i class="bi bi-printer me-2"></i>Imprimer</button>
+                  <button type="button" class="btn btn-primary" id="btnDownloadMembre"><i class="bi bi-download me-2"></i>Télécharger</button>
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                 </div>
               </div>
@@ -1502,8 +1504,8 @@
             document.getElementById('btnPrintMembre').onclick = function() {
               const w = window.open('', '_blank');
               const logoUrl = '/static/main/images/logo_eglise.png';
-              const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:2px 4px;vertical-align:top;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:600;">${safe(val)}</span></div>`;
-              const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:6px;border-radius:4px;"><div style="background:${color};color:#fff;padding:4px 10px;font-size:10pt;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${icon} ${title}</div><div style="padding:6px 10px;">${content}</div></div>`;
+              const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:4px 6px;vertical-align:top;margin-bottom:4px;"><span style="font-size:8pt;color:#666;">${label}</span><br><span style="font-size:9pt;font-weight:700;line-height:1.25;">${safe(val)}</span></div>`;
+              const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:10px;border-radius:7px;overflow:hidden;page-break-inside:avoid;"><div style="background:${color};color:#fff;padding:7px 10px;font-size:10pt;font-weight:800;letter-spacing:.2px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${icon} ${title}</div><div style="padding:7px 8px;">${content}</div></div>`;
               
               const s1 = pf('Nom',m.nom)+pf('Prénom',m.prenom)+pf('Sexe',m.sexe)+pf('Date de naissance',m.date_naissance)+pf('Lieu de naissance',m.lieu_naissance)+pf('Adresse',m.adresse)+pf('Téléphone',m.telephone)+pf('Email',m.email)+pf('Profession',m.profession);
               const s2 = pf('État civil',m.etat_civil)+pf('Nom du conjoint',m.nom_conjoint)+pf("Nombre d'enfants",m.nombre_enfants);
@@ -1512,24 +1514,103 @@
               const s5 = pf('Soutien financier',m.soutien_financier)+pf('Montant souhaité',m.montant_souhaite);
               
               const printHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fiche du Membre</title>
-<style>@page{size:A4;margin:8mm;}body{font-family:Arial,sans-serif;padding:5px 10px;margin:0;}</style></head><body>
-<div style="display:flex;align-items:center;justify-content:center;border-bottom:2px solid #ff8c00;padding-bottom:8px;margin-bottom:8px;">
-<img src="${logoUrl}" style="height:50px;">
-<div style="text-align:center;flex:1;padding:0 15px;"><div style="font-size:14pt;font-weight:bold;color:#ff8c00;">Fiche du Membre</div><div style="font-size:9pt;color:#666;">${safe(m.prenom)} ${safe(m.nom)}</div></div>
-<img src="${logoUrl}" style="height:50px;">
+<style>
+@page{size:A4;margin:6mm;}
+body{font-family:Arial,sans-serif;padding:4px 8px 25mm;margin:0;font-size:9pt;line-height:1.25;}
+*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+.print-footer{position:fixed;bottom:5mm;left:5mm;right:5mm;text-align:center;background:#fff;}
+.print-footer hr{border:none;border-top:1px solid #ff8c00;margin:0 10px 4px;}
+.print-footer .motto{font-size:7pt;font-style:italic;color:#ff8c00;}
+</style></head><body>
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:2px solid #ff8c00;padding-bottom:7px;margin-bottom:10px;">
+<img src="${logoUrl}" style="height:46px;width:46px;object-fit:contain;">
+<div style="text-align:center;flex:1;padding:0 10px;"><div style="font-size:14pt;font-weight:900;color:#ff8c00;">FICHE DU MEMBRE</div><div style="font-size:9pt;color:#666;margin-top:2px;">${safe(m.prenom)} ${safe(m.nom)}</div></div>
+<img src="${logoUrl}" style="height:46px;width:46px;object-fit:contain;">
 </div>
 ${section('#0d6efd','&#128100;','1. Informations Personnelles',s1)}
 ${section('#198754','&#128101;','2. Situation Familiale',s2)}
 ${section('#6f42c1','&#128214;','3. Informations Spirituelles',s3)}
 ${section('#0dcaf0','&#128077;','4. Engagement et Service',s4)}
 ${section('#ffc107','&#128176;','5. Soutien Financier',s5)}
-<div style="position:fixed;bottom:10px;left:0;right:0;text-align:center;">
-<hr style="border:none;border-top:1px solid #ff8c00;margin:5px 20px;">
-<div style="font-size:8pt;font-style:italic;color:#ff8c00;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+<div class="print-footer">
+<hr>
+<div class="motto">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
 </div>
 <script>window.onload=function(){setTimeout(function(){window.print();window.close();},800);};<\/script></body></html>`;
               w.document.write(printHtml);
               w.document.close();
+            };
+            
+            // Bouton Télécharger
+            document.getElementById('btnDownloadMembre').onclick = async function() {
+              const logoUrl = '/static/main/images/logo_eglise.png';
+              
+              // Convertir l'image en base64
+              let logoBase64 = '';
+              try {
+                const response = await fetch(logoUrl);
+                const blob = await response.blob();
+                logoBase64 = await new Promise((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve(reader.result);
+                  reader.readAsDataURL(blob);
+                });
+              } catch (e) {
+                console.error('Erreur logo:', e);
+              }
+              const logoSrc = logoBase64 || logoUrl;
+              
+              const pf = (label, val) => `<div style="display:inline-block;width:32%;padding:4px 6px;vertical-align:top;margin-bottom:5px;"><span style="font-size:9pt;color:#666;">${label}</span><br><span style="font-size:10pt;font-weight:600;">${safe(val)}</span></div>`;
+              const section = (color, icon, title, content) => `<div style="border:1px solid #ddd;margin-bottom:15px;border-radius:6px;overflow:hidden;"><div style="background:${color};color:#fff;padding:8px 12px;font-size:11pt;font-weight:600;">${icon} ${title}</div><div style="padding:10px 12px;background:#fff;">${content}</div></div>`;
+              
+              const s1 = pf('Nom',m.nom)+pf('Prénom',m.prenom)+pf('Sexe',m.sexe)+pf('Date de naissance',m.date_naissance)+pf('Lieu de naissance',m.lieu_naissance)+pf('Adresse',m.adresse)+pf('Téléphone',m.telephone)+pf('Email',m.email)+pf('Profession',m.profession);
+              const s2 = pf('État civil',m.etat_civil)+pf('Nom du conjoint',m.nom_conjoint)+pf("Nombre d'enfants",m.nombre_enfants);
+              const s3 = pf('Date de baptême',m.date_bapteme)+pf('Lieu de baptême',m.lieu_bapteme)+pf("Date d'adhésion",m.date_adhesion)+pf('Église',m.eglise_nom);
+              const s4 = pf('Motivation',m.motivation)+pf('Services',m.services)+pf('Départements',m.departement);
+              const s5 = pf('Soutien financier',m.soutien_financier)+pf('Montant souhaité',m.montant_souhaite);
+              
+              const htmlContent = `<div style="font-family:Arial,sans-serif;padding:10px;font-size:9pt;width:100%;box-sizing:border-box;">
+<div style="display:flex;align-items:center;justify-content:center;border-bottom:3px solid #ff8c00;padding-bottom:10px;margin-bottom:15px;">
+<img src="${logoSrc}" style="height:60px;width:60px;object-fit:contain;">
+<div style="text-align:center;flex:1;padding:0 15px;"><div style="font-size:16pt;font-weight:bold;color:#ff8c00;">FICHE DU MEMBRE</div><div style="font-size:10pt;color:#666;margin-top:5px;">${safe(m.prenom)} ${safe(m.nom)}</div></div>
+<img src="${logoSrc}" style="height:60px;width:60px;object-fit:contain;">
+</div>
+${section('#0d6efd','&#128100;','1. Informations Personnelles',s1)}
+${section('#198754','&#128101;','2. Situation Familiale',s2)}
+${section('#6f42c1','&#128214;','3. Informations Spirituelles',s3)}
+${section('#0dcaf0','&#128077;','4. Engagement et Service',s4)}
+${section('#ffc107','&#128176;','5. Soutien Financier',s5)}
+<div style="margin-top:20px;text-align:center;border-top:2px solid #ff8c00;padding-top:10px;">
+<div style="font-size:9pt;font-style:italic;color:#ff8c00;">Alléluia ! Car le Seigneur Dieu Tout Puissant a Établi Son Règne (Apoc. 19,6b)</div>
+</div>
+</div>`;
+              
+              // Créer un élément temporaire pour générer le PDF
+              const tempDiv = document.createElement('div');
+              tempDiv.innerHTML = htmlContent;
+              tempDiv.style.position = 'fixed';
+              tempDiv.style.left = '-10000px';
+              tempDiv.style.top = '0';
+              tempDiv.style.width = '210mm';
+              tempDiv.style.background = '#ffffff';
+              tempDiv.style.opacity = '1';
+              tempDiv.style.pointerEvents = 'none';
+              tempDiv.style.zIndex = '-1';
+              document.body.appendChild(tempDiv);
+              
+              // Options pour html2pdf
+              const opt = {
+                margin: 6,
+                filename: `Fiche_Membre_${safe(m.prenom)}_${safe(m.nom)}.pdf`.replace(/[^a-zA-Z0-9_\.]/g, '_'),
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+              };
+              
+              // Générer et télécharger le PDF automatiquement
+              html2pdf().set(opt).from(tempDiv).save().then(() => {
+                document.body.removeChild(tempDiv);
+              });
             };
           } else {
             document.getElementById('membreDetailsBody').innerHTML = `
