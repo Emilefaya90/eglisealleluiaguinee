@@ -207,6 +207,7 @@
         <button type="button" id="fullExportExcel" class="btn btn-sm btn-outline-success" title="Exporter Excel (.xls)"><i class="bi bi-file-earmark-excel"></i></button>
         <button type="button" id="fullExportPdfServer" class="btn btn-sm btn-danger" title="Exporter PDF (serveur)"><i class="bi bi-file-earmark-pdf"></i></button>
         <button type="button" id="fullExportPdfLocal" class="btn btn-sm btn-outline-danger" title="PDF (navigateur)"><i class="bi bi-printer"></i></button>
+        <button type="button" id="whatsappEffectifsBtn" class="btn btn-sm" title="Envoyer par WhatsApp" style="background:#25D366;color:white;border:none;"><i class="fab fa-whatsapp"></i></button>
       </div>
     </div>
     <div class="card-body">
@@ -796,6 +797,27 @@
     win.document.open();
     win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Effectifs du culte</title><style>${styles}</style></head><body>${header}${table.outerHTML}${footer}<script>setTimeout(function(){window.print(); window.close();}, 200);<\/script></body></html>`);
     win.document.close();
+  });
+
+  // WhatsApp - Effectifs du culte
+  document.getElementById('whatsappEffectifsBtn')?.addEventListener('click', function(){
+    try {
+      const table = document.getElementById('fullCulteTable');
+      if (!table) { alert('Tableau non trouvé'); return; }
+      const rows = table.querySelectorAll('tbody tr');
+      if (!rows.length) { alert('Aucun effectif à envoyer'); return; }
+      let msg = `⛪ *Effectifs du culte - EPAG*\n📅 ${new Date().toLocaleDateString('fr-FR')}\n📊 Total: ${rows.length} enregistrement(s)\n\n`;
+      rows.forEach(function(row, i) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 3) {
+          const col1 = cells[0]?.textContent?.trim() || '';
+          const col2 = cells[1]?.textContent?.trim() || '';
+          const col3 = cells[2]?.textContent?.trim() || '';
+          msg += `${i+1}. ${col1} | ${col2} | ${col3}\n`;
+        }
+      });
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    } catch (e) { alert('Erreur: ' + e.message); }
   });
 
   // Chargement initial

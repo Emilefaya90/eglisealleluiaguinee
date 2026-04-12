@@ -1,0 +1,590 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}STATISTIQUES - Gestion Église{% endblock %}
+
+{% block content %}
+<style>
+    .statistiques-page {
+        min-height: 100vh;
+        background: #f8f9fa;
+        padding: 40px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .main-content {
+        max-width: 1400px !important;
+        padding: 0 !important;
+    }
+
+    .stats-wrapper {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 25px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .stat-card-eglises {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border-color: #93c5fd;
+        --card-color: #2563eb;
+    }
+
+    .stat-card-personnel {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-color: #86efac;
+        --card-color: #16a34a;
+    }
+
+    .stat-card-membres {
+        background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+        border-color: #fdba74;
+        --card-color: #ea580c;
+    }
+
+    .stat-card-departements {
+        background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+        border-color: #c084fc;
+        --card-color: #9333ea;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--card-color, #89253e);
+        margin-bottom: 5px;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: #475569;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-icon-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+        background: var(--card-color, #89253e);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+
+    .stat-icon-circle i {
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .page-title {
+        color: #89253e;
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 40px;
+        text-shadow: none;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+    }
+
+    .progress-bar {
+        height: 25px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f1f5f9;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #89253e, #b8860b);
+        border-radius: 12px;
+        transition: width 0.8s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card.text-center {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 300px;
+        padding: 25px 15px 10px;
+    }
+
+    .stat-card canvas {
+        width: 100% !important;
+        max-height: 100px;
+        margin-top: auto;
+    }
+
+    @media (max-width: 1199.98px) {
+        .stat-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .stats-wrapper {
+            padding: 0 15px;
+        }
+
+        .stat-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+    }
+
+    .section-title {
+        color: #1e293b;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        border-left: 4px solid #89253e;
+        padding-left: 15px;
+    }
+
+    .chart-evolution-container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .chart-evolution-title {
+        color: #89253e;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .section-title-bleu {
+        border-left-color: #2563eb;
+        color: #1d4ed8;
+    }
+
+    .section-title-vert {
+        border-left-color: #16a34a;
+        color: #15803d;
+    }
+
+    .section-title-orange {
+        border-left-color: #ea580c;
+        color: #c2410c;
+    }
+
+    .section-title-violet {
+        border-left-color: #9333ea;
+        color: #7e22ce;
+    }
+
+    .mini-chart-card {
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e5e7eb;
+        height: 100%;
+    }
+
+    .mini-chart-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .mini-chart-value {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+    }
+
+    .mini-chart-eglises .mini-chart-title,
+    .mini-chart-eglises .mini-chart-value {
+        color: #2563eb;
+    }
+
+    .mini-chart-personnel .mini-chart-title,
+    .mini-chart-personnel .mini-chart-value {
+        color: #16a34a;
+    }
+
+    .mini-chart-membres .mini-chart-title,
+    .mini-chart-membres .mini-chart-value {
+        color: #ea580c;
+    }
+
+    .mini-chart-departements .mini-chart-title,
+    .mini-chart-departements .mini-chart-value {
+        color: #9333ea;
+    }
+
+    .evolution-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 4px;
+    }
+
+    .evolution-positive {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .evolution-negative {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .evolution-pct {
+        font-size: 1.2rem;
+        font-weight: 800;
+    }
+
+    .evolution-label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-top: 2px;
+    }
+
+    .evolution-detail {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+</style>
+
+<div class="statistiques-page">
+    <div class="stats-wrapper">
+        <h1 class="page-title">
+            <i class="bi bi-bar-chart"></i> STATISTIQUES DE L'ÉGLISE
+            <img src="{% static 'main/images/logo_eglise.png' %}" alt="Logo EPAG" style="width: 50px; height: 50px; object-fit: contain; margin-left: 12px; vertical-align: middle;">
+        </h1>
+
+        <!-- Cartes de statistiques principales -->
+        <div class="stat-grid">
+            <div class="stat-card text-center stat-card-eglises">
+                <div class="stat-icon-circle">
+                    <i class="fas fa-church"></i>
+                </div>
+                <div class="stat-label">Églises totales</div>
+                <div class="stat-number">{{ stats.eglises.total }}</div>
+                <canvas id="eglisesMiniChart"></canvas>
+            </div>
+
+            <div class="stat-card text-center stat-card-personnel">
+                <div class="stat-icon-circle">
+                    <i class="fas fa-cross"></i>
+                </div>
+                <div class="stat-label">Personnel pastoral</div>
+                <div class="stat-number">{{ stats.personnel.total }}</div>
+                <canvas id="personnelMiniChart"></canvas>
+            </div>
+
+            <div class="stat-card text-center stat-card-membres">
+                <div class="stat-icon-circle">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-label">Total des membres</div>
+                <div class="stat-number">{{ stats.membres.total }}</div>
+                <canvas id="membresMiniChart"></canvas>
+            </div>
+
+            <div class="stat-card text-center stat-card-departements">
+                <div class="stat-icon-circle">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div class="stat-label">Départements</div>
+                <div class="stat-number">{{ stats.departements.total }}</div>
+                <canvas id="departementsMiniChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Statistiques détaillées -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="chart-container h-100">
+                    <h3 class="section-title section-title-bleu">Statistiques des Églises</h3>
+                    
+                    <div>
+                        <h6>Statut juridique</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Associations:</strong> {{ stats.eglises.avec_association }}</li>
+                            <li><strong>Non associations:</strong> {{ stats.eglises.sans_association }}</li>
+                            <li><strong>Total:</strong> {{ stats.eglises.total }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="chart-container h-100">
+                    <h3 class="section-title section-title-orange">Répartition par Sexe</h3>
+                    
+                    <ul class="list-unstyled">
+                        {% for sexe_stat in stats.membres.par_sexe %}
+                        <li><strong>{{ sexe_stat.sexe|default:"Non spécifié" }}:</strong> {{ sexe_stat.count }} membres</li>
+                        {% empty %}
+                        <li>Aucune donnée disponible</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="chart-container h-100">
+                    <h3 class="section-title section-title-violet">Départements Actifs</h3>
+                    <p><strong>Total:</strong> {{ stats.departements.total }} départements</p>
+                    <p><strong>Actifs:</strong> {{ stats.departements.actifs }} départements</p>
+                    <p><strong>Inactifs:</strong> {{ stats.departements.inactifs }} départements</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="chart-container h-100">
+                    <h3 class="section-title section-title-vert">Top 5 Fonctions (Personnel)</h3>
+                    {% for fonction_stat in stats.personnel.par_fonction %}
+                    <div class="mb-2">
+                        <strong>{{ fonction_stat.fonction|default:"Non spécifié" }}:</strong> {{ fonction_stat.count }} personnes
+                    </div>
+                    {% empty %}
+                    <p>Aucune fonction spécifiée</p>
+                    {% endfor %}
+                    
+                    <h6 class="mt-4">Répartition par Sexe</h6>
+                    <ul class="list-unstyled">
+                        {% for sexe_stat in stats.personnel.par_sexe %}
+                        <li><strong>{{ sexe_stat.sexe|default:"Non spécifié" }}:</strong> {{ sexe_stat.count }} personnes</li>
+                        {% empty %}
+                        <li>Aucune donnée disponible</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique d'évolution -->
+        <div class="chart-evolution-container">
+            <h3 class="chart-evolution-title"><i class="bi bi-graph-up me-2"></i>Courbe d'évolution des statistiques</h3>
+            <canvas id="statsChart" height="120"></canvas>
+
+            <!-- Pourcentage d'évolution -->
+            <div class="row mt-4 text-center">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="evolution-badge {% if stats.eglises.evolution >= 0 %}evolution-positive{% else %}evolution-negative{% endif %}">
+                        <i class="bi {% if stats.eglises.evolution >= 0 %}bi-arrow-up-short{% else %}bi-arrow-down-short{% endif %}"></i>
+                        <span class="evolution-pct">{{ stats.eglises.evolution }}%</span>
+                    </div>
+                    <div class="evolution-label">Églises totales</div>
+                    <div class="evolution-detail">{{ stats.eglises.nouveaux_mois }} nouveau(s) ce mois</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="evolution-badge {% if stats.personnel.evolution >= 0 %}evolution-positive{% else %}evolution-negative{% endif %}">
+                        <i class="bi {% if stats.personnel.evolution >= 0 %}bi-arrow-up-short{% else %}bi-arrow-down-short{% endif %}"></i>
+                        <span class="evolution-pct">{{ stats.personnel.evolution }}%</span>
+                    </div>
+                    <div class="evolution-label">Personnel pastoral</div>
+                    <div class="evolution-detail">{{ stats.personnel.nouveaux_mois }} nouveau(x) ce mois</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="evolution-badge {% if stats.membres.evolution >= 0 %}evolution-positive{% else %}evolution-negative{% endif %}">
+                        <i class="bi {% if stats.membres.evolution >= 0 %}bi-arrow-up-short{% else %}bi-arrow-down-short{% endif %}"></i>
+                        <span class="evolution-pct">{{ stats.membres.evolution }}%</span>
+                    </div>
+                    <div class="evolution-label">Total des membres</div>
+                    <div class="evolution-detail">{{ stats.membres.nouveaux_mois }} nouveau(x) ce mois</div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="evolution-badge {% if stats.departements.evolution >= 0 %}evolution-positive{% else %}evolution-negative{% endif %}">
+                        <i class="bi {% if stats.departements.evolution >= 0 %}bi-arrow-up-short{% else %}bi-arrow-down-short{% endif %}"></i>
+                        <span class="evolution-pct">{{ stats.departements.evolution }}%</span>
+                    </div>
+                    <div class="evolution-label">Départements</div>
+                    <div class="evolution-detail">{{ stats.departements.nouveaux_mois }} nouveau(x) ce mois</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('statsChart').getContext('2d');
+
+        const eglises = {{ stats.eglises.total }};
+        const personnel = {{ stats.personnel.total }};
+        const membres = {{ stats.membres.total }};
+        const departements = {{ stats.departements.total }};
+
+        function buildSeries(total) {
+            const base = Math.max(total - 2, 0);
+            const step = Math.max(total - 1, 0);
+            return [base, step, total];
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Églises totales', 'Personnel pastoral', 'Total des membres', 'Départements'],
+                datasets: [{
+                    label: 'Effectifs actuels',
+                    data: [eglises, personnel, membres, departements],
+                    borderColor: '#89253e',
+                    backgroundColor: 'rgba(137, 37, 62, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: ['#2563eb', '#16a34a', '#ea580c', '#9333ea'],
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 8,
+                    pointHoverRadius: 12,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { size: 14, weight: 'bold' },
+                            color: '#1e293b'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: { size: 13 },
+                            color: '#64748b',
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.06)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 13, weight: '600' },
+                            color: '#1e293b'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        function createMiniChart(elementId, value, color) {
+            var element = document.getElementById(elementId);
+            if (!element) return;
+            new Chart(element.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Début', 'Milieu', 'Actuel'],
+                    datasets: [{
+                        data: buildSeries(value),
+                        borderColor: color,
+                        backgroundColor: color + '22',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: color,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, color: '#94a3b8', font: { size: 10 } },
+                            grid: { color: 'rgba(0,0,0,0.04)' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8', font: { size: 10 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        createMiniChart('eglisesMiniChart', eglises, '#2563eb');
+        createMiniChart('personnelMiniChart', personnel, '#16a34a');
+        createMiniChart('membresMiniChart', membres, '#ea580c');
+        createMiniChart('departementsMiniChart', departements, '#9333ea');
+    });
+</script>
+
+{% endblock %}

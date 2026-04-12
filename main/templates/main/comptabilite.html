@@ -64,6 +64,7 @@
                     <input type="text" class="form-control form-control-sm" id="recetteSearchInput" placeholder="Rechercher..." style="max-width:220px;" autocomplete="off">
                     <button type="button" class="btn btn-sm btn-outline-success" id="recetteExportCsvBtn">Exporter Excel</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" id="recettePrintBtn">Imprimer</button>
+                    <button type="button" class="btn btn-sm" id="whatsappRecetteBtn" style="background:#25D366;color:white;border:none;" title="Envoyer par WhatsApp"><i class="fab fa-whatsapp me-1"></i>WhatsApp</button>
                 </div>
             </div>
             <div class="card-body p-0">
@@ -164,6 +165,7 @@
                     <input type="text" class="form-control form-control-sm" id="depenseSearchInput" placeholder="Rechercher..." style="max-width:220px;" autocomplete="off">
                     <button type="button" class="btn btn-sm btn-outline-success" id="depenseExportCsvBtn">Exporter Excel</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" id="depensePrintBtn">Imprimer</button>
+                    <button type="button" class="btn btn-sm" id="whatsappDepenseBtn" style="background:#25D366;color:white;border:none;" title="Envoyer par WhatsApp"><i class="fab fa-whatsapp me-1"></i>WhatsApp</button>
                     <button type="button" class="btn btn-sm btn-outline-danger" id="depenseClearBtn">Tout supprimer</button>
                 </div>
             </div>
@@ -466,6 +468,25 @@
     if (searchInput){
         searchInput.addEventListener('input', render);
     }
+
+    // WhatsApp - Recettes
+    document.getElementById('whatsappRecetteBtn')?.addEventListener('click', function(){
+        try {
+            const rows = document.querySelectorAll('#recettesTable tbody tr');
+            if (!rows.length) { alert('Aucune recette à envoyer'); return; }
+            let msg = `💵 *Recettes - EPAG*\n📅 ${new Date().toLocaleDateString('fr-FR')}\n📊 Total: ${rows.length} recette(s)\n\n`;
+            rows.forEach(function(row, i){
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 3) {
+                    const date = cells[1]?.textContent?.trim() || '';
+                    const libelle = cells[2]?.textContent?.trim() || '';
+                    const montant = cells[3]?.textContent?.trim() || '';
+                    msg += `${i+1}. ${date} | ${libelle} | ${montant}\n`;
+                }
+            });
+            window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+        } catch (e) { alert('Erreur: ' + e.message); }
+    });
 
     tbody.addEventListener('click', (e) => {
         const btn = e.target.closest('button');
@@ -847,6 +868,25 @@
     if (searchInput){
         searchInput.addEventListener('input', render);
     }
+
+    // WhatsApp - Dépenses
+    document.getElementById('whatsappDepenseBtn')?.addEventListener('click', function(){
+        try {
+            const rows = document.querySelectorAll('#depensesTable tbody tr');
+            if (!rows.length) { alert('Aucune dépense à envoyer'); return; }
+            let msg = `💸 *Dépenses - EPAG*\n📅 ${new Date().toLocaleDateString('fr-FR')}\n📊 Total: ${rows.length} dépense(s)\n\n`;
+            rows.forEach(function(row, i){
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 3) {
+                    const date = cells[1]?.textContent?.trim() || '';
+                    const libelle = cells[2]?.textContent?.trim() || '';
+                    const montant = cells[3]?.textContent?.trim() || '';
+                    msg += `${i+1}. ${date} | ${libelle} | ${montant}\n`;
+                }
+            });
+            window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+        } catch (e) { alert('Erreur: ' + e.message); }
+    });
 
     clearBtn.addEventListener('click', () => {
         if (!confirm('Supprimer toutes les dépenses ?')) return;

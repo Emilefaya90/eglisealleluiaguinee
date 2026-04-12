@@ -374,6 +374,7 @@
           <button class="btn btn-success" id="exportCsvHist" title="Exporter CSV (filtré)"><i class="bi bi-file-earmark-spreadsheet"></i></button>
           <button class="btn btn-danger" id="exportPdfHist" title="Exporter PDF (filtré)"><i class="bi bi-filetype-pdf"></i></button>
           <button class="btn btn-secondary" id="printHist" title="Imprimer (filtré)"><i class="bi bi-printer"></i></button>
+          <button class="btn" id="whatsappHistBtn" title="Envoyer par WhatsApp" style="background:#25D366;color:white;border:none;"><i class="fab fa-whatsapp"></i></button>
         </div>
       </div>
     </div>
@@ -1414,6 +1415,27 @@
   btnCsvHist?.addEventListener('click', exportCsvHist);
   btnPdfHist?.addEventListener('click', exportPdfHist);
   btnPrintHist?.addEventListener('click', printHist);
+
+  // WhatsApp - Historique financier
+  document.getElementById('whatsappHistBtn')?.addEventListener('click', function(){
+    try {
+      const table = document.getElementById('banqueTable');
+      if (!table) { alert('Tableau non trouvé'); return; }
+      const rows = table.querySelectorAll('tbody tr');
+      if (!rows.length) { alert('Aucune donnée à envoyer'); return; }
+      let msg = `💰 *Historique Financier - EPAG*\n📅 ${new Date().toLocaleDateString('fr-FR')}\n📊 Total: ${rows.length} enregistrement(s)\n\n`;
+      rows.forEach(function(row, i) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 3) {
+          const col1 = cells[0]?.textContent?.trim() || '';
+          const col2 = cells[1]?.textContent?.trim() || '';
+          const col3 = cells[2]?.textContent?.trim() || '';
+          msg += `${i+1}. ${col1} | ${col2} | ${col3}\n`;
+        }
+      });
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    } catch (e) { alert('Erreur: ' + e.message); }
+  });
 
   // Utilitaire CSRF
   function getCsrfToken(){

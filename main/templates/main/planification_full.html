@@ -547,6 +547,9 @@
         <button type="button" class="btn btn-outline-secondary btn-sm" id="spFullPrint">
           <i class="fas fa-print me-1"></i>Imprimer
         </button>
+        <button type="button" class="btn btn-sm" id="whatsappResultBtn" style="background:#25D366;color:white;border:none;" title="Envoyer par WhatsApp">
+          <i class="fab fa-whatsapp me-1"></i>WhatsApp
+        </button>
         <button type="button" class="btn btn-primary btn-sm" id="btnVoirTousPlanning" data-bs-toggle="modal" data-bs-target="#modalTousPlanning">
           <i class="fas fa-list-alt me-1"></i>Voir tous les plannings
         </button>
@@ -882,6 +885,28 @@
     `);
     printWindow.document.close();
   });
+
+  // WhatsApp - Résultats
+  document.getElementById('whatsappResultBtn')?.addEventListener('click', function(){
+    try {
+      const tbodyEl = document.getElementById('spFullList');
+      const tableEl = tbodyEl ? tbodyEl.closest('table') : null;
+      if (!tableEl) { alert('Tableau non trouvé'); return; }
+      const rows = tableEl.querySelectorAll('tbody tr');
+      if (!rows.length) { alert('Aucun résultat à envoyer'); return; }
+      let msg = `📋 *Résultats Planification - EPAG*\n📅 ${new Date().toLocaleDateString('fr-FR')}\n📊 Total: ${rows.length} enregistrement(s)\n\n`;
+      rows.forEach(function(row, i) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          const col1 = cells[0]?.textContent?.trim() || '';
+          const col2 = cells[1]?.textContent?.trim() || '';
+          msg += `${i+1}. ${col1} | ${col2}\n`;
+        }
+      });
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    } catch (e) { alert('Erreur: ' + e.message); }
+  });
+
   async function fetchJSON(url){
     const r = await fetch(url);
     if(!r.ok) throw new Error('HTTP ' + r.status);

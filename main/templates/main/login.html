@@ -321,7 +321,7 @@
         <span></span>
     </div>
     
-    <div class="login-card">
+    <div class="login-card" id="loginPageRoot" data-login-locked="{{ login_locked|yesno:'1,0' }}" data-remaining-seconds="{{ remaining_seconds|default:0 }}" data-redirect-url="{% url 'main:accueil' %}">
         <div class="login-header">
             <div class="logo-circle">
                 <i class="fas fa-lock login-icon"></i>
@@ -331,41 +331,63 @@
         </div>
         
         <div class="login-body">
-            {% if form.errors %}
+            {% if login_locked %}
             <div class="alert alert-danger" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                {% trans "Nom d'utilisateur ou mot de passe incorrect." %}
-            </div>
-            {% endif %}
-            
-            {% if next %}
-            <input type="hidden" name="next" value="{{ next }}">
-            {% endif %}
-            
-            <form method="post" action="{% url 'login' %}">
-                {% csrf_token %}
-                
-                <div class="form-floating mb-3">
-                    <input type="text" class="form-control" id="username" name="username" placeholder="{% trans 'Nom d\'utilisateur' %}" required autofocus>
-                    <label for="username"><i class="fas fa-user me-2"></i>{% trans "Nom d'utilisateur" %}</label>
-                </div>
-                
-                <div class="form-floating mb-4 password-container">
-                    <input type="password" class="form-control" id="password" name="password" placeholder="{% trans 'Mot de passe' %}" required>
-                    <label for="password"><i class="fas fa-key me-2"></i>{% trans "Mot de passe" %}</label>
-                    <button type="button" class="password-toggle" id="togglePassword" title="Afficher/Masquer le mot de passe">
-                        <i class="fas fa-eye" id="toggleIcon"></i>
-                    </button>
-                </div>
-                
-                {% if next %}
-                <input type="hidden" name="next" value="{{ next }}">
+                <i class="fas fa-ban me-2"></i>
+                {% trans "Trop de tentatives de connexion non réussies." %}
+                {% if lock_minutes %}
+                {% trans "Veuillez réessayer plus tard." %}
                 {% endif %}
-                
-                <button type="submit" class="btn btn-login">
-                    <i class="fas fa-sign-in-alt me-2"></i>{% trans "Se connecter" %}
-                </button>
-            </form>
+            </div>
+            <div class="text-center text-muted mb-3">
+                <div>
+                    {% trans "Ce menu de connexion est temporairement fermé." %}
+                </div>
+                <div class="mt-2">
+                    {% trans "Redirection automatique dans" %}
+                    <strong><span id="lockCountdown">{{ remaining_seconds|default:0 }}</span>s</strong>
+                </div>
+            </div>
+            {% else %}
+                {% if form.errors or form_errors %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {% trans "Nom d'utilisateur ou mot de passe incorrect." %}
+                    {% if attempts_left is not None %}
+                    <div class="small mt-1">
+                        {% trans "Tentatives restantes" %} : <strong>{{ attempts_left }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endif %}
+            
+            {% if not login_locked %}
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="username" name="username" placeholder="{% trans 'Nom d\'utilisateur' %}" required autofocus>
+                        <label for="username"><i class="fas fa-user me-2"></i>{% trans "Nom d'utilisateur" %}</label>
+                    </div>
+                    
+                    <div class="form-floating mb-4 password-container">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="{% trans 'Mot de passe' %}" required>
+                        <label for="password"><i class="fas fa-key me-2"></i>{% trans "Mot de passe" %}</label>
+                        <button type="button" class="password-toggle" id="togglePassword" title="Afficher/Masquer le mot de passe">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                    
+                    {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-login">
+                        <i class="fas fa-sign-in-alt me-2"></i>{% trans "Se connecter" %}
+                    </button>
+                </form>
+            {% endif %}
             
             <div class="back-link">
                 <a href="{% url 'main:accueil' %}">
@@ -379,19 +401,52 @@
 
 {% block extra_js %}
 <script>
-    document.getElementById('togglePassword').addEventListener('click', function() {
-        const password = document.getElementById('password');
-        const icon = document.getElementById('toggleIcon');
-        
-        if (password.type === 'password') {
-            password.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            password.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+    (function() {
+        const root = document.getElementById('loginPageRoot');
+        if (!root || !root.dataset) return;
+
+        const loginLocked = (root.dataset.loginLocked === '1');
+        const remainingSeconds = parseInt(root.dataset.remainingSeconds || '0', 10) || 0;
+        const redirectUrl = root.dataset.redirectUrl || '/';
+
+        if (!loginLocked) {
+            const toggleBtn = document.getElementById('togglePassword');
+            const password = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+            if (!toggleBtn || !password || !icon) return;
+            toggleBtn.addEventListener('click', function() {
+                if (password.type === 'password') {
+                    password.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    password.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+            return;
         }
-    });
+
+        const el = document.getElementById('lockCountdown');
+        if (!el) return;
+        let remaining = parseInt(el.textContent || String(remainingSeconds || 0), 10);
+        if (!Number.isFinite(remaining)) remaining = 0;
+
+        const tick = function() {
+            remaining = Math.max(0, remaining - 1);
+            el.textContent = remaining.toString();
+            if (remaining <= 0) {
+                try {
+                    if (window.history && history.length > 1) {
+                        window.history.back();
+                        return;
+                    }
+                } catch (e) {}
+                window.location.href = redirectUrl;
+            }
+        };
+        setInterval(tick, 1000);
+    })();
 </script>
 {% endblock %}

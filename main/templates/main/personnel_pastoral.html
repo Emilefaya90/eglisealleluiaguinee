@@ -609,6 +609,9 @@
                         <span class="pp-badge" id="totalPasteursBadge">Total: {{ pasteurs|length|default:'0' }}</span>
                     </div>
                     <div class="d-flex align-items-center gap-2 ms-lg-auto">
+                        <button type="button" class="btn btn-sm" id="whatsappPersonnelBtn" title="Envoyer par WhatsApp" style="background: #25D366; color: white; border: none;">
+                            <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                        </button>
                         <a href="{% url 'main:voir_personnel_pastoral' %}" class="btn btn-outline-primary btn-sm">
                             <i class="fas fa-eye me-1"></i> Voir les Personnels
                         </a>
@@ -1244,6 +1247,24 @@ function capturePhoto() {
                 dt.search(this.value).draw();
             });
         }
+
+        // WhatsApp - Personnel Pastoral
+        document.getElementById('whatsappPersonnelBtn')?.addEventListener('click', function() {
+            try {
+                const rows = document.querySelectorAll('#tablePersonnelPastoral tbody tr');
+                if (!rows.length) { alert('Aucun personnel à envoyer'); return; }
+                let msg = `👥 *Personnel Pastoral - EPAG*\n📅 ${new Date().toLocaleDateString('fr-FR')}\n📊 Total: ${rows.length} personne(s)\n\n`;
+                rows.forEach(function(row, i) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 2) {
+                        const nom = cells[1]?.textContent?.trim() || '';
+                        const fonction = cells[2]?.textContent?.trim() || '';
+                        msg += `${i+1}. *${nom}*${fonction ? ' — ' + fonction : ''}\n`;
+                    }
+                });
+                window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+            } catch (e) { alert('Erreur: ' + e.message); }
+        });
     });
     </script>
             </div>

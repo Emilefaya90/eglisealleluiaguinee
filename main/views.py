@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.conf import settings
+from django.utils import timezone
 from .models import CulteEffectif
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from .models import Eglise, PersonnelPastoral, Membre, Departement, DepartementAttachment, Finance, FinanceReport, ComptabiliteReport, FinanceAttachment, StrategicPlan
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
@@ -20,6 +22,76 @@ from django.core.serializers.json import DjangoJSONEncoder
 import unicodedata as _ud
 from django.forms.models import model_to_dict
 from io import BytesIO
+
+
+def login_view(request):
+    max_attempts = 3
+    lock_minutes = 10
+    now = timezone.now()
+
+    locked_until_iso = request.session.get('login_locked_until')
+    locked_until = None
+    if locked_until_iso:
+        try:
+            locked_until = datetime.fromisoformat(locked_until_iso)
+            if timezone.is_naive(locked_until):
+                locked_until = timezone.make_aware(locked_until, timezone.get_current_timezone())
+        except Exception:
+            locked_until = None
+
+    is_locked = bool(locked_until and locked_until > now)
+    remaining_seconds = int((locked_until - now).total_seconds()) if is_locked else 0
+
+    if request.method == 'POST':
+        if is_locked:
+            context = {
+                'login_locked': True,
+                'lock_minutes': lock_minutes,
+                'remaining_seconds': remaining_seconds,
+                'next': request.POST.get('next') or request.GET.get('next') or '',
+            }
+            return render(request, 'main/login.html', context)
+
+        username = (request.POST.get('username') or '').strip()
+        password = request.POST.get('password') or ''
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            request.session.pop('login_failed_attempts', None)
+            request.session.pop('login_locked_until', None)
+            next_url = request.POST.get('next') or request.GET.get('next') or '/'
+            return redirect(next_url)
+
+        failed = int(request.session.get('login_failed_attempts') or 0) + 1
+        request.session['login_failed_attempts'] = failed
+
+        if failed >= max_attempts:
+            locked_until = now + timedelta(minutes=lock_minutes)
+            request.session['login_locked_until'] = locked_until.isoformat()
+            is_locked = True
+            remaining_seconds = int((locked_until - now).total_seconds())
+            messages.error(request, "Trop de tentatives échouées. Connexion temporairement verrouillée.")
+        else:
+            messages.error(request, "Nom d'utilisateur ou mot de passe incorrect.")
+
+        context = {
+            'form_errors': True,
+            'login_locked': is_locked,
+            'lock_minutes': lock_minutes,
+            'remaining_seconds': remaining_seconds,
+            'attempts_left': max(0, max_attempts - failed),
+            'next': request.POST.get('next') or request.GET.get('next') or '',
+        }
+        return render(request, 'main/login.html', context)
+
+    context = {
+        'login_locked': is_locked,
+        'lock_minutes': lock_minutes,
+        'remaining_seconds': remaining_seconds,
+        'attempts_left': max(0, max_attempts - int(request.session.get('login_failed_attempts') or 0)),
+        'next': request.GET.get('next') or '',
+    }
+    return render(request, 'main/login.html', context)
 
 
 @require_POST
@@ -969,6 +1041,12 @@ def modifier_finance_report(request, report_id: int):
 @login_required
 def nos_fideles(request):
     """Vue pour la page Nos Fidèles (formulaire d'adhésion + tableau)."""
+    eglises = Eglise.objects.all().order_by('nom')
+    return render(request, 'main/nos_fideles.html', { 'eglises': eglises })
+
+
+def nos_fideles_public(request):
+    """Accès public au formulaire d'adhésion (sans demande de mot de passe)."""
     eglises = Eglise.objects.all().order_by('nom')
     return render(request, 'main/nos_fideles.html', { 'eglises': eglises })
 
@@ -3144,6 +3222,78 @@ def message(request):
         'sender_email': sender_email,
     }
     return render(request, 'main/message.html', context)
+
+@login_required
+def statistiques(request):
+    """Vue pour la page Statistiques."""
+    from django.db import models
+    from .models import Eglise, PersonnelPastoral, Membre, Departement
+    from datetime import date
+    import calendar
+
+    today = date.today()
+    debut_mois = today.replace(day=1)
+    fin_mois = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+
+    if today.month == 1:
+        debut_mois_precedent = date(today.year - 1, 12, 1)
+        fin_mois_precedent = date(today.year - 1, 12, 31)
+    else:
+        debut_mois_precedent = date(today.year, today.month - 1, 1)
+        fin_mois_precedent = date(today.year, today.month - 1, calendar.monthrange(today.year, today.month - 1)[1])
+
+    def calc_evolution(nouveau_mois, nouveau_mois_prec):
+        if nouveau_mois_prec == 0:
+            return 100.0 if nouveau_mois > 0 else 0.0
+        return round(((nouveau_mois - nouveau_mois_precedent) / nouveau_mois_prec) * 100, 1)
+
+    eglises_mois = Eglise.objects.filter(date_enregistrement__gte=debut_mois, date_enregistrement__lte=fin_mois).count()
+    eglises_mois_prec = Eglise.objects.filter(date_enregistrement__gte=debut_mois_precedent, date_enregistrement__lte=fin_mois_precedent).count()
+
+    membres_mois = Membre.objects.filter(date_adhesion__gte=debut_mois, date_adhesion__lte=fin_mois).count()
+    membres_mois_prec = Membre.objects.filter(date_adhesion__gte=debut_mois_precedent, date_adhesion__lte=fin_mois_precedent).count()
+
+    departements_mois = Departement.objects.filter(date_creation__gte=debut_mois, date_creation__lte=fin_mois).count()
+    departements_mois_prec = Departement.objects.filter(date_creation__gte=debut_mois_precedent, date_creation__lte=fin_mois_precedent).count()
+
+    personnel_mois = PersonnelPastoral.objects.filter(date_affectation__gte=debut_mois, date_affectation__lte=fin_mois).count()
+    personnel_mois_prec = PersonnelPastoral.objects.filter(date_affectation__gte=debut_mois_precedent, date_affectation__lte=fin_mois_precedent).count()
+
+    # Statistiques générales
+    stats = {
+        'eglises': {
+            'total': Eglise.objects.count(),
+            'avec_association': Eglise.objects.filter(est_association=True).count(),
+            'sans_association': Eglise.objects.filter(est_association=False).count(),
+            'nouveaux_mois': eglises_mois,
+            'evolution': calc_evolution(eglises_mois, eglises_mois_prec),
+        },
+        'personnel': {
+            'total': PersonnelPastoral.objects.count(),
+            'par_fonction': PersonnelPastoral.objects.values('fonction').annotate(count=models.Count('id')).order_by('-count')[:5],
+            'par_sexe': PersonnelPastoral.objects.values('sexe').annotate(count=models.Count('id')),
+            'nouveaux_mois': personnel_mois,
+            'evolution': calc_evolution(personnel_mois, personnel_mois_prec),
+        },
+        'membres': {
+            'total': Membre.objects.count(),
+            'par_sexe': Membre.objects.values('sexe').annotate(count=models.Count('id')),
+            'nouveaux_mois': membres_mois,
+            'evolution': calc_evolution(membres_mois, membres_mois_prec),
+        },
+        'departements': {
+            'total': Departement.objects.count(),
+            'actifs': Departement.objects.filter(statut_actif=True).count(),
+            'inactifs': Departement.objects.filter(statut_actif=False).count(),
+            'nouveaux_mois': departements_mois,
+            'evolution': calc_evolution(departements_mois, departements_mois_prec),
+        }
+    }
+
+    context = {
+        'stats': stats,
+    }
+    return render(request, 'main/statistiques.html', context)
 
 def biographie_pasteurs(request):
     """Vue pour la page Biographie des Pasteurs"""

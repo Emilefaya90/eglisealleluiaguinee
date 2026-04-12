@@ -1138,6 +1138,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Fonction pour envoyer par WhatsApp
+    document.getElementById('whatsappBtn')?.addEventListener('click', function() {
+        try {
+            const table = document.querySelector('.table-eglises');
+            if (!table) {
+                alert('Tableau non trouvé');
+                return;
+            }
+
+            const rows = table.querySelectorAll('tbody tr');
+            if (rows.length === 0) {
+                alert('Aucune église à envoyer');
+                return;
+            }
+
+            let message = `⛪ *Églises Enregistrées - EPAG*\n`;
+            message += `📅 Exporté le: ${new Date().toLocaleDateString('fr-FR')}\n`;
+            message += `📊 Total: ${rows.length} église(s)\n\n`;
+
+            rows.forEach(function(row, index) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 3) {
+                    const nom = cells[0]?.textContent?.trim() || '';
+                    const pays = cells[1]?.textContent?.trim() || '';
+                    const ville = cells[2]?.textContent?.trim() || '';
+                    message += `${index + 1}. *${nom}* - ${ville}, ${pays}\n`;
+                }
+            });
+
+            const encoded = encodeURIComponent(message);
+            const url = `https://wa.me/?text=${encoded}`;
+            window.open(url, '_blank');
+
+            showNotification('Ouverture de WhatsApp...', 'success');
+        } catch (error) {
+            console.error('Erreur WhatsApp:', error);
+            alert('Erreur: ' + error.message);
+        }
+    });
+    
     // Fonction pour le bouton "Voir les détails"
     document.addEventListener('click', function(e) {
         if (e.target.closest('.btn-voir-details')) {
@@ -1350,6 +1390,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </button>
                         <button type="button" class="btn btn-primary btn-sm" id="printBtn" title="Imprimer">
                             🖨️
+                        </button>
+                        <button type="button" class="btn btn-sm" id="whatsappBtn" title="Envoyer par WhatsApp" style="background: #25D366; color: white; border: none;">
+                            <i class="fab fa-whatsapp"></i>
                         </button>
                     </div>
                 </div>

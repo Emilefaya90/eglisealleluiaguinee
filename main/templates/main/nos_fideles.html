@@ -650,6 +650,7 @@
             <button id="exportExcel" class="btn btn-success btn-sm"><i class="bi bi-file-earmark-excel me-1"></i>Excel</button>
             <button id="exportPDF" class="btn btn-danger btn-sm"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</button>
             <button id="printTable" class="btn btn-primary btn-sm"><i class="bi bi-printer me-1"></i>Imprimer</button>
+            <button id="whatsappAdhBtn" class="btn btn-sm" style="background:#25D366;color:white;border:none;" title="Envoyer par WhatsApp"><i class="fab fa-whatsapp me-1"></i>WhatsApp</button>
           </div>
         </div>
         <div class="card-body table-modern-wrapper">
@@ -1155,6 +1156,24 @@
       });
       document.getElementById('printTable').addEventListener('click', function(){
         dt.button?.('2').trigger();
+      });
+
+      // WhatsApp - Adhésions
+      document.getElementById('whatsappAdhBtn')?.addEventListener('click', function(){
+        try {
+          const rows = document.querySelectorAll('#membersTable tbody tr');
+          if (!rows.length) { alert('Aucune adhésion à envoyer'); return; }
+          let msg = `📋 *Adhésions enregistrées - EPAG*\n📅 ${new Date().toLocaleDateString('fr-FR')}\n📊 Total: ${rows.length} adhésion(s)\n\n`;
+          rows.forEach(function(row, i) {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 3) {
+              const matricule = cells[1]?.textContent?.trim() || '';
+              const nom = cells[2]?.textContent?.trim() || '';
+              msg += `${i+1}. *${nom}*${matricule ? ' (' + matricule + ')' : ''}\n`;
+            }
+          });
+          window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+        } catch (e) { alert('Erreur: ' + e.message); }
       });
 
       // Ajouter les boutons Buttons à DataTable
